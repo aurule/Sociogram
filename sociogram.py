@@ -9,8 +9,8 @@ from numpy import dot
 from math import sqrt
 
 #import local libraries
-import Data
-import Graph
+from Data import *
+from Drawing import *
 
 class Sociogram:
     #TODO:
@@ -228,7 +228,7 @@ class Sociogram:
             return
         
         #create object and update data
-        node = Data.Node(lbl)
+        node = Node.Node(lbl)
         self.G.add_node(lbl, {"node": node}) #add to graph
         self.node_lbl_store.append([lbl]) #update name list for the dropdowns
     
@@ -236,12 +236,12 @@ class Sociogram:
         '''Internal function. Add a relationship and handle bookkeeping.'''
         #make sure both nodes exist
         if fname not in self.G:
-            raise Data.MissingNode("Node %s not in graph." % fname)
+            raise Errors.MissingNode("Node %s not in graph." % fname)
         if tname not in self.G:
-            raise Data.MissingNode("Node %s not in graph." % tname)
+            raise Errors.MissingNode("Node %s not in graph." % tname)
         
         #create relationship object
-        rel = Data.Relationship(lbl, fname, tname, weight, bidir)
+        rel = Node.Relationship(lbl, fname, tname, weight, bidir)
         #update existing edge if possible, otherwise add new edge
         if self.G.has_edge(fname, tname):
             self.G[fname][tname]['rels'].append(rel)
