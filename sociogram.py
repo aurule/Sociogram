@@ -9,8 +9,9 @@ from numpy import dot
 from math import sqrt
 
 #import local libraries
-from Data import *
-from Drawing import *
+import Errors
+import Graph
+import Drawing
 
 class Sociogram:
     #TODO:
@@ -34,7 +35,7 @@ class Sociogram:
         self.G = nx.Graph() # instantiate the graph for storage and positioning
         
         self.builder = Gtk.Builder()
-        self.builder.add_from_file("sociogram.ui")
+        self.builder.add_from_file("ui/sociogram.ui")
 
         #set default type for new objects
         self.builder.get_object("newtypesel").set_active(0)
@@ -98,7 +99,7 @@ class Sociogram:
 
         #create canvas object and add to the scroll window
         #VERY IMPORTANT. using the normal window.add() call fails, but setting the parent like this makes everything fine
-        self.canvas = Graph.Canvas(parent=self.builder.get_object("canvas_scroll"))
+        self.canvas = Drawing.Canvas(parent=self.builder.get_object("canvas_scroll"))
         #attach callbacks
         self.canvas.node_callback = self.show_dev_error;
         self.canvas.line_callback = self.show_dev_error;
@@ -228,7 +229,7 @@ class Sociogram:
             return
         
         #create object and update data
-        node = Node.Node(lbl)
+        node = Graph.Node(lbl)
         self.G.add_node(lbl, {"node": node}) #add to graph
         self.node_lbl_store.append([lbl]) #update name list for the dropdowns
     
@@ -241,7 +242,7 @@ class Sociogram:
             raise Errors.MissingNode("Node %s not in graph." % tname)
         
         #create relationship object
-        rel = Node.Relationship(lbl, fname, tname, weight, bidir)
+        rel = Graph.Relationship(lbl, fname, tname, weight, bidir)
         #update existing edge if possible, otherwise add new edge
         if self.G.has_edge(fname, tname):
             self.G[fname][tname]['rels'].append(rel)
