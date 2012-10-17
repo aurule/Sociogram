@@ -6,14 +6,6 @@ from textwrap import TextWrapper
 from numpy import dot
 from math import sqrt
 
-# Wrapper for CanvasPoints to allow sane object creation
-class PointsFactory():
-    def Points(xyarr):
-        pts = GooCanvas.CanvasPoints.new(xyarr.len())
-        for key,pair in xyarr:
-            pts.set_point(key, pair[0], pair[1])
-        return pts
-
 # Custom canvas class to handle graph drawing and interaction
 class Canvas(GooCanvas.Canvas):
     '''Custom GooCanvas that natively handles node/edge drawing with networkx.'''
@@ -105,6 +97,7 @@ class Canvas(GooCanvas.Canvas):
                 dy = bounds.y1 - pos[0]
                 radius = sqrt(dx*dx + dy*dy)
                 self.nodecoords[gnode[0]] = (pos[0], pos[1], radius)
+                print pos
             
             #iterate through edges and draw each according to its stored relationships
             for snode, enode, props in subg.edges_iter(data=True):
@@ -140,7 +133,7 @@ class Canvas(GooCanvas.Canvas):
         lbl.set_properties(x=10+(biggest-lw)/2, y=10+(biggest-lh)/2)
         box.set_properties(width=biggest+20, height=biggest+20)
         
-        return box
+        return ngroup
     
     # Draw an edge on the graph 
     def add_line(self, lobj, snode, enode, parent=None):
@@ -148,12 +141,51 @@ class Canvas(GooCanvas.Canvas):
         spos = self.nodecoords[snode] #x, y, radius
         epos = self.nodecoords[enode] #x, y, radius
         
-        #TODO calculate coords and do some drawing
+        #TODO calculate x and y values for the center of the circle
+        #   spos and epos have x,y at the upper-left corner, which lies on the circle
+        start_center - {'x': spos[0], 'y': spos[1], 'rad': spos[2])
+        end_center = ('x': epos[0], 'y': epos[1], 'rad': epos[2])
         
+        #calculate magnitude of vector from spos to epos
+        dx = start_center['x'] - end_center['x']
+        dy = start_center['y'] - end_center['y']
+        mag = sqrt(dx*dx + dy*dy)
+        
+        #adjust deltas
+        dx = dx/mag
+        dy = dy/mag
+        
+        #calculate start and end coords from the node radii
+        #TODO update to use center x and y coords for both start and end
+        startx = spos[0] - dx*(mag - spos[2])
+        starty = spos[1] - dy*(mag - spos[2])
+        endx = spos[0] - dx*(mag - epos[2])
+        endy = spos[1] - dy*(mag - epos[2])
+        
+        startx = spos[0]
+        starty = spos[1]
+        endx = epos[0]
+        endy = epos[1]
+        
+        #construct the points
+        pts = self.mkpoints([(startx, starty), (endx, endy)])
+        
+        #draw the line
+        #TODO base arrow stuff on lobj
+        GooCanvas.CanvasPolyline(end_arrow=True, start_arrow=False, points=pts, parent=parent, arrow_length=10, arrow_tip_length=8, arrow_width=8)
     
     # Pack the graphs component subgraphs into as small a space as possible.
     def pack(self):
         pass
+    
+    def mkpoints(self, xyarr):
+        '''Create a new Points object with coordinates from xyarr.'''
+        pts = GooCanvas.CanvasPoints.new(len(xyarr))
+        key = 0
+        for x, y in xyarr:
+            pts.set_point(key, x, y)
+            key += 1
+        return pts
 
 class AggLine:
     '''Represents an aggregate line with properties derived from all the relationships between its start and end points.'''
