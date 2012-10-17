@@ -46,10 +46,14 @@ class Relationship(Node):
         self.weight = wgt
         self.mutual = bidir
     
-    def touches(node):
+    def touches(self, node):
         '''Determine whether this relationship eminates or terminates at node.'''
         return self.to_node == node or self.from_node == node
     
-    def spans(a, b):
+    def spans(self, a, b):
         '''Determine whether this relationship touches both a and b.'''
         return self.touches(a) and self.touches(b) and a is not b
+    
+    def ends_at(self, node):
+        '''Determine whether this relationship terminates at node.'''
+        return self.to_node == node

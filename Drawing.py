@@ -3,7 +3,7 @@ from gi.repository import GooCanvas
 from gi.repository import Gdk
 import networkx as nx
 from textwrap import TextWrapper
-from numpy import dot
+from numpy import dot, mean
 from math import sqrt
 
 # Custom canvas class to handle graph drawing and interaction
@@ -94,15 +94,14 @@ class Canvas(GooCanvas.Canvas):
                 #calculate and store the node's bounding radius along with its coords
                 bounds = nbox.get_bounds()
                 dx = bounds.x1 - pos[0]
-                dy = bounds.y1 - pos[0]
+                dy = bounds.y1 - pos[1]
                 radius = sqrt(dx*dx + dy*dy)
                 self.nodecoords[gnode[0]] = (pos[0], pos[1], radius)
-                print pos
             
             #iterate through edges and draw each according to its stored relationships
             for snode, enode, props in subg.edges_iter(data=True):
                 rels = props['rels']
-                line = AggLine(rels)
+                line = AggLine(snode, enode, rels)
                 self.add_line(line, snode, enode, parent=self.gbox)
             
         
@@ -132,6 +131,7 @@ class Canvas(GooCanvas.Canvas):
         
         lbl.set_properties(x=10+(biggest-lw)/2, y=10+(biggest-lh)/2)
         box.set_properties(width=biggest+20, height=biggest+20)
+        ngroup.set_properties(x = x - (biggest+20)/2, y = y - (biggest+20)/2)
         
         return ngroup
     
@@ -140,15 +140,10 @@ class Canvas(GooCanvas.Canvas):
         '''Draw an edge on the graph with properties from AggLine lobj.'''
         spos = self.nodecoords[snode] #x, y, radius
         epos = self.nodecoords[enode] #x, y, radius
-        
-        #TODO calculate x and y values for the center of the circle
-        #   spos and epos have x,y at the upper-left corner, which lies on the circle
-        start_center - {'x': spos[0], 'y': spos[1], 'rad': spos[2])
-        end_center = ('x': epos[0], 'y': epos[1], 'rad': epos[2])
-        
+                
         #calculate magnitude of vector from spos to epos
-        dx = start_center['x'] - end_center['x']
-        dy = start_center['y'] - end_center['y']
+        dx = spos[0] - epos[0]
+        dy = spos[1] - epos[1]
         mag = sqrt(dx*dx + dy*dy)
         
         #adjust deltas
@@ -156,23 +151,17 @@ class Canvas(GooCanvas.Canvas):
         dy = dy/mag
         
         #calculate start and end coords from the node radii
-        #TODO update to use center x and y coords for both start and end
-        startx = spos[0] - dx*(mag - spos[2])
-        starty = spos[1] - dy*(mag - spos[2])
+        startx = epos[0] + dx*(mag - spos[2])
+        starty = epos[1] + dy*(mag - spos[2])
         endx = spos[0] - dx*(mag - epos[2])
         endy = spos[1] - dy*(mag - epos[2])
-        
-        startx = spos[0]
-        starty = spos[1]
-        endx = epos[0]
-        endy = epos[1]
         
         #construct the points
         pts = self.mkpoints([(startx, starty), (endx, endy)])
         
         #draw the line
-        #TODO base arrow stuff on lobj
-        GooCanvas.CanvasPolyline(end_arrow=True, start_arrow=False, points=pts, parent=parent, arrow_length=10, arrow_tip_length=8, arrow_width=8)
+        GooCanvas.CanvasPolyline(end_arrow=lobj.end_arrow, start_arrow=lobj.start_arrow, points=pts, parent=parent, arrow_length=9, arrow_tip_length=7, arrow_width=7, line_width=lobj.width/2)
+        #TODO add dots and text above/left of the line
     
     # Pack the graphs component subgraphs into as small a space as possible.
     def pack(self):
@@ -190,12 +179,16 @@ class Canvas(GooCanvas.Canvas):
 class AggLine:
     '''Represents an aggregate line with properties derived from all the relationships between its start and end points.'''
     
-    def __init__(self, rels):
+    def __init__(self, fnode, tnode, rels):
         '''Create a new aggregate line.'''
 
         self.start_arrow = False
         self.end_arrow = False
         self.width = 5
+        self.weights = []
+        self.origin = fnode
+        self.dest = tnode
+        self.labels = [] #list of tuples (label, dir) where dir is 'from', 'to', or 'both'
 
         if rels == None:
             return
@@ -205,4 +198,26 @@ class AggLine:
     
     def add_rel(self, rel):
         '''Add properties from a relationship object.'''
-        #TODO determine arrows, labels, thickness, etc. from the relationship
+        
+        #add labels and arrows according to directionality
+        if rel.mutual:
+            self.labels.append((rel.label, 'both'))
+            if not (self.start_arrow and self.end_arrow):
+                self.start_arrow = True
+                self.end_arrow = True
+        if rel.ends_at(self.origin):
+            self.labels.append((rel.label, 'from'))
+            if not self.start_arrow:
+                self.start_arrow = True
+        if rel.ends_at(self.dest):
+            self.labels.append((rel.label, 'to'))
+            if not self.end_arrow:
+                self.end_arrow = True
+        
+        #add weight to width concern
+        self.weights.append(rel.weight)
+        self.calc_width()
+    
+    def calc_width(self):
+        '''Calculate line width from relationship weights.'''
+        self.width = mean(self.weights)
