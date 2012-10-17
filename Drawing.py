@@ -3,6 +3,8 @@ from gi.repository import GooCanvas
 from gi.repository import Gdk
 import networkx as nx
 from textwrap import TextWrapper
+from numpy import dot
+from math import sqrt
 
 # Wrapper for CanvasPoints to allow sane object creation
 class PointsFactory():
@@ -15,6 +17,7 @@ class PointsFactory():
 # Custom canvas class to handle graph drawing and interaction
 class Canvas(GooCanvas.Canvas):
     '''Custom GooCanvas that natively handles node/edge drawing with networkx.'''
+    
     def __init__(self, **args):
         '''Create a Canvas object. **args are passed to GooCanvas.Canvas constructor.'''
         GooCanvas.Canvas.__init__(self, **args)
@@ -29,7 +32,8 @@ class Canvas(GooCanvas.Canvas):
         self.zoom = False
         self.node_callback = None
         self.line_callback = None
-        self.cboxes = list()
+        self.cboxes = []
+        self.nodecoords = {}
         self.textwrap = TextWrapper(width=10) #text wrapper for node labels
         
         #connect signals
@@ -70,7 +74,7 @@ class Canvas(GooCanvas.Canvas):
     def redraw(self, G):
         '''Draw the networkx graph G.'''
         del self.cboxes[:]
-        self.cboxes = list()
+        self.nodecoords.clear()
         linked_nodes = []
         #first we clear off the old drawing
         try:
@@ -86,15 +90,28 @@ class Canvas(GooCanvas.Canvas):
         for subg in components:
             cbox = GooCanvas.CanvasGroup(parent = self.gbox)
             self.cboxes.append(cbox)
-            locations = nx.spring_layout(subg, scale=40*subg.order())
+            locations = nx.spring_layout(subg, scale=100*subg.order())
         
             #iterate over the nodes and draw each according to its given positions
             for gnode in subg.nodes_iter(True):
                 pos = locations[gnode[0]]
                 
                 lbl_text = self.textwrap.fill(gnode[0])
-                self.add_node(gnode[1]['node'], label=lbl_text, parent=self.gbox, x=pos[0], y=pos[1])
-            #TODO draw lines
+                nbox = self.add_node(gnode[1]['node'], label=lbl_text, parent=self.gbox, x=pos[0], y=pos[1])
+                
+                #calculate and store the node's bounding radius along with its coords
+                bounds = nbox.get_bounds()
+                dx = bounds.x1 - pos[0]
+                dy = bounds.y1 - pos[0]
+                radius = sqrt(dx*dx + dy*dy)
+                self.nodecoords[gnode[0]] = (pos[0], pos[1], radius)
+            
+            #iterate through edges and draw each according to its stored relationships
+            for snode, enode, props in subg.edges_iter(data=True):
+                rels = props['rels']
+                line = AggLine(rels)
+                self.add_line(line, snode, enode, parent=self.gbox)
+            
         
         self.pack()
     
@@ -122,11 +139,38 @@ class Canvas(GooCanvas.Canvas):
         
         lbl.set_properties(x=10+(biggest-lw)/2, y=10+(biggest-lh)/2)
         box.set_properties(width=biggest+20, height=biggest+20)
+        
+        return box
     
-    # Draw an edge on the graph derived from all the links between two nodes.
-    def add_line(self, lobj, parent=None, startx=0, starty=0, endx=1, endy=1):
-        pass
+    # Draw an edge on the graph 
+    def add_line(self, lobj, snode, enode, parent=None):
+        '''Draw an edge on the graph with properties from AggLine lobj.'''
+        spos = self.nodecoords[snode] #x, y, radius
+        epos = self.nodecoords[enode] #x, y, radius
+        
+        #TODO calculate coords and do some drawing
+        
     
     # Pack the graphs component subgraphs into as small a space as possible.
     def pack(self):
         pass
+
+class AggLine:
+    '''Represents an aggregate line with properties derived from all the relationships between its start and end points.'''
+    
+    def __init__(self, rels):
+        '''Create a new aggregate line.'''
+
+        self.start_arrow = False
+        self.end_arrow = False
+        self.width = 5
+
+        if rels == None:
+            return
+        
+        for rel in rels:
+            self.add_rel(rel)
+    
+    def add_rel(self, rel):
+        '''Add properties from a relationship object.'''
+        #TODO determine arrows, labels, thickness, etc. from the relationship

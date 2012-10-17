@@ -5,8 +5,6 @@ from __future__ import division
 from gi.repository import Gtk, GooCanvas
 from gi.repository.Gdk import WindowState
 import networkx as nx
-from numpy import dot
-from math import sqrt
 
 #import local libraries
 import Errors
