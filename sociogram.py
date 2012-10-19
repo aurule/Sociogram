@@ -189,6 +189,7 @@ class Sociogram:
         vis = "Rel" in obj_type
         for wname in ["frombox_dlg", "tobox_dlg", "weightbox_dlg", "bidir_new"]:
             self.builder.get_object(wname).set_visible(vis)
+        self.builder.get_object("name_entry_dlg").grab_focus()
     
     def check_new_empty(self, widget, data=None):
         '''Event handler. Disable Add Object dialog's Add button unless Label field has text.'''
