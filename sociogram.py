@@ -38,35 +38,53 @@ class Sociogram:
         #set default type for new objects
         self.builder.get_object("newtypesel").set_active(0)
 
-        #populate from_combo, to_combo, attr_edit_name with liststore and renderer
+        
         self.node_lbl_store = Gtk.ListStore(str)
         textcell = Gtk.CellRendererText()
         
+        completions = []
+        for t in range(4):
+            x = Gtk.EntryCompletion()
+            x.set_model(self.node_lbl_store)
+            x.set_text_column(0)
+            x.set_minimum_key_length(1)
+            x.set_inline_completion(True)
+            x.set_popup_single_match(False)
+            completions.append(x)
+        
+        #populate from_combo, to_combo, attr_edit_name with liststore and renderer
         from_combo = self.builder.get_object("from_combo")
         from_combo.set_model(self.node_lbl_store)
-        from_combo.pack_start(textcell, True)
-        from_combo.add_attribute(textcell, 'text', 0)
-        from_combo.set_id_column(0)
+        self.from_main = self.builder.get_object("from_combo_entry")
+        self.from_main.set_completion(completions[0])
+        #from_combo.pack_start(textcell, True)
+        #from_combo.add_attribute(textcell, 'text', 0)
+        #from_combo.set_id_column(0)
         
         to_combo = self.builder.get_object("to_combo")
         to_combo.set_model(self.node_lbl_store)
-        to_combo.pack_start(textcell, True)
-        to_combo.add_attribute(textcell, 'text', 0)
-        to_combo.set_id_column(0)
-        
+        self.to_main = self.builder.get_object("to_combo_entry")
+        self.to_main.set_completion(completions[1])
+        #to_combo.pack_start(textcell, True)
+        #to_combo.add_attribute(textcell, 'text', 0)
+        #to_combo.set_id_column(0)
         
         #populate from_combo_dlg and to_combo_dlg from the same model as above
         from_combo_dlg = self.builder.get_object("from_combo_dlg")
         from_combo_dlg.set_model(self.node_lbl_store)
-        from_combo_dlg.pack_start(textcell, True)
-        from_combo_dlg.add_attribute(textcell, 'text', 0)
-        from_combo_dlg.set_id_column(0)
+        self.from_dlg = self.builder.get_object("from_combo_dlg_entry")
+        self.from_dlg.set_completion(completions[2])
+        #from_combo_dlg.pack_start(textcell, True)
+        #from_combo_dlg.add_attribute(textcell, 'text', 0)
+        #from_combo_dlg.set_id_column(0)
         
         to_combo_dlg = self.builder.get_object("to_combo_dlg")
         to_combo_dlg.set_model(self.node_lbl_store)
-        to_combo_dlg.pack_start(textcell, True)
-        to_combo_dlg.add_attribute(textcell, 'text', 0)
-        to_combo_dlg.set_id_column(0)
+        self.to_dlg = self.builder.get_object("to_combo_dlg_entry")
+        self.to_dlg.set_completion(completions[3])
+        #to_combo_dlg.pack_start(textcell, True)
+        #to_combo_dlg.add_attribute(textcell, 'text', 0)
+        #to_combo_dlg.set_id_column(0)
         
         
         #populate attribute name dropdown from a global list
@@ -149,11 +167,12 @@ class Sociogram:
             "app.toggle_fs": self.toggle_fullscreen,
             "app.track_fs": self.track_fullscreen,
             "app.hide_add_controls": self.hide_addbox_controls,
-            "app.check_empty": self.check_new_empty,
             "app.deep_find": self.show_dev_error,
             "app.show_dlg": self.show_dlg,
             "app.show_add": self.show_add,
-            "data.add": self.add_obj,
+            "app.dlg_sanity": self.check_new_dlg_sanity,
+            "app.set_highlight_radius": self.show_dev_error,
+            "data.add": self.show_dev_error,
             "data.copyattrs": self.show_dev_error,
             "data.pasteattrs": self.do_paste,
             "data.delsel": self.show_dev_error,
@@ -170,8 +189,8 @@ class Sociogram:
         #clear the dialog's values
         self.builder.get_object("newtypesel").set_active(0)
         self.builder.get_object("name_entry_dlg").set_text('')
-        self.builder.get_object("from_combo_dlg").set_active(-1)
-        self.builder.get_object("to_combo_dlg").set_active(-1)
+        self.from_dlg.set_text('')
+        self.to_dlg.set_text('')
         self.builder.get_object("weight_spin_dlg").set_value(5)
         self.builder.get_object("bidir_new").set_active(False)
         self.builder.get_object("use_copied_attrs").set_active(False)
@@ -180,25 +199,14 @@ class Sociogram:
         self.builder.get_object("new_type_box").set_sensitive(self.G.order() > 1) #disallow Relationships unless we have enough nodes
         #TODO disallow selecting the same node for both From and To
         self.builder.get_object("name_entry_dlg").grab_focus()
-        self.add_item_dlg.run()
+        response = self.add_item_dlg.run()
         self.add_item_dlg.hide()
-    
-    def hide_addbox_controls(self, widget, data=None):
-        '''Event handler. Toggles visibility of Relationship-specific fields in the Add Object dialog based on selected Type.'''
-        obj_type = widget.get_active_text()
-        vis = "Rel" in obj_type
-        for wname in ["frombox_dlg", "tobox_dlg", "weightbox_dlg", "bidir_new"]:
-            self.builder.get_object(wname).set_visible(vis)
-        self.builder.get_object("name_entry_dlg").grab_focus()
-    
-    def check_new_empty(self, widget, data=None):
-        '''Event handler. Disable Add Object dialog's Add button unless Label field has text.'''
-        sense = self.builder.get_object("name_entry_dlg").get_text() != ""
-        self.builder.get_object("new_ok").set_sensitive(sense)
-    
-    #TODO move this into show_add with a conditional
-    def add_obj(self, widget, data=None):
-        '''Handles the outcome of the Add Object dialog.'''
+        
+        #don't add anything unless the OK button was pressed
+        if response != 4:
+            return
+        
+        #otherwise, add a new object
         obj_type = self.builder.get_object("newtypesel").get_active_text()
         
         lbl = self.builder.get_object("name_entry_dlg").get_text()
@@ -207,8 +215,8 @@ class Sociogram:
         use_copied = self.builder.get_object("use_copied_attrs").get_active()
         if "Rel" in obj_type:
             #grab extra data fields
-            fnode = self.builder.get_object("from_combo_dlg").get_active_id()
-            tnode = self.builder.get_object("to_combo_dlg").get_active_id()
+            fnode = self.from_dlg.get_text()
+            tnode = self.to_dlg.get_text()
             weight = self.builder.get_object("weight_spin_dlg").get_value()
             bidir = self.builder.get_object("bidir_new").get_active()
             rel = self._add_rel(lbl, fnode, tnode, weight, bidir)
@@ -219,6 +227,22 @@ class Sociogram:
         if use_copied:
             self._paste_attrs(node)
         self.redraw()
+    
+    def hide_addbox_controls(self, widget, data=None):
+        '''Event handler. Toggles visibility of Relationship-specific fields in the Add Object dialog based on selected Type.'''
+        obj_type = widget.get_active_text()
+        vis = "Rel" in obj_type
+        for wname in ["frombox_dlg", "tobox_dlg", "weightbox_dlg", "bidir_new"]:
+            self.builder.get_object(wname).set_visible(vis)
+        self.builder.get_object("name_entry_dlg").grab_focus()
+    
+    def check_new_dlg_sanity(self, widget, data=None):
+        '''Event handler. Disable Add Object dialog's Add button unless inputs make sense.'''
+        sense = self.builder.get_object("name_entry_dlg").get_text() != ""
+        sense2 = True
+        if self.from_dlg.get_text() != '' and self.to_dlg.get_text() != '':
+            sense2 = self.from_dlg.get_text() != self.to_dlg.get_text()
+        self.builder.get_object("new_ok").set_sensitive(sense and sense2)
     
     def _add_node(self, lbl):
         '''Internal function. Add a node and handle bookkeeping.'''
