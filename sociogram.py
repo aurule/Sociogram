@@ -31,19 +31,19 @@ class Sociogram:
     def __init__(self):
         '''Set up internals and instantiate/fix up GUI using Gtk.Builder.'''
         self.G = nx.Graph() # instantiate the graph for storage and positioning
+        self.selection = None #placeholder for selecting a node
         
         self.builder = Gtk.Builder()
         self.builder.add_from_file("ui/sociogram.ui")
 
         #set default type for new objects
         self.builder.get_object("newtypesel").set_active(0)
-
         
         self.node_lbl_store = Gtk.ListStore(str)
         textcell = Gtk.CellRendererText()
         
         completions = []
-        for t in range(4):
+        for t in range(5):
             x = Gtk.EntryCompletion()
             x.set_model(self.node_lbl_store)
             x.set_text_column(0)
@@ -86,6 +86,9 @@ class Sociogram:
         #to_combo_dlg.add_attribute(textcell, 'text', 0)
         #to_combo_dlg.set_id_column(0)
         
+        #add completion to toolbar node search field
+        searchbar = self.builder.get_object("search_entry")
+        searchbar.set_completion(completions[4])
         
         #populate attribute name dropdown from a global list
         attr_names = Gtk.ListStore(str)
@@ -117,8 +120,9 @@ class Sociogram:
         #VERY IMPORTANT. using the normal window.add() call fails, but setting the parent like this makes everything fine
         self.canvas = Drawing.Canvas(parent=self.builder.get_object("canvas_scroll"))
         #attach callbacks
-        self.canvas.node_callback = self.show_dev_error;
-        self.canvas.line_callback = self.show_dev_error;
+        self.canvas.node_callback = self.set_selection;
+        self.canvas.line_callback = self.set_selection;
+        self.canvas.connect("button-press-event", self.clear_select)
         
         
         # Declare references for all the dialogs and popups we need. We do keep
@@ -183,6 +187,9 @@ class Sociogram:
             "graph.refresh": self.redraw
         }
         self.builder.connect_signals(handlers_main)
+        
+        #disable sidebar programmatically, so that labels will be drawn correctly
+        self.builder.get_object("sidebarbox").set_sensitive(False)
     
     def show_add(self, widget, data=None):
         '''Show Add Object dialog after resetting field defaults and ensuring sane Relationship availability.'''
@@ -211,21 +218,25 @@ class Sociogram:
         lbl = self.builder.get_object("name_entry_dlg").get_text()
         
         #get the rest of our data
-        use_copied = self.builder.get_object("use_copied_attrs").get_active()
+        paste = self.builder.get_object("use_copied_attrs").get_active()
         if "Rel" in obj_type:
             #grab extra data fields
             fnode = self.from_dlg.get_text()
             tnode = self.to_dlg.get_text()
             weight = self.builder.get_object("weight_spin_dlg").get_value()
             bidir = self.builder.get_object("bidir_new").get_active()
-            rel = self._add_rel(lbl, fnode, tnode, weight, bidir)
-            if use_copied:
-                self._paste_attrs(rel)
+            rel = self._add_rel(lbl, fnode, tnode, weight, bidir, paste)
+            #TODO set obj to the correct, selectable object
         else:
-            node = self._add_node(lbl)
-        if use_copied:
-            self._paste_attrs(node)
+            node = self._add_node(lbl, paste)
+        
         self.redraw()
+        if "Rel" in obj_type:
+            #TODO get selectable relationship
+            obj = None
+        else:
+            obj = self.canvas.vertices[lbl]
+        self.set_selection(obj)
     
     def hide_addbox_controls(self, widget, data=None):
         '''Event handler. Toggles visibility of Relationship-specific fields in the Add Object dialog based on selected Type.'''
@@ -237,13 +248,24 @@ class Sociogram:
     
     def check_new_dlg_sanity(self, widget, data=None):
         '''Event handler. Disable Add Object dialog's Add button unless inputs make sense.'''
-        sense = self.builder.get_object("name_entry_dlg").get_text() != ""
-        sense2 = True
-        if self.from_dlg.get_text() != '' and self.to_dlg.get_text() != '':
-            sense2 = self.from_dlg.get_text() != self.to_dlg.get_text()
-        self.builder.get_object("new_ok").set_sensitive(sense and sense2)
+        haslbl = self.builder.get_object("name_entry_dlg").get_text() != ""
+        ftext = self.from_dlg.get_text()
+        ttext = self.to_dlg.get_text()
+        
+        hasnodes = True
+        diffnodes = True
+        nodes_exist = True
+        obj_type = self.builder.get_object("newtypesel").get_active_text()
+        if "Rel" in obj_type:
+            hasnodes = ftext != '' and ttext != ''
+            diffnodes = ftext != ttext
+            nodes_exist = ftext in self.G and ttext in self.G
+        
+        sense = haslbl and hasnodes and diffnodes and nodes_exist        
+        
+        self.builder.get_object("new_ok").set_sensitive(sense)
     
-    def _add_node(self, lbl):
+    def _add_node(self, lbl, paste=False):
         '''Internal function. Add a node and handle bookkeeping.'''
         #make sure the node doesn't already exist
         if lbl in self.G: 
@@ -254,8 +276,11 @@ class Sociogram:
         node = Graph.Node(lbl)
         self.G.add_node(lbl, {"node": node}) #add to graph
         self.node_lbl_store.append([lbl]) #update name list for the dropdowns
+        
+        if paste:
+            self._paste_attrs(node)
     
-    def _add_rel(self, lbl, fname, tname, weight, bidir):
+    def _add_rel(self, lbl, fname, tname, weight, bidir, paste):
         '''Internal function. Add a relationship and handle bookkeeping.'''
         #make sure both nodes exist
         if fname not in self.G:
@@ -270,20 +295,22 @@ class Sociogram:
             self.G[fname][tname]['rels'].append(rel)
         else:
             self.G.add_edge(fname, tname, rels=[rel])
+        
+        if paste:
+            self._paste_attrs(node)
     
     # Picks the appropriate object to paste into, then passes off to _paste_attrs.
     def do_paste(self, widget, data=None):
-        #TODO
-        #silently fail if there's no selection
-        #pick target from selected object in graph
-        #call _paste_attrs
-        
-        self.show_dev_error()
+        '''Event handler. Trigger paste operation for selected item.'''
+        if self.selection != None:
+            self._paste_attrs(self.selection)
     
     # Internal function to overwrite target object's attributes with those from
     # the clipboard.
     def _paste_attrs(self, obj):
+        '''Paste copied attributes into obj, overwriting if necessary.'''
         #TODO paste
+        #silently fail if no paste buffer
         self.show_dev_error()
     
     # Sees if a given node exists, and focuses on it if so.
@@ -294,13 +321,101 @@ class Sociogram:
         if node not in self.G:
             widget.set_icon_from_stock(Gtk.EntryIconPosition.SECONDARY, Gtk.STOCK_NO)
         else:
-            #TODO select node and make sure it's visible in the canvas. if not, center it
-            self.show_dev_error()
+            #select node
+            vertex = self.canvas.vertices[node] 
+            self.set_selection(vertex)
         widget.select_region(0, widget.get_text_length())
     
     def set_search_icon(self, widget, data=None):
         '''Event handler. Resets search box icon when new text is entered.'''
         widget.set_icon_from_stock(Gtk.EntryIconPosition.SECONDARY, Gtk.STOCK_FIND)
+    
+    def set_selection(self, selobj, obj=None, event=None):
+        '''Event handler and standalone. Mark selobj as selected and update ui.'''
+        #make sure the old selection is cleared, since we can't guarantee clear_select() has already been run
+        if self.selection != None:
+            self.selection.set_selected(False)
+        
+        if selobj == None:
+            return
+        
+        self.selection = selobj
+        self.selection.set_selected(True)
+            
+        #TODO make sure it's visible in the canvas. if not, center it
+        
+        #TODO grab data and update UI
+        self.builder.get_object("name_entry").set_text(selobj.label)
+        if selobj.type == 'node':
+            self.activate_node_controls()
+        else:
+            self.activate_all_controls()
+            #TODO populate from a single relationship object, not the aggline
+            self.from_combo.set_text(selobj.origin.label)
+            self.from_combo.set_text(selobj.dest.label)
+            self.builder.get_object("weight_spin").set_value(selobj.weight)
+            self.builder.get_object("").set_active(selobj.bidir)
+        
+        #TODO populate attribute list
+    
+    def activate_node_controls(self):
+        '''Make only node-compatable selection-specific controls sensitive to input.'''
+        #enable the enter sidebar
+        self.builder.get_object("sidebarbox").set_sensitive(True)
+        
+        #explicitly disable relationship-only controls
+        self.builder.get_object("frombox").set_sensitive(False)
+        self.builder.get_object("tobox").set_sensitive(False)
+        self.builder.get_object("weightbox").set_sensitive(False)
+    
+    def activate_all_controls(self):
+        '''Make all selection-specific controls sensitive to input.'''
+        self.builder.get_object("sidebarbox").set_sensitive(True)
+        
+        #explicitly enable relationship-only controls, since they may have been previously explicitly disabled
+        self.builder.get_object("frombox").set_sensitive(True)
+        self.builder.get_object("tobox").set_sensitive(True)
+        self.builder.get_object("weightbox").set_sensitive(True)
+        
+        #also enable selection-specific buttons and menu items
+        self.builder.get_object("copy").set_sensitive(True)
+        self.builder.get_object("paste").set_sensitive(True)
+        self.builder.get_object("del").set_sensitive(True)
+        self.builder.get_object("menu_copy").set_sensitive(True)
+        self.builder.get_object("menu_paste").set_sensitive(True)
+        self.builder.get_object("menu_delete").set_sensitive(True)
+    
+    def disable_all_controls(self):
+        '''Make all selection-specific controls unresponsive to input and clear their values.'''
+        self.builder.get_object("sidebarbox").set_sensitive(False)
+        
+        #clear values
+        self.builder.get_object("name_entry").set_text('')       
+        self.from_main.set_text('')
+        self.to_main.set_text('')
+        self.builder.get_object("weight_spin").set_value(5)
+        
+        #explicitly disable
+        self.builder.get_object("frombox").set_sensitive(False)
+        self.builder.get_object("tobox").set_sensitive(False)
+        self.builder.get_object("weightbox").set_sensitive(False)
+        
+        #disable buttons and menu items
+        self.builder.get_object("copy").set_sensitive(False)
+        self.builder.get_object("paste").set_sensitive(False)
+        self.builder.get_object("del").set_sensitive(False)
+        self.builder.get_object("menu_copy").set_sensitive(False)
+        self.builder.get_object("menu_paste").set_sensitive(False)
+        self.builder.get_object("menu_delete").set_sensitive(False)
+        
+    
+    def clear_select(self, canvas, data=None):
+        '''Event handler and standalone. Deselect object(s) on canvas click.'''
+        if self.selection != None:
+            self.selection.set_selected(False)        
+            self.selection = None
+        
+        self.disable_all_controls()
     
     def toggle_widget(self, widget, data=None):
         '''Event handler and standalone. Toggle passed widget.'''

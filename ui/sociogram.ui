@@ -239,6 +239,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
                       <object class="GtkEntry" id="from_combo_dlg_entry">
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
+                        <property name="activates_default">True</property>
                         <property name="completion">entrycompletion1</property>
                         <signal name="changed" handler="app.dlg_sanity" swapped="no"/>
                       </object>
@@ -286,6 +287,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
                       <object class="GtkEntry" id="to_combo_dlg_entry">
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
+                        <property name="activates_default">True</property>
                         <signal name="changed" handler="app.dlg_sanity" swapped="no"/>
                       </object>
                     </child>
@@ -329,6 +331,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
                     <property name="tooltip_text" translatable="yes">Relative importance or strength of the relationship</property>
                     <property name="max_length">2</property>
                     <property name="invisible_char">●</property>
+                    <property name="activates_default">True</property>
                     <property name="width_chars">3</property>
                     <property name="invisible_char_set">True</property>
                     <property name="adjustment">weight_dlg_adj</property>
@@ -1915,6 +1918,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
                         <property name="label">gtk-copy</property>
                         <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
+                        <property name="sensitive">False</property>
                         <property name="can_focus">False</property>
                         <property name="tooltip_text" translatable="yes">Copy selected object's attributes</property>
                         <property name="use_underline">True</property>
@@ -1928,6 +1932,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
                         <property name="label">gtk-paste</property>
                         <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
+                        <property name="sensitive">False</property>
                         <property name="can_focus">False</property>
                         <property name="tooltip_text" translatable="yes">Replace object's attributes</property>
                         <property name="use_underline">True</property>
@@ -1941,6 +1946,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
                         <property name="label">gtk-delete</property>
                         <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
+                        <property name="sensitive">False</property>
                         <property name="can_focus">False</property>
                         <property name="tooltip_text" translatable="yes">Remove object</property>
                         <property name="use_underline">True</property>
@@ -2280,6 +2286,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
                   <object class="GtkToolButton" id="copy">
                     <property name="use_action_appearance">False</property>
                     <property name="visible">True</property>
+                    <property name="sensitive">False</property>
                     <property name="can_focus">False</property>
                     <property name="tooltip_text" translatable="yes">Copy selected item's attributes</property>
                     <property name="use_action_appearance">False</property>
@@ -2297,6 +2304,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
                   <object class="GtkToolButton" id="paste">
                     <property name="use_action_appearance">False</property>
                     <property name="visible">True</property>
+                    <property name="sensitive">False</property>
                     <property name="can_focus">False</property>
                     <property name="tooltip_text" translatable="yes">Replace attributes</property>
                     <property name="use_action_appearance">False</property>
@@ -2314,6 +2322,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
                   <object class="GtkToolButton" id="del">
                     <property name="use_action_appearance">False</property>
                     <property name="visible">True</property>
+                    <property name="sensitive">False</property>
                     <property name="can_focus">False</property>
                     <property name="tooltip_text" translatable="yes">Delete selected object(s)</property>
                     <property name="use_action_appearance">False</property>
@@ -2424,7 +2433,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
           <object class="GtkPaned" id="main_display">
             <property name="visible">True</property>
             <property name="can_focus">True</property>
-            <property name="position">600</property>
+            <property name="position">650</property>
             <property name="position_set">True</property>
             <child>
               <object class="GtkScrolledWindow" id="canvas_scroll">
@@ -2808,7 +2817,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
                         </child>
                       </object>
                       <packing>
-                        <property name="expand">False</property>
+                        <property name="expand">True</property>
                         <property name="fill">True</property>
                         <property name="position">4</property>
                       </packing>

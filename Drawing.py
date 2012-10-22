@@ -3,10 +3,11 @@ from gi.repository import GooCanvas
 from gi.repository import Gdk
 import networkx as nx
 from textwrap import TextWrapper
-from numpy import dot, mean
+from numpy import mean
 from math import sqrt
 
 import Errors
+import painters
 
 # Custom canvas class to handle graph drawing and interaction
 class Canvas(GooCanvas.Canvas):
@@ -31,13 +32,17 @@ class Canvas(GooCanvas.Canvas):
         self.textwrap = TextWrapper(width=10) #text wrapper for node labels
         
         #connect signals
-        self.connect("key_press_event", Canvas.eventhandler)
-        self.connect("key_release_event", Canvas.eventhandler)
-        self.connect("event", Canvas.eventhandler)
+        self.connect("key_press_event", self.eventhandler)
+        self.connect("key_release_event", self.eventhandler)
+        self.connect("event", self.eventhandler)
     
     #imported from elsewhere
     #TODO clean up and customize
-    def eventhandler(self, e):
+    #   make ctl+scrollup/dn zoom in/out
+    #   make ctl+plus/minus zoom in/out
+    #   make shift+scrollup/dn scroll left/right
+    #   make click on empty space deselect
+    def eventhandler(self, widget, e):
         '''Called by GTK whenever we get mouse or keyboard interactions.'''
         if e.type == Gdk.EventType.KEY_PRESS:
             kvn = Gdk.keyval_name(e.keyval)
@@ -47,9 +52,9 @@ class Canvas(GooCanvas.Canvas):
                 if not self.zoom:
                     self.zoom = True
             elif kvn == 'plus' and self.zoom:
-                self.props.scale *= 1.2
+                self.scale *= 1.2
             elif kvn == 'minus' and self.zoom:
-                self.props.scale *= 0.8
+                self.scale *= 0.8
             return False
         elif e.type == Gdk.EventType.KEY_RELEASE:
             if Gdk.keyval_name(e.keyval) == 'Control_L':
@@ -62,7 +67,7 @@ class Canvas(GooCanvas.Canvas):
                 self.props.scale *= 0.8
             return True
         elif e.type == Gdk.EventType.BUTTON_PRESS:
-            print e.get_coords()
+            pass#print e.get_coords()
         return False
     
     def redraw(self, G):
@@ -91,76 +96,32 @@ class Canvas(GooCanvas.Canvas):
                 pos = locations[gnode[0]]
                 
                 lbl_text = self.textwrap.fill(gnode[0])
-                ngroup = Vertex(gnode[1]['node'], parent=self.gbox, x=pos[0], y=pos[1], painter=self.boxpainter)
+                #TODO assign style info to object based on style rules
+                #   change painter if necessary
+                ngroup = Vertex(gnode[1]['node'], parent=self.gbox, x=pos[0]+50, y=pos[1]+50, painter=painters.vertex.box)
                 ngroup.connect("button-press-event", self.node_callback)
                 self.vertices[ngroup.label] = ngroup
+    
+                coords = ngroup.get_xyr()
+                ring = GooCanvas.CanvasEllipse(parent=cbox, radius_x=coords['radius'], radius_y=coords['radius'], center_x=coords['x'], center_y=coords['y'], fill_color_rgba=0x00000000, stroke_color_rgba=0x00000000)
             
             #iterate through edges and draw each according to its stored relationships
             for snode, enode, props in subg.edges_iter(data=True):
-                line = AggLine(snode, enode, rels=props['rels'], painter=self.linepainter, parent=self.gbox)
-                line.connect("button-press-event", self.line_callback)
-            
+                #TODO assign style info to object based on style rules
+                #   change painter if necessary
+                line = AggLine(parent=self.gbox, fnode=self.vertices[snode], tnode=self.vertices[enode], rels=props['rels'], painter=painters.edge.line)
+                
+                #TODO attach this callback to individual relationships, not just the aggline
+                #line.connect("button-press-event", self.line_callback)
         
         self.pack()
     
     # Pack the graphs component subgraphs into as small a space as possible.
     def pack(self):
         '''Pack component subgraphs into the drawing space.'''
-        #TODO all of it
-        pass
-    
-    def mkpoints(self, xyarr):
-        '''Create a new Points object with coordinates from xyarr.'''
-        pts = GooCanvas.CanvasPoints.new(len(xyarr))
-        key = 0
-        for x, y in xyarr:
-            pts.set_point(key, x, y)
-            key += 1
-        return pts
-    
-    def boxpainter(self, parent, node):
-        '''Draw node as a box surrounding its (centered) label.'''
-        label = node.label
-        box = GooCanvas.CanvasRect(parent=parent, stroke_color_rgba=0x000000ff, fill_color_rgba=0xffff00ff)
-        lbl = GooCanvas.CanvasText(parent=parent, text=label, alignment="center", fill_color='black')
-        
-        lbl_bounds = lbl.get_bounds()
-        lw = lbl_bounds.x2 - lbl_bounds.x1
-        lh = lbl_bounds.y2 - lbl_bounds.y1
-        biggest = lw if lw > lh else lh
-        
-        lbl.set_properties(x=10+(biggest-lw)/2, y=10+(biggest-lh)/2)
-        box.set_properties(width=biggest+20, height=biggest+20)
-        
-        props = {'width': biggest+20, 'height': biggest+20}
-        return props
-    
-    def linepainter(self, parent, start, end, lobj):
-        '''Draw lobj, an AggLine, as a simple line with text labels along its length.'''
-        spos = self.vertices[start].get_xyr() #x, y, radius
-        epos = self.vertices[end].get_xyr() #x, y, radius
-                
-        #calculate magnitude of vector from spos to epos
-        dx = spos['x'] - epos['x']
-        dy = spos['y'] - epos['y']
-        mag = sqrt(dx*dx + dy*dy)
-        
-        #adjust deltas
-        dx = dx/mag
-        dy = dy/mag
-        
-        #calculate start and end coords from the node radii
-        startx = epos['x'] + dx*(mag - spos['radius'])
-        starty = epos['y'] + dy*(mag - spos['radius'])
-        endx = spos['x'] - dx*(mag - epos['radius'])
-        endy = spos['y'] - dy*(mag - epos['radius'])
-        
-        #construct the points
-        pts = self.mkpoints([(startx, starty), (endx, endy)])
-        
-        #draw the line
-        GooCanvas.CanvasPolyline(end_arrow=lobj.end_arrow, start_arrow=lobj.start_arrow, points=pts, parent=parent, arrow_length=9, arrow_tip_length=7, arrow_width=7, line_width=lobj.width/2)
-        #TODO add dots and text above/left of the line
+        for sub in self.cboxes:
+            #TODO all of it
+            pass
         
 class AggLine(GooCanvas.CanvasGroup):
     '''Represent an aggregate line with properties derived from all the relationships between its start and end points.'''
@@ -169,14 +130,16 @@ class AggLine(GooCanvas.CanvasGroup):
         '''Create a new aggregate line.'''
         GooCanvas.CanvasGroup.__init__(self, **args)
 
+        self.type = 'rel'
         self.start_arrow = False
         self.end_arrow = False
         self.width = 5
         self.weights = []
-        self.origin = fnode
-        self.dest = tnode
+        self.origin = fnode #Node object
+        self.dest = tnode #Node object
         self.labels = [] #list of tuples (label, dir) where dir is 'from', 'to', or 'both'
-        self.painter = None
+        self.painter = painter
+        self.selected = False
 
         #parse relationships
         if rels != None:
@@ -184,7 +147,7 @@ class AggLine(GooCanvas.CanvasGroup):
                 self.add_rel(rel)
         
         #draw if we're able
-        if painter != None: self.set_painter(painter)
+        if painter != None: self.draw()
     
     def add_rel(self, rel):
         '''Add properties from a relationship object.'''
@@ -195,11 +158,11 @@ class AggLine(GooCanvas.CanvasGroup):
             if not (self.start_arrow and self.end_arrow):
                 self.start_arrow = True
                 self.end_arrow = True
-        if rel.ends_at(self.origin):
+        if rel.ends_at(self.origin.label):
             self.labels.append((rel.label, 'from'))
             if not self.start_arrow:
                 self.start_arrow = True
-        if rel.ends_at(self.dest):
+        if rel.ends_at(self.dest.label):
             self.labels.append((rel.label, 'to'))
             if not self.end_arrow:
                 self.end_arrow = True
@@ -215,7 +178,17 @@ class AggLine(GooCanvas.CanvasGroup):
     def set_painter(self, painter):
         '''Set the painting function used to draw this vertex, then call it.'''
         self.painter = painter
-        shape = painter(parent=self, start=self.origin, end=self.dest, lobj=self)
+    
+    def draw(self):
+        if self.painter == None:
+            return
+        
+        shape = self.painter.paint(parent=self, start=self.origin.get_xyr(), end=self.dest.get_xyr(), lobj=self)
+    
+    def set_selected(self, state):
+        '''Mark our selected status and draw selection ring.'''
+        self.selected = state
+        self.painter.show_selected(state)
 
 class Vertex(GooCanvas.CanvasGroup):
     '''Represent a node on the canvas.'''
@@ -224,21 +197,29 @@ class Vertex(GooCanvas.CanvasGroup):
         '''Create a new Vertex which represents node.'''
         GooCanvas.CanvasGroup.__init__(self, **args)
         
+        self.type = 'node'
         self.node = node
         self.label = node.label
         self.x = x
         self.y = y
         self.radius = 0
-        self.painter = None
+        self.painter = painter
+        self.selected = False
+        self.selring = None
         
         #if we were initialized with a painting function, draw immediately
-        if painter != None: self.set_painter(painter)
+        if painter != None: self.draw()
 
     def set_painter(self, painter):
-        '''Set the painting function used to draw this object, call it, then recalculate x, y, and radius.'''
+        '''Set the painting function used to draw this object.'''
         self.painter = painter
+    
+    def draw(self):
+        '''Draw with our painter, then recalculate x, y, and radius.'''
+        if self.painter == None:
+            return
         
-        shape = painter(parent=self, node=self.node)
+        shape = self.painter.paint(parent=self, node=self.node)
         self.width = shape['width']
         self.height = shape['height']
         
@@ -254,3 +235,12 @@ class Vertex(GooCanvas.CanvasGroup):
     def get_xyr(self):
         '''Return a dict of x, y, and radius.'''
         return {'x':self.x, 'y':self.y, 'radius':self.radius}
+    
+    def set_selected(self, state):
+        '''Mark our selected status and draw selection ring.'''
+        self.selected = state
+        
+        if self.selected:
+            self.selring = self.painter.show_selected(self)
+        else:
+            self.selring.remove()

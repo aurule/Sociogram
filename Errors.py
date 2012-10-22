@@ -18,3 +18,10 @@ class EmptyNode(Exception):
         self.value = value
     def __str__(self):
         return repr(self.value)
+
+class MissingPainter(Exception):
+    '''Exception for missing painter object.'''
+    def __init__(self, value):
+        self.value = value
+    def __str__(self):
+        return repr(self.value)
