@@ -197,8 +197,7 @@ class Sociogram:
         
         #show the thing
         self.builder.get_object("new_type_box").set_sensitive(self.G.order() > 1) #disallow Relationships unless we have enough nodes
-        #TODO disallow selecting the same node for both From and To
-        self.builder.get_object("name_entry_dlg").grab_focus()
+        self.builder.get_object("name_entry_dlg").grab_focus() #focus on the label field
         response = self.add_item_dlg.run()
         self.add_item_dlg.hide()
         

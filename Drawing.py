@@ -6,6 +6,8 @@ from textwrap import TextWrapper
 from numpy import dot, mean
 from math import sqrt
 
+import Errors
+
 # Custom canvas class to handle graph drawing and interaction
 class Canvas(GooCanvas.Canvas):
     '''Custom GooCanvas that natively handles node/edge drawing with networkx.'''
@@ -25,7 +27,7 @@ class Canvas(GooCanvas.Canvas):
         self.node_callback = None
         self.line_callback = None
         self.cboxes = []
-        self.nodecoords = {}
+        self.vertices = {}
         self.textwrap = TextWrapper(width=10) #text wrapper for node labels
         
         #connect signals
@@ -66,7 +68,7 @@ class Canvas(GooCanvas.Canvas):
     def redraw(self, G):
         '''Draw the networkx graph G.'''
         del self.cboxes[:]
-        self.nodecoords.clear()
+        self.vertices.clear()
         linked_nodes = []
         #first we clear off the old drawing
         try:
@@ -89,82 +91,21 @@ class Canvas(GooCanvas.Canvas):
                 pos = locations[gnode[0]]
                 
                 lbl_text = self.textwrap.fill(gnode[0])
-                nbox = self.add_node(gnode[1]['node'], label=lbl_text, parent=self.gbox, x=pos[0], y=pos[1])
-                
-                #calculate and store the node's bounding radius along with its coords
-                bounds = nbox.get_bounds()
-                dx = bounds.x1 - pos[0]
-                dy = bounds.y1 - pos[1]
-                radius = sqrt(dx*dx + dy*dy)
-                self.nodecoords[gnode[0]] = (pos[0], pos[1], radius)
+                ngroup = Vertex(gnode[1]['node'], parent=self.gbox, x=pos[0], y=pos[1], painter=self.boxpainter)
+                ngroup.connect("button-press-event", self.node_callback)
+                self.vertices[ngroup.label] = ngroup
             
             #iterate through edges and draw each according to its stored relationships
             for snode, enode, props in subg.edges_iter(data=True):
-                rels = props['rels']
-                line = AggLine(snode, enode, rels)
-                self.add_line(line, snode, enode, parent=self.gbox)
+                line = AggLine(snode, enode, rels=props['rels'], painter=self.linepainter, parent=self.gbox)
+                line.connect("button-press-event", self.line_callback)
             
         
         self.pack()
     
-    def add_node(self, nobj, label=None, parent=None, x=0, y=0):
-        '''Add a node to the graph. nobj is a Data.Node object.'''
-        #TODO
-        #apply style rules
-        #show displayed attributes
-        #externalize colors and paramaterize shape drawing
-        
-        if label == None:
-            label = nobj.label
-        
-        #create a group for this node's elements
-        ngroup = GooCanvas.CanvasGroup(parent=parent, x=x, y=y)
-        ngroup.connect("button-press-event", self.node_callback)
-        
-        box = GooCanvas.CanvasRect(parent=ngroup, stroke_color_rgba=0x000000ff, fill_color_rgba=0xffff00ff)
-        lbl = GooCanvas.CanvasText(parent=ngroup, text=label, alignment="center", fill_color='black')
-        
-        lbl_bounds = lbl.get_bounds()
-        lw = lbl_bounds.x2 - lbl_bounds.x1
-        lh = lbl_bounds.y2 - lbl_bounds.y1
-        biggest = lw if lw > lh else lh
-        
-        lbl.set_properties(x=10+(biggest-lw)/2, y=10+(biggest-lh)/2)
-        box.set_properties(width=biggest+20, height=biggest+20)
-        ngroup.set_properties(x = x - (biggest+20)/2, y = y - (biggest+20)/2)
-        
-        return ngroup
-    
-    # Draw an edge on the graph 
-    def add_line(self, lobj, snode, enode, parent=None):
-        '''Draw an edge on the graph with properties from AggLine lobj.'''
-        spos = self.nodecoords[snode] #x, y, radius
-        epos = self.nodecoords[enode] #x, y, radius
-                
-        #calculate magnitude of vector from spos to epos
-        dx = spos[0] - epos[0]
-        dy = spos[1] - epos[1]
-        mag = sqrt(dx*dx + dy*dy)
-        
-        #adjust deltas
-        dx = dx/mag
-        dy = dy/mag
-        
-        #calculate start and end coords from the node radii
-        startx = epos[0] + dx*(mag - spos[2])
-        starty = epos[1] + dy*(mag - spos[2])
-        endx = spos[0] - dx*(mag - epos[2])
-        endy = spos[1] - dy*(mag - epos[2])
-        
-        #construct the points
-        pts = self.mkpoints([(startx, starty), (endx, endy)])
-        
-        #draw the line
-        GooCanvas.CanvasPolyline(end_arrow=lobj.end_arrow, start_arrow=lobj.start_arrow, points=pts, parent=parent, arrow_length=9, arrow_tip_length=7, arrow_width=7, line_width=lobj.width/2)
-        #TODO add dots and text above/left of the line
-    
     # Pack the graphs component subgraphs into as small a space as possible.
     def pack(self):
+        #TODO all of it
         pass
     
     def mkpoints(self, xyarr):
@@ -175,12 +116,59 @@ class Canvas(GooCanvas.Canvas):
             pts.set_point(key, x, y)
             key += 1
         return pts
+    
+    #TODO externalize
+    def boxpainter(self, parent, node):
+        label = node.label
+        box = GooCanvas.CanvasRect(parent=parent, stroke_color_rgba=0x000000ff, fill_color_rgba=0xffff00ff)
+        lbl = GooCanvas.CanvasText(parent=parent, text=label, alignment="center", fill_color='black')
+        
+        lbl_bounds = lbl.get_bounds()
+        lw = lbl_bounds.x2 - lbl_bounds.x1
+        lh = lbl_bounds.y2 - lbl_bounds.y1
+        biggest = lw if lw > lh else lh
+        
+        lbl.set_properties(x=10+(biggest-lw)/2, y=10+(biggest-lh)/2)
+        box.set_properties(width=biggest+20, height=biggest+20)
+        
+        props = {'width': biggest+20, 'height': biggest+20}
+        return props
+    
+    #TODO externalize
+    def linepainter(self, parent, start, end, lobj):
+        '''Draw an edge on the graph with properties from AggLine lobj.'''
+        spos = self.vertices[start].get_xyr() #x, y, radius
+        epos = self.vertices[end].get_xyr() #x, y, radius
+                
+        #calculate magnitude of vector from spos to epos
+        dx = spos['x'] - epos['x']
+        dy = spos['y'] - epos['y']
+        mag = sqrt(dx*dx + dy*dy)
+        
+        #adjust deltas
+        dx = dx/mag
+        dy = dy/mag
+        
+        #calculate start and end coords from the node radii
+        startx = epos['x'] + dx*(mag - spos['radius'])
+        starty = epos['y'] + dy*(mag - spos['radius'])
+        endx = spos['x'] - dx*(mag - epos['radius'])
+        endy = spos['y'] - dy*(mag - epos['radius'])
+        
+        #construct the points
+        pts = self.mkpoints([(startx, starty), (endx, endy)])
+        
+        #draw the line
+        GooCanvas.CanvasPolyline(end_arrow=lobj.end_arrow, start_arrow=lobj.start_arrow, points=pts, parent=parent, arrow_length=9, arrow_tip_length=7, arrow_width=7, line_width=lobj.width/2)
+        #TODO add dots and text above/left of the line
+        
 
-class AggLine:
+class AggLine(GooCanvas.CanvasGroup):
     '''Represents an aggregate line with properties derived from all the relationships between its start and end points.'''
     
-    def __init__(self, fnode, tnode, rels):
+    def __init__(self, fnode, tnode, rels=None, painter=None, **args):
         '''Create a new aggregate line.'''
+        GooCanvas.CanvasGroup.__init__(self, **args)
 
         self.start_arrow = False
         self.end_arrow = False
@@ -189,12 +177,15 @@ class AggLine:
         self.origin = fnode
         self.dest = tnode
         self.labels = [] #list of tuples (label, dir) where dir is 'from', 'to', or 'both'
+        self.painter = None
 
-        if rels == None:
-            return
+        #parse relationships
+        if rels != None:
+            for rel in rels:
+                self.add_rel(rel)
         
-        for rel in rels:
-            self.add_rel(rel)
+        #draw if we're able
+        if painter != None: self.set_painter(painter)
     
     def add_rel(self, rel):
         '''Add properties from a relationship object.'''
@@ -221,3 +212,42 @@ class AggLine:
     def calc_width(self):
         '''Calculate line width from relationship weights.'''
         self.width = mean(self.weights)
+
+    def set_painter(self, painter):
+        self.painter = painter
+        shape = painter(parent=self, start=self.origin, end=self.dest, lobj=self)
+
+class Vertex(GooCanvas.CanvasGroup):
+    '''Represents a shape+label on the canvas.'''
+    
+    def __init__(self, node, x=0, y=0, painter=None, **args):
+        GooCanvas.CanvasGroup.__init__(self, **args)
+        
+        self.node = node
+        self.label = node.label
+        self.x = x
+        self.y = y
+        self.radius = 0
+        self.painter = None
+        
+        #if we were initialized with a painting function, draw immediately
+        if painter != None: self.set_painter(painter)
+
+    def set_painter(self, painter):
+        self.painter = painter
+        
+        shape = painter(parent=self, node=self.node)
+        self.width = shape['width']
+        self.height = shape['height']
+        
+        #now that something's drawn, center ourselves around our original x,y
+        self.set_properties(x = self.x - self.width/2, y = self.y - self.height/2)
+        
+        #calculate and store our new radius
+        bounds = self.get_bounds()
+        dx = bounds.x1 - self.x
+        dy = bounds.y1 - self.y
+        self.radius = sqrt(dx*dx + dy*dy)
+    
+    def get_xyr(self):
+        return {'x':self.x, 'y':self.y, 'radius':self.radius}
