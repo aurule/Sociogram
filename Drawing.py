@@ -105,6 +105,7 @@ class Canvas(GooCanvas.Canvas):
     
     # Pack the graphs component subgraphs into as small a space as possible.
     def pack(self):
+        '''Pack component subgraphs into the drawing space.'''
         #TODO all of it
         pass
     
@@ -117,8 +118,8 @@ class Canvas(GooCanvas.Canvas):
             key += 1
         return pts
     
-    #TODO externalize
     def boxpainter(self, parent, node):
+        '''Draw node as a box surrounding its (centered) label.'''
         label = node.label
         box = GooCanvas.CanvasRect(parent=parent, stroke_color_rgba=0x000000ff, fill_color_rgba=0xffff00ff)
         lbl = GooCanvas.CanvasText(parent=parent, text=label, alignment="center", fill_color='black')
@@ -134,9 +135,8 @@ class Canvas(GooCanvas.Canvas):
         props = {'width': biggest+20, 'height': biggest+20}
         return props
     
-    #TODO externalize
     def linepainter(self, parent, start, end, lobj):
-        '''Draw an edge on the graph with properties from AggLine lobj.'''
+        '''Draw lobj, an AggLine, as a simple line with text labels along its length.'''
         spos = self.vertices[start].get_xyr() #x, y, radius
         epos = self.vertices[end].get_xyr() #x, y, radius
                 
@@ -162,9 +162,8 @@ class Canvas(GooCanvas.Canvas):
         GooCanvas.CanvasPolyline(end_arrow=lobj.end_arrow, start_arrow=lobj.start_arrow, points=pts, parent=parent, arrow_length=9, arrow_tip_length=7, arrow_width=7, line_width=lobj.width/2)
         #TODO add dots and text above/left of the line
         
-
 class AggLine(GooCanvas.CanvasGroup):
-    '''Represents an aggregate line with properties derived from all the relationships between its start and end points.'''
+    '''Represent an aggregate line with properties derived from all the relationships between its start and end points.'''
     
     def __init__(self, fnode, tnode, rels=None, painter=None, **args):
         '''Create a new aggregate line.'''
@@ -214,13 +213,15 @@ class AggLine(GooCanvas.CanvasGroup):
         self.width = mean(self.weights)
 
     def set_painter(self, painter):
+        '''Set the painting function used to draw this vertex, then call it.'''
         self.painter = painter
         shape = painter(parent=self, start=self.origin, end=self.dest, lobj=self)
 
 class Vertex(GooCanvas.CanvasGroup):
-    '''Represents a shape+label on the canvas.'''
+    '''Represent a node on the canvas.'''
     
     def __init__(self, node, x=0, y=0, painter=None, **args):
+        '''Create a new Vertex which represents node.'''
         GooCanvas.CanvasGroup.__init__(self, **args)
         
         self.node = node
@@ -234,6 +235,7 @@ class Vertex(GooCanvas.CanvasGroup):
         if painter != None: self.set_painter(painter)
 
     def set_painter(self, painter):
+        '''Set the painting function used to draw this object, call it, then recalculate x, y, and radius.'''
         self.painter = painter
         
         shape = painter(parent=self, node=self.node)
@@ -250,4 +252,5 @@ class Vertex(GooCanvas.CanvasGroup):
         self.radius = sqrt(dx*dx + dy*dy)
     
     def get_xyr(self):
+        '''Return a dict of x, y, and radius.'''
         return {'x':self.x, 'y':self.y, 'radius':self.radius}
