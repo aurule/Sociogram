@@ -491,9 +491,9 @@ class Sociogram:
         elif event.state & zoom_mask:
             #TODO get scale from settings
             if event.direction == Gdk.ScrollDirection.UP:
-                self.canvas.set_scale(self.canvas.scale * 1.2)
+                self.zoom_in()
             elif event.direction == Gdk.ScrollDirection.DOWN:
-                self.canvas.set_scale(self.canvas.scale * 0.8)
+                self.zoom_out()
             
             return True
         
@@ -502,10 +502,12 @@ class Sociogram:
     
     def zoom_in_step(self, widget, data=None):
         '''Event handler. Enlarge scale by prefs factor.'''
+            #TODO get scale from settings
         self.canvas.set_scale(self.canvas.scale * 1.2)
     
     def zoom_out_step(self, widget, data=None):
         '''Event handler. Shrink scale by prefs factor.'''
+            #TODO get scale from settings
         self.canvas.set_scale(self.canvas.scale * 0.8)
     
     def zoom_reset(self, widget, data=None):
