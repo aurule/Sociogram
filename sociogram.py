@@ -89,22 +89,18 @@ class Sociogram:
         searchbar = self.builder.get_object("search_entry")
         searchbar.set_completion(completions[4])
         
-        #populate attribute name dropdown from a global list
-        attr_names = Gtk.ListStore(str)
-        ane = self.builder.get_object("attr_edit_name")
-        ane.set_model(attr_names)
-        ane.pack_start(textcell, True)
-        ane.add_attribute(textcell, 'text', 0)
-        to_combo_dlg.set_id_column(0)
-        
         
         #connect attribute view with attribute list, create columns, and make it all sortable
+        editme = Gtk.CellRendererText()
+        editme.set_property("editable", True)
+        editme.connect("edited", self.update_attrs)
+        
         self.attr_store = Gtk.ListStore(str, str, bool, str)
         adisp = self.builder.get_object("attrstree")
         adisp.set_model(self.attr_store)
-        col1 = Gtk.TreeViewColumn("Name", textcell, text=0)
+        col1 = Gtk.TreeViewColumn("Name", editme, text=0)
         col1.set_sort_column_id(0)
-        col2 = Gtk.TreeViewColumn("Value", textcell, text=1)
+        col2 = Gtk.TreeViewColumn("Value", editme, text=1)
         col2.set_sort_column_id(1)
         togglecell = Gtk.CellRendererToggle()
         togglecell.connect("toggled", self.show_dev_error) #TODO handle attr visibility change
@@ -183,12 +179,15 @@ class Sociogram:
             "app.zoom_out": self.zoom_out_step,
             "app.zoom_reset": self.zoom_reset,
             "app.zoom_fit": self.zoom_fit,
+            "app.cancel_newname": self.cancel_name_edit,
             "data.add": self.show_dev_error,
             "data.copyattrs": self.show_dev_error,
             "data.pasteattrs": self.do_paste,
             "data.delsel": self.delete_selection,
-            "data.update": self.show_dev_error,
-            "data.update_lbl": self.show_dev_error,
+            "data.update_lbl": self.update_lbl,
+            "data.update_terminus": self.update_terminus,
+            "data.update_weight": self.update_weight,
+            "data.update_bidir": self.update_bidir,
             "data.newattr": self.show_dev_error,
             "data.delattr": self.show_dev_error,
             "graph.toggle_highlight": self.show_dev_error,
@@ -536,6 +535,40 @@ class Sociogram:
             widget.set_icon_activatable(Gtk.EntryIconPosition.SECONDARY, False)
         else:
             widget.set_icon_from_stock(Gtk.EntryIconPosition.SECONDARY, None)
+    
+    def update_lbl(self, widget, data=None):
+        '''Event handler. Update selection's label and redraw it.'''
+        #TODO
+        #   update selection's label property
+        #   redraw selection
+        #   redraw connected lines if needed
+        pass
+    
+    def cancel_name_edit(self, widget, data=None):
+        '''Event handler. Reset name field if Esc key pressed.'''
+        #TODO reset widget text to stored label if blurred from Esc key
+        pass
+    
+    def update_terminus(self, widget, data=None):
+        '''Event handler. Update selected relationship's endpoints and redraw it.'''
+        pass
+    
+    def update_weight(self, widget, data=None):
+        '''Event handler. Update selected relationship's weight and redraw it.'''
+        pass
+    
+    def update_bidir(self, widget, data=None):
+        '''Event handler. Update selected relationship's bidir property and redraw it.'''
+        pass
+    
+    def update_attrs(self, widget, path, text):
+        #TODO update visible attrs
+        #   update selection's attributes
+        #   redraw selection
+        
+        #self.attrstore[path][???] = text
+        
+        pass
     
     def toggle_widget(self, widget, data=None):
         '''Event handler and standalone. Toggle passed widget.'''
