@@ -32,8 +32,9 @@ Planned for Release
 Finished
 -------
 * arbitrary nodes and relationships
-* drawing! (except subgraph packing...)
+* drawing! (except subgraph packing)
 * search nodes by label
+* zooming and panning (except best fit)
 
 The Future
 ---------
