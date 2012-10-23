@@ -179,6 +179,10 @@ class Sociogram:
             "app.set_highlight_radius": self.show_dev_error,
             "app.check_name": self.check_label,
             "app.canvas_keys": self.canvas_key_handler,
+            "app.zoom_in": self.zoom_in_step,
+            "app.zoom_out": self.zoom_out_step,
+            "app.zoom_reset": self.zoom_reset,
+            "app.zoom_fit": self.zoom_fit,
             "data.add": self.show_dev_error,
             "data.copyattrs": self.show_dev_error,
             "data.pasteattrs": self.do_paste,
@@ -453,9 +457,14 @@ class Sociogram:
         '''Event handler. Take actions based on keyboard input while a graph object is selected.'''
         
         kvn = Gdk.keyval_name(event.keyval)
+        print kvn
         if kvn == '1':
             self.canvas.set_scale(1)
             return True
+        elif kvn == 'plus':
+            self.zoom_in()
+        elif kvn == 'minus':
+            self.zoom_out()
         elif kvn == 'Delete':
             self.delete_selection()
             return True
@@ -480,6 +489,7 @@ class Sociogram:
             
             return True
         elif event.state & zoom_mask:
+            #TODO get scale from settings
             if event.direction == Gdk.ScrollDirection.UP:
                 self.canvas.set_scale(self.canvas.scale * 1.2)
             elif event.direction == Gdk.ScrollDirection.DOWN:
@@ -490,8 +500,26 @@ class Sociogram:
         #unless we handled it, let the event flow along
         return False
     
+    def zoom_in_step(self, widget, data=None):
+        '''Event handler. Enlarge scale by prefs factor.'''
+        self.canvas.set_scale(self.canvas.scale * 1.2)
+    
+    def zoom_out_step(self, widget, data=None):
+        '''Event handler. Shrink scale by prefs factor.'''
+        self.canvas.set_scale(self.canvas.scale * 0.8)
+    
+    def zoom_reset(self, widget, data=None):
+        '''Event handler. Set scale to 1.'''
+        self.canvas.set_scale(1)
+    
+    def zoom_fit(self, widget=None, data=None):
+        '''Event handler and standalone. Calculate optimal scale value to show entire area at once.'''
+        #TODO figure out the best fit, for real
+        pass
+    
     def check_label(self, widget, data=None):
         '''Ensure that edited label is unused.'''
+        #TODO check, and refuse to update if it's taken
         pass
     
     def toggle_widget(self, widget, data=None):
