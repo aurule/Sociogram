@@ -188,6 +188,7 @@ class Sociogram:
             "data.pasteattrs": self.do_paste,
             "data.delsel": self.delete_selection,
             "data.update": self.show_dev_error,
+            "data.update_lbl": self.show_dev_error,
             "data.newattr": self.show_dev_error,
             "data.delattr": self.show_dev_error,
             "graph.toggle_highlight": self.show_dev_error,
@@ -457,7 +458,6 @@ class Sociogram:
         '''Event handler. Take actions based on keyboard input while a graph object is selected.'''
         
         kvn = Gdk.keyval_name(event.keyval)
-        print kvn
         if kvn == '1':
             self.canvas.set_scale(1)
             return True
@@ -520,9 +520,18 @@ class Sociogram:
         pass
     
     def check_label(self, widget, data=None):
-        '''Ensure that edited label is unused.'''
-        #TODO check, and refuse to update if it's taken
-        pass
+        '''Event handler. Warn if edited label is already used.'''
+        
+        if widget == None or self.selection == None:
+            return
+        
+        newlbl = widget.get_text()
+        if newlbl != self.selection.label and newlbl in self.G:
+            widget.set_icon_from_stock(Gtk.EntryIconPosition.SECONDARY, Gtk.STOCK_NO)
+            widget.set_icon_tooltip_text(Gtk.EntryIconPosition.SECONDARY, _("Label already used"))
+            widget.set_icon_activatable(Gtk.EntryIconPosition.SECONDARY, False)
+        else:
+            widget.set_icon_from_stock(Gtk.EntryIconPosition.SECONDARY, None)
     
     def toggle_widget(self, widget, data=None):
         '''Event handler and standalone. Toggle passed widget.'''
@@ -568,6 +577,11 @@ class Sociogram:
         '''Event handler and standalone. Trigger a graph update and redraw.'''
         self.canvas.redraw(self.G)
         #TODO maintain selection
+
+def _(text):
+    '''Get translated text where possible.'''
+    #TODO grab translated text
+    return text
 
 def main():
     '''Enter Gtk.main().'''

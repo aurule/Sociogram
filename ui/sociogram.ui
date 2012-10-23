@@ -2603,7 +2603,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
                                 <property name="invisible_char">●</property>
                                 <property name="width_chars">10</property>
                                 <signal name="changed" handler="app.check_name" swapped="no"/>
-                                <signal name="activate" handler="data.update" swapped="no"/>
+                                <signal name="activate" handler="data.update_lbl" swapped="no"/>
                                 <signal name="focus-out-event" handler="data.update" swapped="no"/>
                               </object>
                               <packing>
@@ -2650,6 +2650,8 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
                                   <object class="GtkEntry" id="from_combo_entry">
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
+                                    <property name="secondary_icon_activatable">False</property>
+                                    <property name="secondary_icon_sensitive">False</property>
                                   </object>
                                 </child>
                               </object>
