@@ -331,6 +331,8 @@ class Sociogram:
         node = widget.get_text()
         if node not in self.G:
             widget.set_icon_from_stock(Gtk.EntryIconPosition.SECONDARY, Gtk.STOCK_NO)
+            widget.set_icon_tooltip_text(Gtk.EntryIconPosition.SECONDARY, _("No such node"))
+            widget.set_icon_activatable(Gtk.EntryIconPosition.SECONDARY, False)
         else:
             #select node
             vertex = self.canvas.vertices[node] 
@@ -338,8 +340,10 @@ class Sociogram:
         widget.select_region(0, widget.get_text_length())
     
     def set_search_icon(self, widget, data=None):
-        '''Event handler. Resets search box icon when new text is entered.'''
+        '''Event handler. Resets search box icon when user types.'''
         widget.set_icon_from_stock(Gtk.EntryIconPosition.SECONDARY, Gtk.STOCK_FIND)
+        widget.set_icon_tooltip_text(Gtk.EntryIconPosition.SECONDARY, _("Search"))
+        widget.set_icon_activatable(Gtk.EntryIconPosition.SECONDARY, True)
     
     def set_selection(self, selobj, obj=None, event=None):
         '''Event handler and standalone. Mark selobj as selected and update ui.'''
@@ -527,7 +531,7 @@ class Sociogram:
         
         newlbl = widget.get_text()
         if newlbl != self.selection.label and newlbl in self.G:
-            widget.set_icon_from_stock(Gtk.EntryIconPosition.SECONDARY, Gtk.STOCK_NO)
+            widget.set_icon_from_stock(Gtk.EntryIconPosition.SECONDARY, Gtk.STOCK_ERROR)
             widget.set_icon_tooltip_text(Gtk.EntryIconPosition.SECONDARY, _("Label already used"))
             widget.set_icon_activatable(Gtk.EntryIconPosition.SECONDARY, False)
         else:
