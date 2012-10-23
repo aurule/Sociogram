@@ -2,8 +2,7 @@
 
 #import system libraries
 from __future__ import division
-from gi.repository import Gtk, GooCanvas
-from gi.repository.Gdk import WindowState
+from gi.repository import Gtk, GooCanvas, Gdk
 import networkx as nx
 
 #import local libraries
@@ -120,9 +119,11 @@ class Sociogram:
         #VERY IMPORTANT. using the normal window.add() call fails, but setting the parent like this makes everything fine
         self.canvas = Drawing.Canvas(parent=self.builder.get_object("canvas_scroll"))
         #attach callbacks
-        self.canvas.node_callback = self.set_selection;
-        self.canvas.line_callback = self.set_selection;
-        self.canvas.connect("button-press-event", self.clear_select)
+        self.canvas.node_callback = self.node_clicked
+        self.canvas.line_callback = None
+        self.canvas.key_handler = self.canvas_key_handler
+        self.canvas.connect("button-press-event", self.canvas_clicked)
+        self.canvas.connect("scroll-event", self.scroll_handler)
         
         
         # Declare references for all the dialogs and popups we need. We do keep
@@ -176,11 +177,13 @@ class Sociogram:
             "app.show_add": self.show_add,
             "app.dlg_sanity": self.check_new_dlg_sanity,
             "app.set_highlight_radius": self.show_dev_error,
+            "app.check_name": self.check_label,
+            "app.canvas_keys": self.canvas_key_handler,
             "data.add": self.show_dev_error,
             "data.copyattrs": self.show_dev_error,
             "data.pasteattrs": self.do_paste,
-            "data.delsel": self.show_dev_error,
-            "data.update": self.redraw,
+            "data.delsel": self.delete_selection,
+            "data.update": self.show_dev_error,
             "data.newattr": self.show_dev_error,
             "data.delattr": self.show_dev_error,
             "graph.toggle_highlight": self.show_dev_error,
@@ -190,6 +193,9 @@ class Sociogram:
         
         #disable sidebar programmatically, so that labels will be drawn correctly
         self.builder.get_object("sidebarbox").set_sensitive(False)
+    
+    def nothing(self, a=None, b=None):
+        print 'nothing'
     
     def show_add(self, widget, data=None):
         '''Show Add Object dialog after resetting field defaults and ensuring sane Relationship availability.'''
@@ -341,6 +347,7 @@ class Sociogram:
         
         self.selection = selobj
         self.selection.set_selected(True)
+        self.canvas.grab_focus(selobj)
             
         #TODO make sure it's visible in the canvas. if not, center it
         
@@ -357,13 +364,29 @@ class Sociogram:
             self.builder.get_object("").set_active(selobj.bidir)
         
         #TODO populate attribute list
+        self.builder.get_object("canvas_eventbox").grab_focus() #set keyboard focus
+    
+    def clear_select(self, canvas=None, data=None):
+        '''Event handler and standalone. Deselect object(s).'''
+        if self.selection != None:
+            self.selection.set_selected(False)        
+            self.selection = None
+        
+        self.disable_all_controls()
+    
+    def delete_selection(self, widget=None, data=None):
+        if self.selection != None:
+            self.G.remove_node(self.selection.label)
+            self.selection.remove()
+            self.clear_select()
+            self.redraw()
     
     def activate_node_controls(self):
         '''Make only node-compatable selection-specific controls sensitive to input.'''
-        #enable the enter sidebar
-        self.builder.get_object("sidebarbox").set_sensitive(True)
+        #enable the enter sidebar and related controls
+        self.activate_all_controls()
         
-        #explicitly disable relationship-only controls
+        #now explicitly disable relationship-only controls
         self.builder.get_object("frombox").set_sensitive(False)
         self.builder.get_object("tobox").set_sensitive(False)
         self.builder.get_object("weightbox").set_sensitive(False)
@@ -371,6 +394,8 @@ class Sociogram:
     def activate_all_controls(self):
         '''Make all selection-specific controls sensitive to input.'''
         self.builder.get_object("sidebarbox").set_sensitive(True)
+        self.builder.get_object("add_attr").set_sensitive(True)
+        self.builder.get_object("remove_attr").set_sensitive(True)
         
         #explicitly enable relationship-only controls, since they may have been previously explicitly disabled
         self.builder.get_object("frombox").set_sensitive(True)
@@ -399,6 +424,8 @@ class Sociogram:
         self.builder.get_object("frombox").set_sensitive(False)
         self.builder.get_object("tobox").set_sensitive(False)
         self.builder.get_object("weightbox").set_sensitive(False)
+        self.builder.get_object("add_attr").set_sensitive(False)
+        self.builder.get_object("remove_attr").set_sensitive(False)
         
         #disable buttons and menu items
         self.builder.get_object("copy").set_sensitive(False)
@@ -407,15 +434,65 @@ class Sociogram:
         self.builder.get_object("menu_copy").set_sensitive(False)
         self.builder.get_object("menu_paste").set_sensitive(False)
         self.builder.get_object("menu_delete").set_sensitive(False)
-        
     
-    def clear_select(self, canvas, data=None):
-        '''Event handler and standalone. Deselect object(s) on canvas click.'''
-        if self.selection != None:
-            self.selection.set_selected(False)        
-            self.selection = None
+    def node_clicked(self, selobj, obj=None, event=None):
+        '''Event handler. Select and otherwise perform UI actions on node click.'''
+        self.set_selection(selobj)
+        btn = event.get_button()
         
-        self.disable_all_controls()
+        #TODO handle the right-click menu
+        if btn[1] == 3L:
+            self.show_dev_error()
+    
+    def canvas_clicked(self, canvas, obj=None, event=None):
+        '''Event handler. Set keyboard focus and clear selection on canvas click.'''
+        self.clear_select()
+        self.builder.get_object("canvas_eventbox").grab_focus() #set keyboard focus
+    
+    def canvas_key_handler(self, widget, event=None):
+        '''Event handler. Take actions based on keyboard input while a graph object is selected.'''
+        
+        kvn = Gdk.keyval_name(event.keyval)
+        if kvn == '1':
+            self.canvas.set_scale(1)
+            return True
+        elif kvn == 'Delete':
+            self.delete_selection()
+            return True
+        elif kvn == 'Escape':
+            self.clear_select()
+            return True
+    
+    def scroll_handler(self, widget, event=None):
+        '''Event handler. Change scroll action based on various contexts.'''
+        horiz_mask = Gdk.ModifierType.SHIFT_MASK
+        zoom_mask = Gdk.ModifierType.CONTROL_MASK
+        
+        if event.state & horiz_mask:
+            val = self.builder.get_object("horiz_scroll_adj").get_value() #minus step increment, capped at zero
+            adj = self.builder.get_object("horiz_scroll_adj").get_step_increment()
+            if event.direction == Gdk.ScrollDirection.UP:
+                #scroll left
+                self.builder.get_object("horiz_scroll_adj").set_value(val-adj)
+            elif event.direction == Gdk.ScrollDirection.DOWN:
+                #scroll right
+                self.builder.get_object("horiz_scroll_adj").set_value(val+adj)
+            
+            return True
+        elif event.state & zoom_mask:
+            if event.direction == Gdk.ScrollDirection.UP:
+                self.canvas.set_scale(self.canvas.scale * 1.2)
+            elif event.direction == Gdk.ScrollDirection.DOWN:
+                self.canvas.set_scale(self.canvas.scale * 0.8)
+            
+            return True
+        
+        #unless we handled it, let the event flow along
+        return False
+    
+    def check_label(self, widget, data=None):
+        '''Ensure that edited label is unused.'''
+        pass
     
     def toggle_widget(self, widget, data=None):
         '''Event handler and standalone. Toggle passed widget.'''
@@ -432,7 +509,7 @@ class Sociogram:
     
     def track_fullscreen(self, widget, data=None):
         '''Event handler. Tracks the app's fullscreen state.'''
-        mask = WindowState.FULLSCREEN
+        mask = Gdk.WindowState.FULLSCREEN
         self.is_fullscreen = (widget.get_window().get_state() & mask) == mask
     
     def show_dlg(self, widget, data=None):
@@ -460,6 +537,7 @@ class Sociogram:
     def redraw(self, widget=None, data=None):
         '''Event handler and standalone. Trigger a graph update and redraw.'''
         self.canvas.redraw(self.G)
+        #TODO maintain selection
 
 def main():
     '''Enter Gtk.main().'''

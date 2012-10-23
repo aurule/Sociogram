@@ -2422,6 +2422,22 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
                 <property name="position">1</property>
               </packing>
             </child>
+            <child>
+              <object class="GtkEventBox" id="canvas_eventbox">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="visible_window">False</property>
+                <signal name="key-press-event" handler="app.canvas_keys" swapped="no"/>
+                <child>
+                  <placeholder/>
+                </child>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">False</property>
+                <property name="position">2</property>
+              </packing>
+            </child>
           </object>
           <packing>
             <property name="expand">False</property>
@@ -2526,6 +2542,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
                                 <property name="tooltip_text" translatable="yes">Name to display</property>
                                 <property name="invisible_char">●</property>
                                 <property name="width_chars">10</property>
+                                <signal name="changed" handler="app.check_name" swapped="no"/>
                                 <signal name="activate" handler="data.update" swapped="no"/>
                                 <signal name="focus-out-event" handler="data.update" swapped="no"/>
                               </object>
@@ -2934,7 +2951,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
   <object class="GtkFileChooserDialog" id="save_dlg">
     <property name="can_focus">False</property>
     <property name="border_width">5</property>
-    <property name="title" translatable="yes">Save Sociogram</property>
+    <property name="title" translatable="yes">Save File</property>
     <property name="role">GtkFileChooserDialog</property>
     <property name="modal">True</property>
     <property name="destroy_with_parent">True</property>

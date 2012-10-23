@@ -27,48 +27,10 @@ class Canvas(GooCanvas.Canvas):
         self.zoom = False
         self.node_callback = None
         self.line_callback = None
+        self.key_handler = None
         self.cboxes = []
         self.vertices = {}
         self.textwrap = TextWrapper(width=10) #text wrapper for node labels
-        
-        #connect signals
-        self.connect("key_press_event", self.eventhandler)
-        self.connect("key_release_event", self.eventhandler)
-        self.connect("event", self.eventhandler)
-    
-    #imported from elsewhere
-    #TODO clean up and customize
-    #   make ctl+scrollup/dn zoom in/out
-    #   make ctl+plus/minus zoom in/out
-    #   make shift+scrollup/dn scroll left/right
-    #   make click on empty space deselect
-    def eventhandler(self, widget, e):
-        '''Called by GTK whenever we get mouse or keyboard interactions.'''
-        if e.type == Gdk.EventType.KEY_PRESS:
-            kvn = Gdk.keyval_name(e.keyval)
-            if kvn == 'a':
-                self.scroll_to(0,0)
-            if kvn == 'Control_L':
-                if not self.zoom:
-                    self.zoom = True
-            elif kvn == 'plus' and self.zoom:
-                self.scale *= 1.2
-            elif kvn == 'minus' and self.zoom:
-                self.scale *= 0.8
-            return False
-        elif e.type == Gdk.EventType.KEY_RELEASE:
-            if Gdk.keyval_name(e.keyval) == 'Control_L':
-                self.zoom = False
-                return True
-        elif e.type == Gdk.EventType.SCROLL and self.zoom:
-            if e.direction == Gdk.SCROLL_UP:
-                self.props.scale *= 1.2
-            elif e.direction == Gdk.SCROLL_DOWN:
-                self.props.scale *= 0.8
-            return True
-        elif e.type == Gdk.EventType.BUTTON_PRESS:
-            pass#print e.get_coords()
-        return False
     
     def redraw(self, G):
         '''Draw the networkx graph G.'''
