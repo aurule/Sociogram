@@ -245,7 +245,7 @@ class Sociogram:
             #TODO get selectable relationship
             obj = None
         else:
-            obj = self.canvas.vertices[lbl]
+            obj = self.canvas.get_vertex(lbl)
         self.set_selection(obj)
     
     def hide_addbox_controls(self, widget, data=None):
@@ -494,9 +494,9 @@ class Sociogram:
         elif event.state & zoom_mask:
             #TODO get scale from settings
             if event.direction == Gdk.ScrollDirection.UP:
-                self.zoom_in()
+                self.zoom_in_step()
             elif event.direction == Gdk.ScrollDirection.DOWN:
-                self.zoom_out()
+                self.zoom_out_step()
             
             return True
         
@@ -530,7 +530,7 @@ class Sociogram:
         
         newlbl = widget.get_text()
         if newlbl != self.selection.label and newlbl in self.G:
-            widget.set_icon_from_stock(Gtk.EntryIconPosition.SECONDARY, Gtk.STOCK_ERROR)
+            widget.set_icon_from_stock(Gtk.EntryIconPosition.SECONDARY, Gtk.STOCK_DIALOG_ERROR)
             widget.set_icon_tooltip_text(Gtk.EntryIconPosition.SECONDARY, _("Label already used"))
             widget.set_icon_activatable(Gtk.EntryIconPosition.SECONDARY, False)
         else:

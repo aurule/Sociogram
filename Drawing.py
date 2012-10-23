@@ -29,61 +29,72 @@ class Canvas(GooCanvas.Canvas):
         self.line_callback = None
         self.key_handler = None
         self.cboxes = []
-        self.vertices = {}
         self.textwrap = TextWrapper(width=10) #text wrapper for node labels
+        
+        self.gbox = GooCanvas.CanvasGroup(parent = self.root)
     
     def redraw(self, G):
-        '''Draw the networkx graph G.'''
-        del self.cboxes[:]
-        self.vertices.clear()
-        linked_nodes = []
+        '''Draw the networkx graph G, including new layout.'''
         #first we clear off the old drawing
-        try:
-            self.gbox.remove()
-        except AttributeError:
-            pass
-        
-        #set up new box
-        self.gbox = GooCanvas.CanvasGroup(parent=self.root)
+        for x in range(self.gbox.get_n_children()):
+            self.gbox.get_child(x).remove()
         
         #get locations from the graph
         components = nx.connected_component_subgraphs(G)
         for subg in components:
-            cbox = GooCanvas.CanvasGroup(parent = self.gbox)
-            self.cboxes.append(cbox)
             locations = nx.spring_layout(subg, scale=100*subg.order())
-        
+            cbox = SubGraph(parent = self.gbox, locs=locations, graph=subg)
+            self.cboxes.append(cbox)
+            
             #iterate over the nodes and draw each according to its given positions
             for gnode in subg.nodes_iter(True):
                 pos = locations[gnode[0]]
-                
                 lbl_text = self.textwrap.fill(gnode[0])
+                
+                #initialize background ring for spacing
+                #done before the vertex so it'll be in the background and not interrupt clicking
+                ring = GooCanvas.CanvasEllipse(parent=cbox, fill_color_rgba=0x00000000, stroke_color_rgba=0x00000000)
+                
                 #TODO assign style info to object based on style rules
                 #   change painter if necessary
-                ngroup = Vertex(gnode[1]['node'], parent=self.gbox, x=pos[0]+50, y=pos[1]+50, painter=painters.vertex.box)
+                ngroup = Vertex(gnode[1]['node'], parent=cbox, x=pos[0]+50, y=pos[1]+50, painter=painters.vertex.box)
                 ngroup.connect("button-press-event", self.node_callback)
-                self.vertices[ngroup.label] = ngroup
+                cbox.vertices[ngroup.label] = ngroup
+                cbox.spacers[ngroup.label] = ring
     
+                #define ring properties
                 coords = ngroup.get_xyr()
-                ring = GooCanvas.CanvasEllipse(parent=cbox, radius_x=coords['radius'], radius_y=coords['radius'], center_x=coords['x'], center_y=coords['y'], fill_color_rgba=0x00000000, stroke_color_rgba=0x00000000)
+                ring.set_properties(radius_x=coords['radius'], radius_y=coords['radius'], center_x=coords['x'], center_y=coords['y'])
             
             #iterate through edges and draw each according to its stored relationships
             for snode, enode, props in subg.edges_iter(data=True):
                 #TODO assign style info to object based on style rules
                 #   change painter if necessary
-                line = AggLine(parent=self.gbox, fnode=self.vertices[snode], tnode=self.vertices[enode], rels=props['rels'], painter=painters.edge.line)
+                line = AggLine(parent=cbox, fnode=cbox.vertices[snode], tnode=cbox.vertices[enode], rels=props['rels'], painter=painters.edge.line)
+                cbox.edges.append(line)
                 
                 #TODO attach this callback to individual relationships, not just the aggline
                 #line.connect("button-press-event", self.line_callback)
         
         self.pack()
-    
-    # Pack the graphs component subgraphs into as small a space as possible.
+        
+    def update(self):
+        '''Update visuals without calculating a new layout.'''
+        for sub in self.cboxes:
+            sub.update()
+            
     def pack(self):
         '''Pack component subgraphs into the drawing space.'''
-        for sub in self.cboxes:
-            #TODO all of it
-            pass
+        #TODO all of it
+        pass
+    
+    def get_vertex(self, label):
+        '''Find vertex object by label.'''
+        for subg in self.cboxes:
+            if label in subg.vertices:
+                return subg.vertices[label]
+        
+        return None
         
 class AggLine(GooCanvas.CanvasGroup):
     '''Represent an aggregate line with properties derived from all the relationships between its start and end points.'''
@@ -142,8 +153,13 @@ class AggLine(GooCanvas.CanvasGroup):
         self.painter = painter
     
     def draw(self):
+        '''Draw with our painter.'''
         if self.painter == None:
             return
+        
+        #remove any child objects we have
+        for x in range(self.get_n_children()):
+            self.get_child(x).remove()
         
         shape = self.painter.paint(parent=self, start=self.origin.get_xyr(), end=self.dest.get_xyr(), lobj=self)
     
@@ -151,6 +167,11 @@ class AggLine(GooCanvas.CanvasGroup):
         '''Mark our selected status and draw selection ring.'''
         self.selected = state
         self.painter.show_selected(state)
+    
+    def clear_rels(self):
+        '''Clear out all relationship-derived data.'''
+        del self.weights[:]
+        del self.labels[:]
 
 class Vertex(GooCanvas.CanvasGroup):
     '''Represent a node on the canvas.'''
@@ -181,6 +202,11 @@ class Vertex(GooCanvas.CanvasGroup):
         if self.painter == None:
             return
         
+        #remove any child objects we have
+        for x in range(self.get_n_children()):
+            self.get_child(x).remove()
+        
+        #draw some new ones
         shape = self.painter.paint(parent=self, node=self.node)
         self.width = shape['width']
         self.height = shape['height']
@@ -206,3 +232,32 @@ class Vertex(GooCanvas.CanvasGroup):
             self.selring = self.painter.show_selected(self)
         else:
             self.selring.remove()
+
+class SubGraph(GooCanvas.CanvasGroup):
+    '''Represents a connected subgraph on the graph.'''
+    
+    def __init__(self, locs=None, graph=None, **args):
+        '''Set up accounting structures and init canvasgroup.'''
+        GooCanvas.CanvasGroup.__init__(self, **args)
+        
+        self.locations = locs
+        self.G = graph
+        self.vertices = {}
+        self.spacers = {} #dict of spacing rings for each vertex
+        self.edges = []
+    
+    def update(self):
+        '''Redraw the subgroup without recalculating anything.'''
+        for v in self.vertices:
+            v.draw()
+            
+            #update spacer
+            coords = v.get_xyr()
+            self.spacers[v.label].set_properties(radius_x=coords['radius'], radius_y=coords['radius'], center_x=coords['x'], center_y=coords['y'])      
+        
+        for line in self.edges:
+            line.clear_rels()
+            #populate new rels from stored origin/dest and self.G
+            for rel in self.G[line.origin][line.dest]:
+                line.add_rel(rel)
+            line.draw()
