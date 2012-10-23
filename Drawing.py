@@ -36,8 +36,8 @@ class Canvas(GooCanvas.Canvas):
     def redraw(self, G):
         '''Draw the networkx graph G, including new layout.'''
         #first we clear off the old drawing
-        for x in range(self.gbox.get_n_children()):
-            self.gbox.get_child(x).remove()
+        for c in self.cboxes:
+            c.remove()
         
         #get locations from the graph
         components = nx.connected_component_subgraphs(G)
