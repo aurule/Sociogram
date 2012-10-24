@@ -236,7 +236,6 @@ class Sociogram:
             weight = self.builder.get_object("weight_spin_dlg").get_value()
             bidir = self.builder.get_object("bidir_new").get_active()
             rel = self._add_rel(lbl, fnode, tnode, weight, bidir, paste)
-            #TODO set obj to the correct, selectable object
         else:
             node = self._add_node(lbl, paste)
         
@@ -334,7 +333,7 @@ class Sociogram:
             widget.set_icon_activatable(Gtk.EntryIconPosition.SECONDARY, False)
         else:
             #select node
-            vertex = self.canvas.vertices[node] 
+            vertex = self.canvas.get_vertex(node)
             self.set_selection(vertex)
         widget.select_region(0, widget.get_text_length())
     
@@ -536,18 +535,37 @@ class Sociogram:
         else:
             widget.set_icon_from_stock(Gtk.EntryIconPosition.SECONDARY, None)
     
-    def update_lbl(self, widget, data=None):
-        '''Event handler. Update selection's label and redraw it.'''
-        #TODO
-        #   update selection's label property
-        #   redraw selection
-        #   redraw connected lines if needed
-        pass
-    
     def cancel_name_edit(self, widget, data=None):
         '''Event handler. Reset name field if Esc key pressed.'''
-        #TODO reset widget text to stored label if blurred from Esc key
-        pass
+        kvn = Gdk.keyval_name(data.keyval)
+        if kvn == 'Escape':
+            widget.set_text(self.selection.label)
+    
+    def update_lbl(self, widget, data=None):
+        '''Event handler. Update selection's label and redraw it.'''
+        if self.selection == None:
+            return
+        
+        newlbl = widget.get_text()
+        oldlbl = self.selection.label
+        if oldlbl == newlbl:
+            return
+        
+        #change the internal object's label
+        self.G.node[oldlbl]['node'].label = newlbl
+        
+        #remove old label from the liststore and add the new one
+        for row in self.node_lbl_store:
+            if row[0] == oldlbl:
+                self.node_lbl_store.remove(row.iter)
+        self.node_lbl_store.append([newlbl])
+        
+        #change the graph node's key
+        nx.relabel_nodes(self.G, {oldlbl:newlbl}, False)
+        
+        #redraw and reselect the new node
+        self.canvas.redraw(self.G)
+        self.set_selection(self.canvas.get_vertex(newlbl))
     
     def update_terminus(self, widget, data=None):
         '''Event handler. Update selected relationship's endpoints and redraw it.'''

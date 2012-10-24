@@ -39,6 +39,8 @@ class Canvas(GooCanvas.Canvas):
         for c in self.cboxes:
             c.remove()
         
+        del self.cboxes[:]
+        
         #get locations from the graph
         components = nx.connected_component_subgraphs(G)
         for subg in components:
@@ -78,7 +80,7 @@ class Canvas(GooCanvas.Canvas):
         
         self.pack()
         
-    def update(self):
+    def freshen(self):
         '''Update visuals without calculating a new layout.'''
         for sub in self.cboxes:
             sub.update()
@@ -158,8 +160,8 @@ class AggLine(GooCanvas.CanvasGroup):
             return
         
         #remove any child objects we have
-        for x in range(self.get_n_children()):
-            self.get_child(x).remove()
+        if self.get_n_children():
+            self.get_child(0).remove()
         
         shape = self.painter.paint(parent=self, start=self.origin.get_xyr(), end=self.dest.get_xyr(), lobj=self)
     
@@ -203,8 +205,8 @@ class Vertex(GooCanvas.CanvasGroup):
             return
         
         #remove any child objects we have
-        for x in range(self.get_n_children()):
-            self.get_child(x).remove()
+        if self.get_n_children():
+            self.get_child(0).remove()
         
         #draw some new ones
         shape = self.painter.paint(parent=self, node=self.node)
@@ -248,7 +250,7 @@ class SubGraph(GooCanvas.CanvasGroup):
     
     def update(self):
         '''Redraw the subgroup without recalculating anything.'''
-        for v in self.vertices:
+        for k, v in self.vertices.iteritems():
             v.draw()
             
             #update spacer
