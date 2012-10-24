@@ -30,7 +30,9 @@ class Sociogram:
     def __init__(self):
         '''Set up internals and instantiate/fix up GUI using Gtk.Builder.'''
         self.G = nx.Graph() # instantiate the graph for storage and positioning
-        self.selection = None #placeholder for selecting a node
+        #placeholders for selecting objects
+        self.selection = None
+        self.seltype = None
         
         self.builder = Gtk.Builder()
         self.builder.add_from_file("ui/sociogram.ui")
@@ -353,6 +355,7 @@ class Sociogram:
             return
         
         self.selection = selobj
+        self.seltype = selobj.type
         self.selection.set_selected(True)
         self.canvas.grab_focus(selobj)
             
@@ -378,6 +381,7 @@ class Sociogram:
         if self.selection != None:
             self.selection.set_selected(False)        
             self.selection = None
+            self.seltype = None
         
         self.disable_all_controls()
     
