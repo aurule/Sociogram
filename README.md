@@ -32,6 +32,7 @@ Planned for Release
 Finished
 -------
 * arbitrary nodes and relationships
+* arbitrary name:value attribute pairs on nodes
 * drawing! (except subgraph packing)
 * search nodes by label
 * zooming and panning (except best fit)
