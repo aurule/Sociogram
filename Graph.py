@@ -11,22 +11,22 @@ class Node:
         '''Create a node.'''
         self.label = lbl
         self.uid = uuid4()
+        self.attributes = {}
+        
         if attrs != None:
             for element in attrs:
                 self.add_attr(element)
-        else:
-            self.attributes = {}
     
     def add_attr(self, attr):
         '''Add an attribute.'''
-        uid = uuid4()
+        uid = str(uuid4())
         self.attributes[uid] = {"name": attr[0], "value": attr[1], "visible": attr[2]}
         return uid
     
     def del_attr(self, uid):
         '''Remove an attribute. Raises AttrError exception if attribute doesn't exist.'''
         try:
-            self.attributes.remove(uid)
+            del self.attributes[uid]
         except:
             raise AttrError("Attribute UUID %s does not exist" % uid)
     

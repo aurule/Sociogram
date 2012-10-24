@@ -49,9 +49,10 @@ class Canvas(GooCanvas.Canvas):
             self.cboxes.append(cbox)
             
             #iterate over the nodes and draw each according to its given positions
-            for gnode in subg.nodes_iter(True):
-                pos = locations[gnode[0]]
-                lbl_text = self.textwrap.fill(gnode[0])
+            for gnode in subg.nodes_iter():
+                nodeobj = G.node[gnode]['node']
+                pos = locations[gnode]
+                lbl_text = self.textwrap.fill(gnode)
                 
                 #initialize background ring for spacing
                 #done before the vertex so it'll be in the background and not interrupt clicking
@@ -59,7 +60,7 @@ class Canvas(GooCanvas.Canvas):
                 
                 #TODO assign style info to object based on style rules
                 #   change painter if necessary
-                ngroup = Vertex(gnode[1]['node'], parent=cbox, x=pos[0], y=pos[1], painter=painters.vertex.box, text=lbl_text)
+                ngroup = Vertex(nodeobj, parent=cbox, x=pos[0], y=pos[1], painter=painters.vertex.box, text=lbl_text)
                 ngroup.connect("button-press-event", self.node_callback)
                 cbox.vertices[ngroup.label] = ngroup
                 cbox.spacers[ngroup.label] = ring

@@ -33,6 +33,7 @@ class Sociogram:
         #placeholders for selecting objects
         self.selection = None
         self.seltype = None
+        self.selattr = None
         
         self.builder = Gtk.Builder()
         self.builder.add_from_file("ui/sociogram.ui")
@@ -93,19 +94,24 @@ class Sociogram:
         
         
         #connect attribute view with attribute list, create columns, and make it all sortable
-        editme = Gtk.CellRendererText()
-        editme.set_property("editable", True)
-        editme.connect("edited", self.update_attrs)
+        editname = Gtk.CellRendererText()
+        editname.set_property("editable", True)
+        editname.connect("edited", self.update_attrs, 0)
+        editval = Gtk.CellRendererText()
+        editval.set_property("editable", True)
+        editval.connect("edited", self.update_attrs, 1)
         
         self.attr_store = Gtk.ListStore(str, str, bool, str)
         adisp = self.builder.get_object("attrstree")
         adisp.set_model(self.attr_store)
-        col1 = Gtk.TreeViewColumn("Name", editme, text=0)
+        col1 = Gtk.TreeViewColumn("Name", editname, text=0)
         col1.set_sort_column_id(0)
-        col2 = Gtk.TreeViewColumn("Value", editme, text=1)
+        col1.set_expand(True)
+        col2 = Gtk.TreeViewColumn("Value", editval, text=1)
         col2.set_sort_column_id(1)
+        col2.set_expand(True)
         togglecell = Gtk.CellRendererToggle()
-        togglecell.connect("toggled", self.show_dev_error) #TODO handle attr visibility change
+        togglecell.connect("toggled", self.update_attrs, None, 2)
         col3 = Gtk.TreeViewColumn("Visible", togglecell, active=2)
         col3.set_sort_column_id(2)
         adisp.append_column(col1)
@@ -182,6 +188,7 @@ class Sociogram:
             "app.zoom_reset": self.zoom_reset,
             "app.zoom_fit": self.zoom_fit,
             "app.cancel_newname": self.cancel_name_edit,
+            "app.set_selattr": self.set_attr_selection,
             "data.add": self.show_dev_error,
             "data.copyattrs": self.show_dev_error,
             "data.pasteattrs": self.do_paste,
@@ -190,8 +197,9 @@ class Sociogram:
             "data.update_terminus": self.update_terminus,
             "data.update_weight": self.update_weight,
             "data.update_bidir": self.update_bidir,
-            "data.newattr": self.show_dev_error,
-            "data.delattr": self.show_dev_error,
+            "data.newattr": self.add_attr,
+            "data.delattr": self.del_attr,
+            "data.updateattr": self.show_dev_error,
             "graph.toggle_highlight": self.show_dev_error,
             "graph.refresh": self.redraw
         }
@@ -202,6 +210,50 @@ class Sociogram:
     
     def nothing(self, a=None, b=None):
         print 'nothing'
+    
+    def add_attr(self, widget=None, data=None):
+        '''Event handler and standalone. Adds an attribute to the current selection.'''
+        if self.selection == None:
+            return
+        
+        if self.seltype == "node":
+            #add to underlying Node object
+            uid = self.selection.node.add_attr(("attribute", "value", False))
+            #add to attr_store, since it's obviously selected
+            self.attr_store.append(("attribute", "value", False, uid))
+        else:
+            #TODO add row attribute
+            pass
+    
+    def del_attr(self, widget, data=None):
+        '''Event handler. Removes the currently highlighted attribute from the current selection.'''
+        if self.selection == None or self.selattr == None:
+            return
+        
+        #remove from underlying Node object
+        self.selection.node.del_attr(self.selattr)
+        
+        #find and remove from attr_store
+        if self.seltype == "node":
+            for row in self.attr_store:
+                if row[3] == self.selattr:
+                    self.attr_store.remove(row.iter)
+                    break
+        else:
+            #TODO remove row attribute
+            pass
+    
+    def set_attr_selection(self, widget, data=None):
+        '''Event handler. Update internal selection var whenever the attribute selection cursor changes.'''
+        tree_selection = widget.get_selection()
+        if tree_selection == None:
+            self.selattr = None
+            return
+        
+        (model, pathlist) = tree_selection.get_selected_rows()
+        for path in pathlist :
+            tree_iter = model.get_iter(path)
+            self.selattr = model.get_value(tree_iter,3)
     
     def show_add(self, widget, data=None):
         '''Show Add Object dialog after resetting field defaults and ensuring sane Relationship availability.'''
@@ -365,6 +417,10 @@ class Sociogram:
         self.builder.get_object("name_entry").set_text(selobj.label)
         if selobj.type == 'node':
             self.activate_node_controls()
+            #TODO populate self.attr_store from Node object's attributes
+            for uid in self.selection.node.attributes.iterkeys():
+                attr = self.selection.node.attributes[uid]
+                self.attr_store.append((attr['name'], attr['value'], attr['visible'], uid))
         else:
             self.activate_all_controls()
             #TODO populate from a single relationship object, not the aggline
@@ -382,10 +438,12 @@ class Sociogram:
             self.selection.set_selected(False)        
             self.selection = None
             self.seltype = None
+            self.attr_store.clear()
         
         self.disable_all_controls()
     
     def delete_selection(self, widget=None, data=None):
+        '''Event handler and standalone. Delete selected object.'''
         if self.selection != None:
             self.G.remove_node(self.selection.label)
             self.selection.remove()
@@ -562,6 +620,7 @@ class Sociogram:
         for row in self.node_lbl_store:
             if row[0] == oldlbl:
                 self.node_lbl_store.remove(row.iter)
+                break
         self.node_lbl_store.append([newlbl])
         
         #update internal relationship objects' to and from node labels
@@ -589,14 +648,33 @@ class Sociogram:
         '''Event handler. Update selected relationship's bidir property and redraw it.'''
         pass
     
-    def update_attrs(self, widget, path, text):
-        #TODO update visible attrs
-        #   update selection's attributes
-        #   redraw selection
+    def update_attrs(self, widget, path=None, text=None, col=None):
+        '''Event handler. Change name or value of currently selected attribute.'''
+        if self.selection == None or self.selattr == None:
+            return
         
-        #self.attrstore[path][???] = text
+        if text != None:
+            self.attr_store[path][col] = text
+        else:
+            self.attr_store[path][col] = not self.attr_store[path][col]
         
-        pass
+        if self.seltype == 'node':
+            attr = self.selection.node.attributes[self.selattr]
+            val = self.attr_store[path][col]
+            if col==0:
+                attr['name'] = val
+            elif col==1:
+                attr['value'] = val
+            elif col==2:
+                attr['visible'] = val
+        else:
+            #TODO update internal relationship object's attribute
+            pass
+        
+        sel = self.selection.label
+        self.canvas.redraw(self.G)
+        self.attr_store.clear()
+        self.set_selection(self.canvas.get_vertex(sel))
     
     def toggle_widget(self, widget, data=None):
         '''Event handler and standalone. Toggle passed widget.'''
