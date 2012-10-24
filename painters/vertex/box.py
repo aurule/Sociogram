@@ -3,7 +3,7 @@ from gi.repository import Gdk
 
 def paint(parent, node):
     '''Draw node as a box surrounding its (centered) label.'''
-    label = node.label
+    label = parent.text
     box = GooCanvas.CanvasRect(parent=parent, stroke_color_rgba=0x000000ff, fill_color_rgba=0xffff00ff)
     lbl = GooCanvas.CanvasText(parent=parent, text=label, alignment="center", fill_color='black')
     

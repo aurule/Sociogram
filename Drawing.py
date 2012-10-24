@@ -29,7 +29,7 @@ class Canvas(GooCanvas.Canvas):
         self.line_callback = None
         self.key_handler = None
         self.cboxes = []
-        self.textwrap = TextWrapper(width=10) #text wrapper for node labels
+        self.textwrap = TextWrapper(width=8) #text wrapper for node labels
         
         self.gbox = GooCanvas.CanvasGroup(parent = self.root)
     
@@ -44,7 +44,7 @@ class Canvas(GooCanvas.Canvas):
         #get locations from the graph
         components = nx.connected_component_subgraphs(G)
         for subg in components:
-            locations = nx.spring_layout(subg, scale=100*subg.order())
+            locations = nx.spring_layout(subg, scale=150*subg.order())
             cbox = SubGraph(parent = self.gbox, locs=locations, graph=subg)
             self.cboxes.append(cbox)
             
@@ -59,7 +59,7 @@ class Canvas(GooCanvas.Canvas):
                 
                 #TODO assign style info to object based on style rules
                 #   change painter if necessary
-                ngroup = Vertex(gnode[1]['node'], parent=cbox, x=pos[0]+50, y=pos[1]+50, painter=painters.vertex.box)
+                ngroup = Vertex(gnode[1]['node'], parent=cbox, x=pos[0], y=pos[1], painter=painters.vertex.box, text=lbl_text)
                 ngroup.connect("button-press-event", self.node_callback)
                 cbox.vertices[ngroup.label] = ngroup
                 cbox.spacers[ngroup.label] = ring
@@ -178,7 +178,7 @@ class AggLine(GooCanvas.CanvasGroup):
 class Vertex(GooCanvas.CanvasGroup):
     '''Represent a node on the canvas.'''
     
-    def __init__(self, node, x=0, y=0, painter=None, **args):
+    def __init__(self, node, x=0, y=0, painter=None, text=None, **args):
         '''Create a new Vertex which represents node.'''
         GooCanvas.CanvasGroup.__init__(self, **args)
         
@@ -191,6 +191,10 @@ class Vertex(GooCanvas.CanvasGroup):
         self.painter = painter
         self.selected = False
         self.selring = None
+        self.text = text
+        
+        if text == None:
+            self.text = self.label
         
         #if we were initialized with a painting function, draw immediately
         if painter != None: self.draw()

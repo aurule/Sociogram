@@ -560,6 +560,12 @@ class Sociogram:
                 self.node_lbl_store.remove(row.iter)
         self.node_lbl_store.append([newlbl])
         
+        #update internal relationship objects' to and from node labels
+        for n in self.G[oldlbl]:
+            for rel in self.G[oldlbl][n]['rels']:
+                if rel.from_node == oldlbl: rel.from_node = newlbl
+                if rel.to_node == oldlbl: rel.to_node = newlbl
+        
         #change the graph node's key
         nx.relabel_nodes(self.G, {oldlbl:newlbl}, False)
         
