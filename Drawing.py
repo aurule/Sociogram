@@ -85,7 +85,7 @@ class Canvas(GooCanvas.Canvas):
     def freshen(self):
         '''Update visuals without calculating a new layout.'''
         for sub in self.cboxes:
-            sub.update()
+            sub.freshen()
             
     def pack(self):
         '''Pack component subgraphs into the drawing space.'''
@@ -340,7 +340,7 @@ class SubGraph(GooCanvas.CanvasGroup):
         self.spacers = {} #dict of spacing rings for each vertex
         self.edges = []
     
-    def update(self):
+    def freshen(self):
         '''Redraw the subgroup without recalculating anything.'''
         for k, v in self.vertices.iteritems():
             v.draw()

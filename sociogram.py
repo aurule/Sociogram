@@ -718,8 +718,8 @@ class Sociogram:
     
     def redraw(self, widget=None, data=None):
         '''Event handler and standalone. Trigger a graph update and redraw.'''
+        #TODO make it redraw everything
         self.canvas.redraw(self.G)
-        self.canvas.scroll_to(0, 0)
         #TODO maintain selection
 
 def _(text):
