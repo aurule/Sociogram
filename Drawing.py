@@ -30,6 +30,7 @@ class Canvas(GooCanvas.Canvas):
         self.key_handler = None
         self.cboxes = []
         self.textwrap = TextWrapper(width=8) #text wrapper for node labels
+        self.space = None
         
         self.gbox = GooCanvas.CanvasGroup(parent = self.root)
     
@@ -88,8 +89,29 @@ class Canvas(GooCanvas.Canvas):
             
     def pack(self):
         '''Pack component subgraphs into the drawing space.'''
-        #TODO all of it
-        pass
+        if len(self.cboxes) == 0:
+            return
+        
+        del self.space
+        
+        #figure out the maximum possible dimensions by layout all our subgraphs end-to-end
+        worst_case = 0
+        boxes = []
+        for subg in self.cboxes:
+            bounds = subg.get_bounds()
+            h = bounds.y2 - bounds.y1
+            w = bounds.x2 - bounds.x1
+            boxes.append((w*h, subg))
+            worst_case += max(h, w)
+        keys = sorted(boxes, reverse=True)
+        
+        self.space = Packer(0, 0, worst_case, worst_case)
+        for key, subg in keys:
+            bounds = subg.get_bounds()
+            h = bounds.y2 - bounds.y1
+            w = bounds.x2 - bounds.x1
+            (x, y) = self.space.place(w, h)
+            subg.set_properties(x=x, y=y)
     
     def get_vertex(self, label):
         '''Find vertex object by label.'''
@@ -98,7 +120,86 @@ class Canvas(GooCanvas.Canvas):
                 return subg.vertices[label]
         
         return None
+    
+    def get_agglines(self, label):
+        '''Find all agglines which touch node label.'''
+        pass
+
+class Packer():
+    def __init__(self, x, y, width, height):
+        self.x = x
+        self.y = y
+        self.w = width
+        self.h = height
+        self.child = None
+        self.used = False
+    
+    def place(self, width, height):
+        if self.child != None:
+            coords = self.child[0].place(width, height)
+            if coords != None:
+                return coords
         
+            return self.child[1].place(width, height)
+        else:
+            if self.used: return None
+            if width > self.w or height > self.h: return None
+            if width == self.w and height == self.h:
+                self.used = True
+                return (self.x, self.y)
+            
+            self.child = []
+            
+            dw = self.w - width
+            dh = self.h - height
+            
+            if dw > dh:
+                self.child.append(Packer(self.x, self.y, width, self.h))
+                self.child.append(Packer(self.x + width, self.y, self.w - width, self.h))
+            else:
+                self.child.append(Packer(self.x, self.y, self.w, height))
+                self.child.append(Packer(self.x, self.y + height, self.w, self.h - height))
+            
+            return self.child[0].place(width, height)
+        #return (0, 0)
+
+class SpaceTree():
+    def __init__(self, x=0, y=0, h=0):
+        self.x = x #top-left X
+        self.y = y #top-left Y
+        self.h = h #our maximum height
+        self.usable = True
+        self.left = None
+        self.right = None
+    
+    def place(self, width, height, child=0):
+        if self.left == None: self.left = SpaceTree(x=self.x, y=self.y+height, h=self.h+height)
+        if self.right == None: self.right = SpaceTree(x=self.x + width, y=self.y, h=self.h)
+        
+        if height <= self.h:
+            if self.usable:
+                #left child starts at x, y+h, height -= h
+                self.left.x = self.x
+                self.left.y = self.y + height
+                self.left.h = self.h
+                
+                #right child starts at x+w, y, height = h
+                self.right.x = self.x + width
+                self.right.y = self.y
+                self.right.h = height
+                
+                self.h = height
+                
+                self.usable = False #we are now occupied
+                
+                coords = (self.x, self.y)
+            elif self.right.usable:
+                coords = self.right.place(width, height)
+        else:
+            coords = self.left.place(width, height)
+        
+        return coords
+
 class AggLine(GooCanvas.CanvasGroup):
     '''Represent an aggregate line with properties derived from all the relationships between its start and end points.'''
     

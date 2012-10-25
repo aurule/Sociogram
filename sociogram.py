@@ -564,17 +564,17 @@ class Sociogram:
         #unless we handled it, let the event flow along
         return False
     
-    def zoom_in_step(self, widget, data=None):
+    def zoom_in_step(self, widget=None, data=None):
         '''Event handler. Enlarge scale by prefs factor.'''
             #TODO get scale from settings
         self.canvas.set_scale(self.canvas.scale * 1.2)
     
-    def zoom_out_step(self, widget, data=None):
+    def zoom_out_step(self, widget=None, data=None):
         '''Event handler. Shrink scale by prefs factor.'''
             #TODO get scale from settings
         self.canvas.set_scale(self.canvas.scale * 0.8)
     
-    def zoom_reset(self, widget, data=None):
+    def zoom_reset(self, widget=None, data=None):
         '''Event handler. Set scale to 1.'''
         self.canvas.set_scale(1)
     
@@ -719,6 +719,7 @@ class Sociogram:
     def redraw(self, widget=None, data=None):
         '''Event handler and standalone. Trigger a graph update and redraw.'''
         self.canvas.redraw(self.G)
+        self.canvas.scroll_to(0, 0)
         #TODO maintain selection
 
 def _(text):
