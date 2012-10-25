@@ -54,6 +54,22 @@ Documentation
 ============
 Documentation will be added to the project's [wiki](https://github.com/aurule/Sociogram/wiki) here on github, once Sociogram is stable enough for documentation to be reliable.
 
+Helping Out
+==========
+There a tons of ways that you can help, though some of them might have to wait until the program is more stable and complete.
+
+Code
+----
+Pull requests are always welcome and I'd be happy to collaborate with anyone interested in development.
+
+Testing
+------
+Adding to the project's Issues is a great way to help me out. I have my own development checklist, but seeing other people's issues helps refine my efforts.
+
+Art
+---
+Sociogram could really use some custom icons, especially one for the program itself. If you have skills in this direction, please do send icons my way! They're very, very likely to be added.
+
 Internationalization
-==================
-I'm planning to make the whole program compatable with i18n, but not until it's more complete.
+-----------------
+I'm planning to make the whole program compatable with i18n, but not until it's more complete. If you'd like to help translate, watch this space! Or, you can send me a message to that effect and I'll let you know when it's ready.
