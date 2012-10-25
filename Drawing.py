@@ -95,24 +95,32 @@ class Canvas(GooCanvas.Canvas):
         del self.space
         
         #figure out the maximum possible dimensions by layout all our subgraphs end-to-end
-        worst_case = 0
+        tog = 0
+        worst_w = 0
+        worst_h = 0
         boxes = []
         for subg in self.cboxes:
             bounds = subg.get_bounds()
             h = bounds.y2 - bounds.y1
             w = bounds.x2 - bounds.x1
-            boxes.append((w*h, subg))
-            worst_case += max(h, w)
+            boxes.append((w*h, subg, w, h))
+            
+            #add each box to either the width or height of the max bounds
+            #this ensures relatively sane packing behavior
+            worst_w = max(worst_w, w)
+            worst_h = max(worst_h, h)
+            if tog:
+                worst_w += w
+            else:
+                worst_h += h
+            tog = not tog
+        
+        #sort the subgraphs by size
         keys = sorted(boxes, reverse=True)
         
-        #TODO using the worst case number for both width and height results in
-        #the packer putting all items on either the X or Y axis, whichever it picks
-        #first. The width and height need to be tightened, but I don't know how, yet.
-        self.space = Packer(0, 0, worst_case, worst_case)
-        for key, subg in keys:
-            bounds = subg.get_bounds()
-            h = bounds.y2 - bounds.y1
-            w = bounds.x2 - bounds.x1
+        #pack each individually
+        self.space = Packer(0, 0, worst_w, worst_h)
+        for key, subg, w, h in keys:
             (x, y) = self.space.place(w, h)
             subg.set_properties(x=x, y=y)
     
