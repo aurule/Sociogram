@@ -105,6 +105,9 @@ class Canvas(GooCanvas.Canvas):
             worst_case += max(h, w)
         keys = sorted(boxes, reverse=True)
         
+        #TODO using the worst case number for both width and height results in
+        #the packer putting all items on either the X or Y axis, whichever it picks
+        #first. The width and height need to be tightened, but I don't know how, yet.
         self.space = Packer(0, 0, worst_case, worst_case)
         for key, subg in keys:
             bounds = subg.get_bounds()
@@ -126,7 +129,9 @@ class Canvas(GooCanvas.Canvas):
         pass
 
 class Packer():
+    '''Tree for packing rectangles into an area.'''
     def __init__(self, x, y, width, height):
+        '''Set up this node of the tree.'''
         self.x = x
         self.y = y
         self.w = width
@@ -135,70 +140,43 @@ class Packer():
         self.used = False
     
     def place(self, width, height):
+        '''Find coordinates for a box of width,height.'''
         if self.child != None:
+            #if we aren't a child, try our 0 child first
             coords = self.child[0].place(width, height)
             if coords != None:
                 return coords
         
+            #if that fails, try the 1 child
             return self.child[1].place(width, height)
         else:
+            #if we're a leaf...
+            #can't place something if we're occupied
             if self.used: return None
+            #nor if the box is too big for us
             if width > self.w or height > self.h: return None
+            #but if it's exactly the right size, go ahead
             if width == self.w and height == self.h:
                 self.used = True
                 return (self.x, self.y)
             
+            #by now, we have the space to hold said box, so let's allocate it
             self.child = []
             
             dw = self.w - width
             dh = self.h - height
             
             if dw > dh:
+                #set up children so child[0] has the exact width needed
                 self.child.append(Packer(self.x, self.y, width, self.h))
                 self.child.append(Packer(self.x + width, self.y, self.w - width, self.h))
             else:
+                #set up children so child[0] has the exact height needed
                 self.child.append(Packer(self.x, self.y, self.w, height))
                 self.child.append(Packer(self.x, self.y + height, self.w, self.h - height))
             
+            #ask our tailored child to place the box
             return self.child[0].place(width, height)
-        #return (0, 0)
-
-class SpaceTree():
-    def __init__(self, x=0, y=0, h=0):
-        self.x = x #top-left X
-        self.y = y #top-left Y
-        self.h = h #our maximum height
-        self.usable = True
-        self.left = None
-        self.right = None
-    
-    def place(self, width, height, child=0):
-        if self.left == None: self.left = SpaceTree(x=self.x, y=self.y+height, h=self.h+height)
-        if self.right == None: self.right = SpaceTree(x=self.x + width, y=self.y, h=self.h)
-        
-        if height <= self.h:
-            if self.usable:
-                #left child starts at x, y+h, height -= h
-                self.left.x = self.x
-                self.left.y = self.y + height
-                self.left.h = self.h
-                
-                #right child starts at x+w, y, height = h
-                self.right.x = self.x + width
-                self.right.y = self.y
-                self.right.h = height
-                
-                self.h = height
-                
-                self.usable = False #we are now occupied
-                
-                coords = (self.x, self.y)
-            elif self.right.usable:
-                coords = self.right.place(width, height)
-        else:
-            coords = self.left.place(width, height)
-        
-        return coords
 
 class AggLine(GooCanvas.CanvasGroup):
     '''Represent an aggregate line with properties derived from all the relationships between its start and end points.'''
