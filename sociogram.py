@@ -34,6 +34,8 @@ class Sociogram:
         self.selection = None
         self.seltype = None
         self.selattr = None
+        self.highlight_dist = 1
+        self.highlight = False
         
         self.builder = Gtk.Builder()
         self.builder.add_from_file("ui/sociogram.ui")
@@ -180,7 +182,7 @@ class Sociogram:
             "app.show_dlg": self.show_dlg,
             "app.show_add": self.show_add,
             "app.dlg_sanity": self.check_new_dlg_sanity,
-            "app.set_highlight_radius": self.show_dev_error,
+            "app.set_highlight_radius": self.set_highlight_dist,
             "app.check_name": self.check_label,
             "app.canvas_keys": self.canvas_key_handler,
             "app.zoom_in": self.zoom_in_step,
@@ -200,7 +202,7 @@ class Sociogram:
             "data.newattr": self.add_attr,
             "data.delattr": self.del_attr,
             "data.updateattr": self.show_dev_error,
-            "graph.toggle_highlight": self.show_dev_error,
+            "graph.toggle_highlight": self.toggle_highlight,
             "graph.refresh": self.redraw
         }
         self.builder.connect_signals(handlers_main)
@@ -210,6 +212,28 @@ class Sociogram:
     
     def nothing(self, a=None, b=None):
         print 'nothing'
+    
+    def set_highlight_dist(self, widget, data=None):
+        '''Event handler. Update our internal highlight distance.'''
+        self.highlight_dist = widget.get_value()
+        self._do_highlight()
+    
+    def toggle_highlight(self, widget, data=None):
+        '''Event handler. Turn highlight mode on or off.'''
+        self.highlight = widget.get_active()
+        self.builder.get_object("highlight_btn").set_active(self.highlight)
+        self.builder.get_object("menu_highlight").set_active(self.highlight)
+        self._do_highlight()
+    
+    def _do_highlight(self):
+        '''Set params for the special "highlight" draw mode and draw it.'''
+        if not (self.highlight and self.seltype == 'node'):
+            return
+        
+        #TODO
+        #   iterate out from the selected node
+        #   mark/store those nodes and paths
+        #   trigger a special canvas.freshen operation
     
     def add_attr(self, widget=None, data=None):
         '''Event handler and standalone. Adds an attribute to the current selection.'''
