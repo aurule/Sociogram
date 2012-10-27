@@ -719,7 +719,13 @@ class Sociogram:
     def redraw(self, widget=None, data=None):
         '''Event handler and standalone. Trigger a graph update and redraw.'''
         #TODO make it redraw everything
+        self.builder.get_object("horiz_scroll_adj").set_value(0)
+        self.builder.get_object("vertical_scroll_adj").set_value(0)
         self.canvas.redraw(self.G)
+        w = self.builder.get_object("horiz_scroll_adj").get_page_size()
+        h = self.builder.get_object("vertical_scroll_adj").get_page_size()
+        bds = GooCanvas.CanvasBounds(0,0,w,h)
+        self.canvas.request_redraw(bds)
         #TODO maintain selection
 
 def _(text):
