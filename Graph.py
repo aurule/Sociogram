@@ -2,7 +2,7 @@ from uuid import uuid4
 import Errors
 
 # Represents graph nodes (people, places, groups, etc.)
-class Node:
+class Node(object):
     '''Handle storage and interaction with graph nodes and their properties.'''
 
     # set up our label, uuid, and attributes (if given)

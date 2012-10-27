@@ -136,7 +136,7 @@ class Canvas(GooCanvas.Canvas):
         '''Find all agglines which touch node label.'''
         pass
 
-class Packer():
+class Packer(object):
     '''Tree for packing rectangles into an area.'''
     def __init__(self, x, y, width, height):
         '''Set up this node of the tree.'''
@@ -356,7 +356,7 @@ class SubGraph(GooCanvas.CanvasGroup):
                 line.add_rel(rel)
             line.draw()
 
-class Stylesheet:
+class Stylesheet(object):
     '''Defines styling properties for a vertex or edge.'''
     
     def __init__(self):

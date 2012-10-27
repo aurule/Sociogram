@@ -10,7 +10,7 @@ import Errors
 import Graph
 import Drawing
 
-class Sociogram:
+class Sociogram(object):
     #TODO:
     #nodes are stored in a networkx.Graph(node.label, node=node)
     #adding checks for the label in networkx.Graph.nodes()
