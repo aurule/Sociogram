@@ -355,3 +355,14 @@ class SubGraph(GooCanvas.CanvasGroup):
             for rel in self.G[line.origin][line.dest]:
                 line.add_rel(rel)
             line.draw()
+
+class Stylesheet:
+    '''Defines styling properties for a vertex or edge.'''
+    
+    def __init__(self):
+        '''Set default drawing values.'''
+        #TODO get these from a theme
+        self.shape = None
+        self.fill_color = None
+        self.line_color = None
+        #TODO add font desc
