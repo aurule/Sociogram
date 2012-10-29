@@ -135,6 +135,7 @@ class Sociogram(object):
         #populate our default styling
         sheet = self.canvas.edge_default_stylesheet
         sheet.stroke_color = 0x000000ff
+        sheet.set_fontdesc('sans normal 11')
         
         sheet = self.canvas.vertex_default_stylesheet
         sheet.fill_color = 0xffff00ff
@@ -163,6 +164,8 @@ class Sociogram(object):
         self.save_dlg = self.builder.get_object("save_dlg")
         self.open_dlg = self.builder.get_object("open_dlg")
         
+        self.hscroll = self.builder.get_object("horiz_scroll_adj")
+        self.vscroll = self.builder.get_object("vertical_scroll_adj")
         
         #initialize our fullscreen tracker
         self.fullscreen = False
@@ -559,17 +562,35 @@ class Sociogram(object):
         
         kvn = Gdk.keyval_name(event.keyval)
         if kvn == '1':
-            self.canvas.set_scale(1)
+            self.zoom_reset()
             return True
         elif kvn == 'plus':
-            self.zoom_in()
+            self.zoom_in_step()
+            return True
         elif kvn == 'minus':
-            self.zoom_out()
+            self.zoom_out_step()
+            return True
         elif kvn == 'Delete':
             self.delete_selection()
             return True
         elif kvn == 'Escape':
             self.clear_select()
+            return True
+        elif kvn == 'Right' or kvn == 'Left':
+            val = self.hscroll.get_value()
+            adj = self.hscroll.get_step_increment()
+            if kvn == 'Right':
+                self.hscroll.set_value(val+adj)
+            else:
+                self.hscroll.set_value(val-adj)
+            return True
+        elif kvn == 'Up' or kvn == 'Down':
+            val = self.vscroll.get_value()
+            adj = self.vscroll.get_step_increment()
+            if kvn == 'Down':
+                self.vscroll.set_value(val+adj)
+            else:
+                self.vscroll.set_value(val-adj)
             return True
     
     def scroll_handler(self, widget, event=None):
@@ -578,14 +599,14 @@ class Sociogram(object):
         zoom_mask = Gdk.ModifierType.CONTROL_MASK
         
         if event.state & horiz_mask:
-            val = self.builder.get_object("horiz_scroll_adj").get_value() #minus step increment, capped at zero
-            adj = self.builder.get_object("horiz_scroll_adj").get_step_increment()
+            val = self.hscroll.get_value() #minus step increment, capped at zero
+            adj = self.hscroll.get_step_increment()
             if event.direction == Gdk.ScrollDirection.UP:
                 #scroll left
-                self.builder.get_object("horiz_scroll_adj").set_value(val-adj)
+                self.hscroll.set_value(val-adj)
             elif event.direction == Gdk.ScrollDirection.DOWN:
                 #scroll right
-                self.builder.get_object("horiz_scroll_adj").set_value(val+adj)
+                self.hscroll.set_value(val+adj)
             
             return True
         elif event.state & zoom_mask:
@@ -602,12 +623,12 @@ class Sociogram(object):
     
     def zoom_in_step(self, widget=None, data=None):
         '''Event handler. Enlarge scale by prefs factor.'''
-            #TODO get scale from settings
+        #TODO get scale from settings
         self.canvas.set_scale(self.canvas.scale * 1.2)
     
     def zoom_out_step(self, widget=None, data=None):
         '''Event handler. Shrink scale by prefs factor.'''
-            #TODO get scale from settings
+        #TODO get scale from settings
         self.canvas.set_scale(self.canvas.scale * 0.8)
     
     def zoom_reset(self, widget=None, data=None):

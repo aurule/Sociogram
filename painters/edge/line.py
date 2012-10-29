@@ -28,12 +28,13 @@ def paint(edge):
     #construct the points
     pts = util.mkpoints([(startx, starty), (endx, endy)])
     
-    #draw the line
+    #get style data from edge stylesheet
     sheet = edge.stylesheet
     stroke = edge.stylesheet.stroke_color
     text_color = edge.stylesheet.text_color
     font = edge.stylesheet.text_fontdesc
     
+    #draw the line
     GooCanvas.CanvasPolyline(end_arrow=edge.end_arrow, start_arrow=edge.start_arrow, points=pts, parent=edge, arrow_length=9, arrow_tip_length=7, arrow_width=7, line_width=edge.width/2, stroke_color_rgba=stroke)
     #TODO add dots and text above/left of the line
 

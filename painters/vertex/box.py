@@ -3,7 +3,7 @@ from gi.repository import Gdk
 
 def paint(vertex):
     '''Draw vertex as a box surrounding its (centered) label.'''
-    #TODO get stroke and fill colors from parent.stylesheet
+    #get style data from vertex stylesheet
     label = vertex.text
     stroke = vertex.stylesheet.stroke_color
     fill = vertex.stylesheet.fill_color
