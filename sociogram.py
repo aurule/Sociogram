@@ -126,7 +126,7 @@ class Sociogram(object):
         self.canvas = Drawing.Canvas(parent=self.builder.get_object("canvas_scroll"))
         #attach callbacks
         self.canvas.node_callback = self.node_clicked
-        self.canvas.line_callback = None
+        self.canvas.line_callback = self.show_dev_error
         self.canvas.key_handler = self.canvas_key_handler
         self.canvas.connect("button-press-event", self.canvas_clicked)
         self.canvas.connect("scroll-event", self.scroll_handler)
@@ -417,10 +417,31 @@ class Sociogram(object):
         #silently fail if no paste buffer
         self.show_dev_error()
     
+    def center_on(self, obj):
+        '''Center the graph on a specific drawn object.'''
+        pass
+        #TODO work out how to get the proper coords off of an object
+        
+        #get the visible window dimensions
+        vis_w = self.hscroll.get_page_size()
+        vis_h = self.vscroll.get_page_size()
+        
+        #get the object's width and height
+        bounds = obj.get_bounds()
+        cx = (bounds.x2 - bounds.x1)/2 - vis_w/2
+        cy = (bounds.y2 - bounds.y1)/2 - vis_h/2
+        
+        cx, cy = self.canvas.convert_from_item_space(obj, cx, cy)
+        
+        print cx, cy
+        
+        self.canvas.scroll_to(cx, cy)
+    
     # Sees if a given node exists, and focuses on it if so.
     # Slightly different definition so that data is big enough to accept random
-    # crap from clicking the search icon.
+    # data from clicking the search icon.
     def find_node(self, widget, *data):
+        '''Event handler. Search for the node whose label matches widget input.'''
         node = widget.get_text()
         if node not in self.G:
             widget.set_icon_from_stock(Gtk.EntryIconPosition.SECONDARY, Gtk.STOCK_NO)
@@ -430,6 +451,7 @@ class Sociogram(object):
             #select node
             vertex = self.canvas.get_vertex(node)
             self.set_selection(vertex)
+            self.center_on(vertex)
         widget.select_region(0, widget.get_text_length())
     
     def set_search_icon(self, widget, data=None):
@@ -440,9 +462,8 @@ class Sociogram(object):
     
     def set_selection(self, selobj, obj=None, event=None):
         '''Event handler and standalone. Mark selobj as selected and update ui.'''
-        #make sure the old selection is cleared, since we can't guarantee clear_select() has already been run
-        if self.selection != None:
-            self.selection.set_selected(False)
+        #clear the old selection
+        self.clear_select()
         
         if selobj == None:
             return
@@ -799,9 +820,27 @@ class Sociogram(object):
     
     def redraw(self, widget=None, data=None):
         '''Event handler and standalone. Trigger a graph update and redraw.'''
+        seltype = None
+        if self.seltype == 'node':
+            seltype = 'node'
+            lbl = self.selection.label
+        elif self.seltype == 'edge':
+            #TODO get edge selection data
+            pass
+        
         self.canvas.scroll_to(0, 0)
         self.canvas.redraw(self.G)
-        #TODO maintain selection
+        
+        #get back our selection
+        if seltype != None:
+            if seltype == 'node':
+                self.set_selection(self.canvas.get_vertex(lbl))
+            else:
+                #TODO select old edge
+                pass
+            
+            #center the selection
+            self.center_on(self.selection)
 
 def _(text):
     '''Get translated text where possible.'''

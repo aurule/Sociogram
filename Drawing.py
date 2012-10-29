@@ -84,8 +84,7 @@ class Canvas(GooCanvas.Canvas):
                 line = AggLine(parent=cbox, fnode=cbox.vertices[snode], tnode=cbox.vertices[enode], rels=props['rels'], painter=painters.edge.line, sheet=self.edge_default_stylesheet)
                 cbox.edges.append(line)
                 
-                #TODO attach this callback to individual relationships, not just the aggline
-                #line.connect("button-press-event", self.line_callback)
+                line.connect("button-press-event", self.line_callback)
         
         self.pack()
         
