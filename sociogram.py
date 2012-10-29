@@ -166,6 +166,7 @@ class Sociogram(object):
         
         self.hscroll = self.builder.get_object("horiz_scroll_adj")
         self.vscroll = self.builder.get_object("vertical_scroll_adj")
+        self.scale_adj = self.builder.get_object("scale_adj")
         
         #initialize our fullscreen tracker
         self.fullscreen = False
@@ -206,6 +207,7 @@ class Sociogram(object):
             "app.zoom_fit": self.zoom_fit,
             "app.cancel_newname": self.cancel_name_edit,
             "app.set_selattr": self.set_attr_selection,
+            "app.zoom_changed": self.update_zoom,
             "data.add": self.show_dev_error,
             "data.copyattrs": self.show_dev_error,
             "data.pasteattrs": self.do_paste,
@@ -456,7 +458,7 @@ class Sociogram(object):
         self.builder.get_object("name_entry").set_text(selobj.label)
         if selobj.type == 'node':
             self.activate_node_controls()
-            #TODO populate self.attr_store from Node object's attributes
+            #populate self.attr_store from Node object's attributes
             for uid in self.selection.node.attributes.iterkeys():
                 attr = self.selection.node.attributes[uid]
                 self.attr_store.append((attr['name'], attr['value'], attr['visible'], uid))
@@ -468,7 +470,6 @@ class Sociogram(object):
             self.builder.get_object("weight_spin").set_value(selobj.weight)
             self.builder.get_object("").set_active(selobj.bidir)
         
-        #TODO populate attribute list
         self.builder.get_object("canvas_eventbox").grab_focus() #set keyboard focus
     
     def clear_select(self, canvas=None, data=None):
@@ -551,6 +552,7 @@ class Sociogram(object):
         #TODO handle the right-click menu
         if btn[1] == 3L:
             self.show_dev_error()
+            #use menu.popup function
     
     def canvas_clicked(self, canvas, obj=None, event=None):
         '''Event handler. Set keyboard focus and clear selection on canvas click.'''
@@ -595,6 +597,7 @@ class Sociogram(object):
     
     def scroll_handler(self, widget, event=None):
         '''Event handler. Change scroll action based on various contexts.'''
+        #TODO get masks from prefs
         horiz_mask = Gdk.ModifierType.SHIFT_MASK
         zoom_mask = Gdk.ModifierType.CONTROL_MASK
         
@@ -610,7 +613,6 @@ class Sociogram(object):
             
             return True
         elif event.state & zoom_mask:
-            #TODO get scale from settings
             if event.direction == Gdk.ScrollDirection.UP:
                 self.zoom_in_step()
             elif event.direction == Gdk.ScrollDirection.DOWN:
@@ -621,19 +623,24 @@ class Sociogram(object):
         #unless we handled it, let the event flow along
         return False
     
+    def update_zoom(self, widget, data=None):
+        '''Event handler. Set scale to current adjustment value.'''
+        val = self.scale_adj.get_value()
+        self.canvas.set_scale(val / 100)
+    
     def zoom_in_step(self, widget=None, data=None):
-        '''Event handler. Enlarge scale by prefs factor.'''
-        #TODO get scale from settings
-        self.canvas.set_scale(self.canvas.scale * 1.2)
+        '''Event handler. Enlarge scale by 20%.'''
+        val = self.scale_adj.get_value()
+        self.scale_adj.set_value(val + 20)
     
     def zoom_out_step(self, widget=None, data=None):
-        '''Event handler. Shrink scale by prefs factor.'''
-        #TODO get scale from settings
-        self.canvas.set_scale(self.canvas.scale * 0.8)
+        '''Event handler. Shrink scale by 20%.'''
+        val = self.scale_adj.get_value()
+        self.scale_adj.set_value(val - 20)
     
     def zoom_reset(self, widget=None, data=None):
         '''Event handler. Set scale to 1.'''
-        self.canvas.set_scale(1)
+        self.scale_adj.set_value(100)
     
     def zoom_fit(self, widget=None, data=None):
         '''Event handler and standalone. Calculate optimal scale value to show entire area at once.'''
