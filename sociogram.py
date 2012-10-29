@@ -644,8 +644,25 @@ class Sociogram(object):
     
     def zoom_fit(self, widget=None, data=None):
         '''Event handler and standalone. Calculate optimal scale value to show entire area at once.'''
-        #TODO figure out the best fit, for real
-        pass
+        #get the visible window dimensions
+        vis_w = self.hscroll.get_page_size()
+        vis_h = self.vscroll.get_page_size()
+        
+        #add padding to the graph width and height to account for invisible spacing rings
+        bounds = self.canvas.get_bounds()
+        graph_w = bounds.x2 - bounds.x1 + 20
+        graph_h = bounds.y2 - bounds.y1 + 20
+        
+        if graph_w == 0 or graph_h == 0:
+            return
+        
+        xscale = vis_h / graph_h
+        yscale = vis_w / graph_w
+        
+        #use the smaller of the two scales so we fit as much as possible
+        scale = min(xscale, yscale) * 100
+        
+        self.scale_adj.set_value(scale)
     
     def check_label(self, widget, data=None):
         '''Event handler. Warn if edited label is already used.'''

@@ -32,6 +32,7 @@ class Canvas(GooCanvas.Canvas):
         self.space = None
         self.edge_default_stylesheet = esheet
         self.vertex_default_stylesheet = vsheet
+        self.gbox = GooCanvas.CanvasGroup(parent = self.root)
         
         #default to a blank stylesheet if none was provided
         #yes, this will cause big drawing errors if you don't bother to populate it
@@ -39,8 +40,6 @@ class Canvas(GooCanvas.Canvas):
             self.edge_default_stylesheet = Stylesheet()
         if vsheet == None:
             self.vertex_default_stylesheet = Stylesheet()
-        
-        self.gbox = GooCanvas.CanvasGroup(parent = self.root)
     
     def redraw(self, G):
         '''Draw the networkx graph G, including new layout.'''
@@ -143,6 +142,9 @@ class Canvas(GooCanvas.Canvas):
     def get_agglines(self, label):
         '''Find all agglines which touch node label.'''
         pass
+    
+    def get_bounds(self):
+        return self.gbox.get_bounds()
 
 class Packer(object):
     '''Tree for packing rectangles into an area.'''
