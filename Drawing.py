@@ -1,6 +1,5 @@
 # Module for graph drawing and maintenance
-from gi.repository import GooCanvas
-from gi.repository import Gdk
+from gi.repository import GooCanvas, Gdk, Pango
 import networkx as nx
 from textwrap import TextWrapper
 from numpy import mean
@@ -13,7 +12,7 @@ import painters
 class Canvas(GooCanvas.Canvas):
     '''Custom GooCanvas that natively handles node/edge drawing with networkx.'''
     
-    def __init__(self, **args):
+    def __init__(self, vsheet=None, esheet=None, **args):
         '''Create a Canvas object. **args are passed to GooCanvas.Canvas constructor.'''
         GooCanvas.Canvas.__init__(self, **args)
         self.set_properties(automatic_bounds=True,
@@ -31,6 +30,15 @@ class Canvas(GooCanvas.Canvas):
         self.cboxes = []
         self.textwrap = TextWrapper(width=8) #text wrapper for node labels
         self.space = None
+        self.edge_default_stylesheet = esheet
+        self.vertex_default_stylesheet = vsheet
+        
+        #default to a blank stylesheet if none was provided
+        #yes, this will cause big drawing errors if you don't bother to populate it
+        if esheet == None:
+            self.edge_default_stylesheet = Stylesheet()
+        if vsheet == None:
+            self.vertex_default_stylesheet = Stylesheet()
         
         self.gbox = GooCanvas.CanvasGroup(parent = self.root)
     
@@ -61,7 +69,7 @@ class Canvas(GooCanvas.Canvas):
                 
                 #TODO assign style info to object based on style rules
                 #   change painter if necessary
-                ngroup = Vertex(nodeobj, parent=cbox, x=pos[0], y=pos[1], painter=painters.vertex.box, text=lbl_text)
+                ngroup = Vertex(nodeobj, parent=cbox, x=pos[0], y=pos[1], painter=painters.vertex.box, text=lbl_text, sheet=self.vertex_default_stylesheet)
                 ngroup.connect("button-press-event", self.node_callback)
                 cbox.vertices[ngroup.label] = ngroup
                 cbox.spacers[ngroup.label] = ring
@@ -74,7 +82,7 @@ class Canvas(GooCanvas.Canvas):
             for snode, enode, props in subg.edges_iter(data=True):
                 #TODO assign style info to object based on style rules
                 #   change painter if necessary
-                line = AggLine(parent=cbox, fnode=cbox.vertices[snode], tnode=cbox.vertices[enode], rels=props['rels'], painter=painters.edge.line)
+                line = AggLine(parent=cbox, fnode=cbox.vertices[snode], tnode=cbox.vertices[enode], rels=props['rels'], painter=painters.edge.line, sheet=self.edge_default_stylesheet)
                 cbox.edges.append(line)
                 
                 #TODO attach this callback to individual relationships, not just the aggline
@@ -189,7 +197,7 @@ class Packer(object):
 class AggLine(GooCanvas.CanvasGroup):
     '''Represent an aggregate line with properties derived from all the relationships between its start and end points.'''
     
-    def __init__(self, fnode, tnode, rels=None, painter=None, **args):
+    def __init__(self, fnode, tnode, rels=None, painter=None, sheet=None, **args):
         '''Create a new aggregate line.'''
         GooCanvas.CanvasGroup.__init__(self, **args)
 
@@ -203,6 +211,10 @@ class AggLine(GooCanvas.CanvasGroup):
         self.labels = [] #list of tuples (label, dir) where dir is 'from', 'to', or 'both'
         self.painter = painter
         self.selected = False
+        self.stylesheet = sheet
+        
+        if sheet == None:
+            self.stylesheet = Stylesheet()
 
         #parse relationships
         if rels != None:
@@ -251,7 +263,7 @@ class AggLine(GooCanvas.CanvasGroup):
         if self.get_n_children():
             self.get_child(0).remove()
         
-        shape = self.painter.paint(parent=self, start=self.origin.get_xyr(), end=self.dest.get_xyr(), lobj=self)
+        shape = self.painter.paint(self)
     
     def set_selected(self, state):
         '''Mark our selected status and draw selection ring.'''
@@ -266,7 +278,7 @@ class AggLine(GooCanvas.CanvasGroup):
 class Vertex(GooCanvas.CanvasGroup):
     '''Represent a node on the canvas.'''
     
-    def __init__(self, node, x=0, y=0, painter=None, text=None, **args):
+    def __init__(self, node, x=0, y=0, painter=None, text=None, sheet=None, **args):
         '''Create a new Vertex which represents node.'''
         GooCanvas.CanvasGroup.__init__(self, **args)
         
@@ -280,7 +292,13 @@ class Vertex(GooCanvas.CanvasGroup):
         self.selected = False
         self.selring = None
         self.text = text
+        self.stylesheet = sheet
         
+        #get default stylesheet if none was provided
+        if sheet == None:
+            self.stylesheet = Stylesheet()
+        
+        #default text is our label
         if text == None:
             self.text = self.label
         
@@ -301,7 +319,7 @@ class Vertex(GooCanvas.CanvasGroup):
             self.get_child(0).remove()
         
         #draw some new ones
-        shape = self.painter.paint(parent=self, node=self.node)
+        shape = self.painter.paint(self)
         self.width = shape['width']
         self.height = shape['height']
         
@@ -361,8 +379,26 @@ class Stylesheet(object):
     
     def __init__(self):
         '''Set default drawing values.'''
-        #TODO get these from a theme
-        self.shape = None
+        #vertex: background color of the box
         self.fill_color = None
-        self.line_color = None
-        #TODO add font desc
+        
+        #vertex: color of the box outline
+        #edge: color of the edge line
+        self.stroke_color = None
+        
+        #color of the text shown
+        self.text_color = None
+        
+        #font description for the text shown
+        #must be a PangoTextDescription object
+        #setter function provided for convenience
+        self.text_fontdesc = None
+        
+        #vertex: color of the highlight ring
+        #edge: color of the highlight border
+        self.sel_color = None
+    
+    def set_fontdesc(self, desc):
+        '''Convert a textual font description into a PangoFontDescription object.'''
+        #see http://www.pygtk.org/docs/pygtk/class-pangofontdescription.html for format
+        self.text_fontdesc = Pango.FontDescription(desc)

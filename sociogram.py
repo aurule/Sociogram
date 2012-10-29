@@ -131,6 +131,18 @@ class Sociogram(object):
         self.canvas.connect("button-press-event", self.canvas_clicked)
         self.canvas.connect("scroll-event", self.scroll_handler)
         
+        #TODO once the prefs dialog is implemented, this should be moved to a separate default style update function
+        #populate our default styling
+        sheet = self.canvas.edge_default_stylesheet
+        sheet.stroke_color = 0x000000ff
+        
+        sheet = self.canvas.vertex_default_stylesheet
+        sheet.fill_color = 0xffff00ff
+        sheet.stroke_color = 0x000000ff
+        sheet.text_color = 0x000000ff
+        sheet.sel_color = 0x000000ff
+        sheet.set_fontdesc('sans normal 11')
+        
         
         # Declare references for all the dialogs and popups we need. We do keep
         # the builder around, so this is mostly for code readability.

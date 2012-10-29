@@ -1,11 +1,17 @@
 from gi.repository import GooCanvas
 from gi.repository import Gdk
 
-def paint(parent, node):
-    '''Draw node as a box surrounding its (centered) label.'''
-    label = parent.text
-    box = GooCanvas.CanvasRect(parent=parent, stroke_color_rgba=0x000000ff, fill_color_rgba=0xffff00ff)
-    lbl = GooCanvas.CanvasText(parent=parent, text=label, alignment="center", fill_color='black')
+def paint(vertex):
+    '''Draw vertex as a box surrounding its (centered) label.'''
+    #TODO get stroke and fill colors from parent.stylesheet
+    label = vertex.text
+    stroke = vertex.stylesheet.stroke_color
+    fill = vertex.stylesheet.fill_color
+    text_color = vertex.stylesheet.text_color
+    font = vertex.stylesheet.text_fontdesc
+    
+    box = GooCanvas.CanvasRect(parent=vertex, stroke_color_rgba=stroke, fill_color_rgba=fill)
+    lbl = GooCanvas.CanvasText(parent=vertex, text=label, alignment="center", fill_color_rgba=text_color, font_desc=font)
     
     lbl_bounds = lbl.get_bounds()
     lw = lbl_bounds.x2 - lbl_bounds.x1
@@ -19,7 +25,8 @@ def paint(parent, node):
     return props
 
 def show_selected(vertex):
-    '''Draw selection ring around node.'''
+    '''Draw selection ring around vertex.'''
     coords = vertex.get_xyr()
-    ring = GooCanvas.CanvasEllipse(parent=vertex.parent, radius_x=coords['radius'], radius_y=coords['radius'], center_x=coords['x'], center_y=coords['y'], fill_color_rgba=0x00000000, stroke_color_rgba=0x000000ff)
+    stroke = vertex.stylesheet.sel_color
+    ring = GooCanvas.CanvasEllipse(parent=vertex.parent, radius_x=coords['radius'], radius_y=coords['radius'], center_x=coords['x'], center_y=coords['y'], fill_color_rgba=0x00000000, stroke_color_rgba=stroke)
     return ring

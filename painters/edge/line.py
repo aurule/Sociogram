@@ -4,10 +4,11 @@ from math import sqrt
 
 import util
 
-def paint(parent, start, end, lobj):
+def paint(edge):
     '''Draw lobj, an AggLine, as a simple line with text labels along its length.'''
-    spos = start#self.vertices[start].get_xyr() #x, y, radius
-    epos = end#self.vertices[end].get_xyr() #x, y, radius
+    
+    spos = edge.origin.get_xyr() #x, y, radius
+    epos = edge.dest.get_xyr() #x, y, radius
             
     #calculate magnitude of vector from spos to epos
     dx = spos['x'] - epos['x']
@@ -28,8 +29,13 @@ def paint(parent, start, end, lobj):
     pts = util.mkpoints([(startx, starty), (endx, endy)])
     
     #draw the line
-    GooCanvas.CanvasPolyline(end_arrow=lobj.end_arrow, start_arrow=lobj.start_arrow, points=pts, parent=parent, arrow_length=9, arrow_tip_length=7, arrow_width=7, line_width=lobj.width/2)
+    sheet = edge.stylesheet
+    stroke = edge.stylesheet.stroke_color
+    text_color = edge.stylesheet.text_color
+    font = edge.stylesheet.text_fontdesc
+    
+    GooCanvas.CanvasPolyline(end_arrow=edge.end_arrow, start_arrow=edge.start_arrow, points=pts, parent=edge, arrow_length=9, arrow_tip_length=7, arrow_width=7, line_width=edge.width/2, stroke_color_rgba=stroke)
     #TODO add dots and text above/left of the line
 
-def show_selected(parent, node, state):
+def show_selected(vertex):
     pass
