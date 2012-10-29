@@ -117,9 +117,9 @@ class Canvas(GooCanvas.Canvas):
             worst_w = max(worst_w, w)
             worst_h = max(worst_h, h)
             if tog:
-                worst_w += w
+                worst_w += max(w, h)
             else:
-                worst_h += h
+                worst_h += max(w, h)
             tog = not tog
         
         #sort the subgraphs by size
@@ -144,6 +144,7 @@ class Canvas(GooCanvas.Canvas):
         pass
     
     def get_bounds(self):
+        '''Return the bounds for our master box.'''
         return self.gbox.get_bounds()
 
 class Packer(object):
