@@ -263,7 +263,7 @@ class Sociogram(object):
             #add to attr_store, since it's obviously selected
             self.attr_store.append(("attribute", "value", False, uid))
         else:
-            #TODO add row attribute
+            #TODO add relationship
             pass
     
     def del_attr(self, widget, data=None):
@@ -281,7 +281,7 @@ class Sociogram(object):
                     self.attr_store.remove(row.iter)
                     break
         else:
-            #TODO remove row attribute
+            #TODO remove relationship
             pass
     
     def set_attr_selection(self, widget, data=None):
@@ -419,23 +419,16 @@ class Sociogram(object):
     
     def center_on(self, obj):
         '''Center the graph on a specific drawn object.'''
-        pass
-        #TODO work out how to get the proper coords off of an object
+        xyr = obj.get_xyr()
+        x, y = self.canvas.convert_from_item_space(obj.parent, xyr['x'], xyr['y'])
         
         #get the visible window dimensions
         vis_w = self.hscroll.get_page_size()
         vis_h = self.vscroll.get_page_size()
+        corner_x = x - vis_w/2
+        corner_y = y - vis_h/2
         
-        #get the object's width and height
-        bounds = obj.get_bounds()
-        cx = (bounds.x2 - bounds.x1)/2 - vis_w/2
-        cy = (bounds.y2 - bounds.y1)/2 - vis_h/2
-        
-        cx, cy = self.canvas.convert_from_item_space(obj, cx, cy)
-        
-        print cx, cy
-        
-        self.canvas.scroll_to(cx, cy)
+        self.canvas.scroll_to(corner_x, corner_y)
     
     # Sees if a given node exists, and focuses on it if so.
     # Slightly different definition so that data is big enough to accept random
@@ -472,10 +465,8 @@ class Sociogram(object):
         self.seltype = selobj.type
         self.selection.set_selected(True)
         self.canvas.grab_focus(selobj)
-            
-        #TODO make sure it's visible in the canvas. if not, center it
         
-        #TODO grab data and update UI
+        #grab data and update UI
         self.builder.get_object("name_entry").set_text(selobj.label)
         if selobj.type == 'node':
             self.activate_node_controls()
