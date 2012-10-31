@@ -136,12 +136,15 @@ class Sociogram(object):
         sheet = self.canvas.edge_default_stylesheet
         sheet.stroke_color = 0x000000ff
         sheet.set_fontdesc('sans normal 11')
+        sheet.sel_color = 0xff0000ff
+        sheet.text_color = 0x000000ff
+        sheet.set_fontdesc('sans normal 11')
         
         sheet = self.canvas.vertex_default_stylesheet
         sheet.fill_color = 0xffff00ff
         sheet.stroke_color = 0x000000ff
-        sheet.text_color = 0x000000ff
         sheet.sel_color = 0x000000ff
+        sheet.text_color = 0x000000ff
         sheet.set_fontdesc('sans normal 11')
         
         

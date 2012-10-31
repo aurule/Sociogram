@@ -276,6 +276,15 @@ class AggLine(GooCanvas.CanvasGroup):
         '''Clear out all relationship-derived data.'''
         del self.weights[:]
         del self.labels[:]
+    
+    def get_xyr(self):
+        '''Return our central x and y coords, and a placeholder radius.'''
+        xyr1 = self.origin.get_xyr()
+        xyr2 = self.dest.get_xyr()
+        x = (xyr1['x'] + xyr2['x']) / 2
+        y = (xyr1['y'] + xyr2['y']) / 2
+        
+        return {'x':x, 'y':y, 'radius':0}
 
 class Vertex(GooCanvas.CanvasGroup):
     '''Represent a node on the canvas.'''
