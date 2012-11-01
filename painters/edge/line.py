@@ -40,7 +40,9 @@ def paint(edge):
     center = edge.get_xyr()
     text_color = edge.stylesheet.text_color
     font = edge.stylesheet.text_fontdesc
+    #the label field is a dict of three labels, each a list of [weight,text]
     label = edge.label
+    
     cx = center['x']
     cy = center['y']
     
@@ -59,15 +61,25 @@ def paint(edge):
     nx = -dy if dx < 0 else dy
     ny = dx if dx < 0 else -dx
     
-    #multiply for 10px magnitude and eminate from the center coords
-    nx = nx*10 + cx
-    ny = ny*10 + cy
+    #multiply for distance from the line, and adj to eminate from the center coords
+    topx = nx*3 + cx
+    topy = ny*3 + cy
+    
+    botx = -nx*3 + cx
+    boty = -ny*3 + cy
     
     #make the label
-    lbl = GooCanvas.CanvasText(parent=edge, text=label, alignment="center", fill_color_rgba=text_color, font_desc=font, anchor=GooCanvas.CanvasAnchorType.CENTER, x=nx, y=ny)
+    tpart = '< '+label['to'][1] if label['to'] else '';
+    fpart = label['from'][1]+' >' if label['from'] else '';
+    toptext = tpart+"\t"+fpart
+    bottext = '< '+label['bidir'][1]+' >' if label['bidir'] else '';
+    
+    toplbl = GooCanvas.CanvasText(parent=edge, text=toptext, alignment="center", fill_color_rgba=text_color, font_desc=font, anchor=GooCanvas.CanvasAnchorType.SOUTH, x=topx, y=topy)
+    botlbl = GooCanvas.CanvasText(parent=edge, text=bottext, alignment="center", fill_color_rgba=text_color, font_desc=font, anchor=GooCanvas.CanvasAnchorType.NORTH, x=botx, y=boty)
     
     #rotate the label appropriately
-    lbl.rotate(deg, nx, ny)
+    toplbl.rotate(deg, topx, topy)
+    botlbl.rotate(deg, botx, boty)
 
 def show_selected(vertex):
     pass

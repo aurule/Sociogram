@@ -126,10 +126,11 @@ class Sociogram(object):
         self.canvas = Drawing.Canvas(parent=self.builder.get_object("canvas_scroll"))
         #attach callbacks
         self.canvas.node_callback = self.node_clicked
-        self.canvas.line_callback = self.show_dev_error
+        self.canvas.line_callback = self.nothing#show_dev_error
         self.canvas.key_handler = self.canvas_key_handler
         self.canvas.connect("button-press-event", self.canvas_clicked)
         self.canvas.connect("scroll-event", self.scroll_handler)
+        self.canvas.connect("motion-notify-event", self.update_pointer)
         
         #TODO once the prefs dialog is implemented, this should be moved to a separate default style update function
         #populate our default styling
@@ -230,8 +231,16 @@ class Sociogram(object):
         #disable sidebar programmatically, so that labels will be drawn correctly
         self.builder.get_object("sidebarbox").set_sensitive(False)
     
-    def nothing(self, a=None, b=None):
+    def nothing(self, a=None, b=None, c=None):
         print 'nothing'
+    
+    def update_pointer(self, widget, data=None):
+        '''Event handler to pick the pointer used on the graph.'''
+        objunder = self.canvas.get_item_at(data.x, data.y, True)
+        if objunder != None:
+            print objunder
+        else:
+            print "none"
     
     def set_highlight_dist(self, widget, data=None):
         '''Event handler. Update our internal highlight distance.'''

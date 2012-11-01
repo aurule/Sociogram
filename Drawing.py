@@ -4,6 +4,7 @@ import networkx as nx
 from textwrap import TextWrapper
 from numpy import mean
 from math import sqrt
+from operator import itemgetter
 
 import Errors
 import painters
@@ -210,7 +211,10 @@ class AggLine(GooCanvas.CanvasGroup):
         self.weights = []
         self.origin = fnode #Node object
         self.dest = tnode #Node object
-        self.labels = [] #list of tuples (label, dir) where dir is 'from', 'to', or 'both'
+        self.labels_both = []
+        self.labels_from = []
+        self.labels_to = []
+        self.label = {'bidir': '', 'from': '', 'to': ''}
         self.painter = painter
         self.selected = False
         self.stylesheet = sheet
@@ -221,36 +225,57 @@ class AggLine(GooCanvas.CanvasGroup):
         #parse relationships
         if rels != None:
             for rel in rels:
-                self.add_rel(rel)
+                self._add_rel(rel)
+        self.calc_width()
+        self.calc_label()
+            
         
         #draw if we're able
         if painter != None: self.draw()
     
     def add_rel(self, rel):
         '''Add properties from a relationship object.'''
+        self._add_rel(rel)
         
+        self.calc_width() #calculate new average weight
+        self.calc_label() #calculate new label text
+    
+    def _add_rel(self, rel):
+        '''Internal function to add relationship properties without any recalculating.'''
         #add labels and arrows according to directionality
         if rel.mutual:
-            self.labels.append((rel.label, 'both'))
+            self.labels_both.append([rel.weight, rel.label])
             if not (self.start_arrow and self.end_arrow):
                 self.start_arrow = True
                 self.end_arrow = True
-        if rel.ends_at(self.origin.label):
-            self.labels.append((rel.label, 'from'))
-            if not self.start_arrow:
-                self.start_arrow = True
-        if rel.ends_at(self.dest.label):
-            self.labels.append((rel.label, 'to'))
-            if not self.end_arrow:
-                self.end_arrow = True
+        else:
+            if rel.ends_at(self.origin.label):
+                self.labels_from.append([rel.weight, rel.label])
+                if not self.start_arrow:
+                    self.start_arrow = True
+            if rel.ends_at(self.dest.label):
+                self.labels_to.append([rel.weight, rel.label])
+                if not self.end_arrow:
+                    self.end_arrow = True
         
-        #add weight to width concern
+        #store weight
         self.weights.append(rel.weight)
-        self.calc_width()
     
     def calc_width(self):
         '''Calculate line width from relationship weights.'''
         self.width = mean(self.weights)
+
+    def calc_label(self):
+        '''Decide on label text, given label weights and directions.'''
+        #sort by weight, then by text
+        lbl_bidir = sorted(self.labels_both, key=itemgetter(0, 1))
+        lbl_from = sorted(self.labels_from, key=itemgetter(0, 1))
+        lbl_to = sorted(self.labels_to, key=itemgetter(0, 1))
+        
+        #take the last element from each and splice it into the label field
+        self.label['bidir'] = lbl_bidir[-1] if lbl_bidir else ''
+        self.label['from'] = lbl_from[-1] if lbl_from else ''
+        self.label['to'] = lbl_to[-1] if lbl_to else ''
 
     def set_painter(self, painter):
         '''Set the painting function used to draw this vertex, then call it.'''
