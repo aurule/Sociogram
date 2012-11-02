@@ -27,6 +27,7 @@ class Canvas(GooCanvas.Canvas):
         self.zoom = False
         self.node_callback = None
         self.line_callback = None
+        self.mouseover_callback = None
         self.key_handler = None
         self.cboxes = []
         self.textwrap = TextWrapper(width=8) #text wrapper for node labels
@@ -71,6 +72,8 @@ class Canvas(GooCanvas.Canvas):
                 #   change painter if necessary
                 ngroup = Vertex(nodeobj, parent=cbox, x=pos[0], y=pos[1], painter=painters.vertex.box, text=lbl_text, sheet=self.vertex_default_stylesheet)
                 ngroup.connect("button-press-event", self.node_callback)
+                ngroup.connect("enter-notify-event", self.mouseover_callback, True)
+                ngroup.connect("leave-notify-event", self.mouseover_callback, False)
                 cbox.vertices[ngroup.label] = ngroup
                 cbox.spacers[ngroup.label] = ring
     
@@ -232,6 +235,13 @@ class AggLine(GooCanvas.CanvasGroup):
         
         #draw if we're able
         if painter != None: self.draw()
+        
+        self.connect("query-tooltip", self.attr_tooltip)
+    
+    def attr_tooltip(self, me, x, y, kbd, tooltip):
+        '''Event handler to set a tooltip message containing our attributes.'''
+        #TODO set tooltip
+        pass
     
     def add_rel(self, rel):
         '''Add properties from a relationship object.'''
@@ -340,6 +350,13 @@ class Vertex(GooCanvas.CanvasGroup):
         
         #if we were initialized with a painting function, draw immediately
         if painter != None: self.draw()
+        
+        self.connect("query-tooltip", self.attr_tooltip)
+    
+    def attr_tooltip(self, me, x, y, kbd, tooltip):
+        '''Event handler to set a tooltip message containing our attributes.'''
+        #TODO set tooltip
+        pass
 
     def set_painter(self, painter):
         '''Set the painting function used to draw this object.'''

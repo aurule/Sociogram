@@ -130,7 +130,7 @@ class Sociogram(object):
         self.canvas.key_handler = self.canvas_key_handler
         self.canvas.connect("button-press-event", self.canvas_clicked)
         self.canvas.connect("scroll-event", self.scroll_handler)
-        self.canvas.connect("motion-notify-event", self.update_pointer)
+        self.canvas.mouseover_callback = self.update_pointer
         
         #TODO once the prefs dialog is implemented, this should be moved to a separate default style update function
         #populate our default styling
@@ -234,13 +234,14 @@ class Sociogram(object):
     def nothing(self, a=None, b=None, c=None):
         print 'nothing'
     
-    def update_pointer(self, widget, data=None):
+    def update_pointer(self, widget, data=None, extra=None, hand=None):
         '''Event handler to pick the pointer used on the graph.'''
-        objunder = self.canvas.get_item_at(data.x, data.y, True)
-        if objunder != None:
-            print objunder
+        if hand:
+            cursor = Gdk.Cursor(Gdk.CursorType.HAND1)
         else:
-            print "none"
+            cursor = Gdk.Cursor(Gdk.CursorType.LEFT_PTR)
+        rwin = self.builder.get_object("canvas_eventbox").get_window()
+        rwin.set_cursor(cursor)
     
     def set_highlight_dist(self, widget, data=None):
         '''Event handler. Update our internal highlight distance.'''
