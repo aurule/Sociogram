@@ -89,6 +89,8 @@ class Canvas(GooCanvas.Canvas):
                 cbox.edges.append(line)
                 
                 line.connect("button-press-event", self.line_callback)
+                line.connect("enter-notify-event", self.mouseover_callback, True)
+                line.connect("leave-notify-event", self.mouseover_callback, False)
         
         self.pack()
         
@@ -236,12 +238,30 @@ class AggLine(GooCanvas.CanvasGroup):
         #draw if we're able
         if painter != None: self.draw()
         
-        self.connect("query-tooltip", self.attr_tooltip)
+        self.connect("query-tooltip", self.rel_tooltip)
     
-    def attr_tooltip(self, me, x, y, kbd, tooltip):
-        '''Event handler to set a tooltip message containing our attributes.'''
-        #TODO set tooltip
-        pass
+    def rel_tooltip(self, me, x, y, kbd, tooltip):
+        '''Event handler to set a tooltip message containing our relationships.'''
+        if not (self.start_arrow or self.end_arrow):
+            return False
+        
+        outtext = []
+        fname = self.origin.label
+        tname = self.dest.label
+        
+        #iterate through all three label fields, showing bidir, to, then from labels
+        for weight, lbl in self.labels_both:
+            outtext.append("Both <b>"+lbl+"</b>")
+        for weight, lbl in self.labels_to:
+            outtext.append(fname+" <b>"+lbl+"</b> "+tname)
+        for weight, lbl in self.labels_from:
+            outtext.append(tname+" <b>"+lbl+"</b> "+fname)
+        
+        out = "\n".join(outtext)
+        tooltip.set_markup(out) #set our tooltip
+        
+        #reply that this event has been handled
+        return True
     
     def add_rel(self, rel):
         '''Add properties from a relationship object.'''
@@ -355,8 +375,21 @@ class Vertex(GooCanvas.CanvasGroup):
     
     def attr_tooltip(self, me, x, y, kbd, tooltip):
         '''Event handler to set a tooltip message containing our attributes.'''
-        #TODO set tooltip
-        pass
+        if len(self.node.attributes) == 0:
+            return False
+        
+        outtext = []
+        
+        #get our attributes
+        attrs = self.node.attributes.itervalues()
+        #show in sorted order
+        for attr in sorted(attrs, key=itemgetter('name', 'value')):
+            outtext.append("<b>"+attr['name']+"</b>: "+attr['value'])
+        out = "\n".join(outtext)
+        tooltip.set_markup(out) #set our tooltip
+        
+        #reply that this event has been handled
+        return True
 
     def set_painter(self, painter):
         '''Set the painting function used to draw this object.'''
