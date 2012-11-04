@@ -45,7 +45,6 @@ class Sociogram(object):
         self.builder.get_object("newtypesel").set_active(0)
         
         self.node_lbl_store = Gtk.ListStore(str)
-        textcell = Gtk.CellRendererText()
         
         completions = []
         for t in range(5):
@@ -109,6 +108,13 @@ class Sociogram(object):
         adisp.append_column(col2)
         adisp.append_column(col3)
 
+        
+        self.rel_store = Gtk.ListStore(str, str)
+        rel_combo = self.builder.get_object("rel_combo")
+        rel_combo.set_model(self.rel_store)
+        cell = Gtk.CellRendererText()
+        rel_combo.pack_start(cell, True)
+        rel_combo.add_attribute(cell, 'text', 0)
 
         #create canvas object and add to the scroll window
         #VERY IMPORTANT. using the normal window.add() call fails, but setting the parent like this makes everything fine
@@ -204,6 +210,7 @@ class Sociogram(object):
             "app.zoom_changed": self.update_zoom,
             "app.check_endpoint": self.check_endpoint,
             "app.cancel_endpoint": self.cancel_endpoint,
+            "app.set_selrel": self.pick_rel,
             "data.add": self.show_dev_error,
             "data.copyattrs": self.show_dev_error,
             "data.pasteattrs": self.do_paste,
@@ -460,7 +467,6 @@ class Sociogram(object):
     
     def set_selection(self, selobj, obj=None, event=None):
         '''Event handler and standalone. Mark selobj as selected and update ui.'''
-        print "selecting"
         #clear the old selection
         self.clear_select()
         
@@ -477,11 +483,34 @@ class Sociogram(object):
             self.activate_node_controls()
         elif self.seltype == 'edge':
             #activate all edit controls
-            self.activate_all_controls()
+            self.activate_rel_controls()
             
             #automatically select the edge's most heavily weighted relationship
             self.seldata = selobj.get_heaviest()
             
+            #populate self.rel_store from the edge
+            for rel in self.selection.rels:
+                self.rel_store.append((str(rel), str(rel.uid)))
+            self.builder.get_object("rel_combo").set_active(0)
+        
+        self._refresh_edit_controls()
+        self.builder.get_object("canvas_eventbox").grab_focus() #set keyboard focus
+    
+    def pick_rel(self, widget=None, data=None, relnum=None):
+        '''Event handler. Select a specific relationship from an edge.'''
+        if self.selection == None: return
+        
+        relid = widget.get_active() if widget != None else relnum
+        rel = self.selection.rels[relid]
+        if rel == self.seldata: return
+        
+        self.seldata = rel
+        
+        self._refresh_edit_controls()
+    
+    def _refresh_edit_controls(self):
+        '''Update contents of edit box controls.'''
+        if self.seltype == 'edge':
             #populate edit controls for that relationship
             weight = self.seldata.weight
             bidir = self.seldata.mutual
@@ -492,15 +521,15 @@ class Sociogram(object):
             self.from_main.set_text(flbl)
             self.builder.get_object("weight_spin").set_value(weight)
             self.builder.get_object("bidir").set_active(bidir)
-        
+    
         #populate common fields
         self.builder.get_object("name_entry").set_text(self.seldata.label)
+        
         #populate self.attr_store from selected graph object's attributes
+        self.attr_store.clear()
         for uid in self.seldata.attributes.iterkeys():
             attr = self.seldata.attributes[uid]
             self.attr_store.append((attr['name'], attr['value'], attr['visible'], uid))
-        
-        self.builder.get_object("canvas_eventbox").grab_focus() #set keyboard focus
     
     def clear_select(self, canvas=None, data=None):
         '''Event handler and standalone. Deselect object(s).'''
@@ -510,6 +539,7 @@ class Sociogram(object):
             self.seltype = None
             self.seldata = None
             self.attr_store.clear()
+            self.rel_store.clear()
         
         self.disable_all_controls()
     
@@ -539,9 +569,14 @@ class Sociogram(object):
         self.activate_all_controls()
         
         #now explicitly disable relationship-only controls
+        self.builder.get_object("relbox").set_sensitive(False)
         self.builder.get_object("frombox").set_sensitive(False)
         self.builder.get_object("tobox").set_sensitive(False)
         self.builder.get_object("weightbox").set_sensitive(False)
+    
+    def activate_rel_controls(self):
+        '''Show relationship controls.'''
+        self.activate_all_controls()
     
     def activate_all_controls(self):
         '''Make all selection-specific controls sensitive to input.'''
@@ -550,6 +585,7 @@ class Sociogram(object):
         self.builder.get_object("remove_attr").set_sensitive(True)
         
         #explicitly enable relationship-only controls, since they may have been previously explicitly disabled
+        self.builder.get_object("relbox").set_sensitive(True)
         self.builder.get_object("frombox").set_sensitive(True)
         self.builder.get_object("tobox").set_sensitive(True)
         self.builder.get_object("weightbox").set_sensitive(True)
@@ -855,6 +891,8 @@ class Sociogram(object):
     
     def update_weight(self, widget, data=None):
         '''Event handler. Update selected relationship's weight and redraw it.'''
+        if self.selection == None: return
+        
         oldw = self.seldata.weight
         neww = widget.get_value()
         
@@ -866,6 +904,8 @@ class Sociogram(object):
     
     def update_bidir(self, widget, data=None):
         '''Event handler. Update selected relationship's bidir property and redraw it.'''
+        if self.selection == None: return
+        
         oldb = self.seldata.weight
         newb = widget.get_active()
         
@@ -934,6 +974,7 @@ class Sociogram(object):
     
     def show_dev_error(self, widget=None, data=None, other=None):
         '''Event handler and standalone. Show the Not Implemented dialog.'''
+        print widget
         self.not_implemented_box.run()
         self.not_implemented_box.hide()
     
@@ -945,6 +986,7 @@ class Sociogram(object):
             lbl = self.seldata.label
         elif self.seltype == 'edge':
             seltype = 'edge'
+            rel = self.seldata
             #get edge selection data
             tlbl = self.seldata.to_node
             flbl = self.seldata.from_node
@@ -962,6 +1004,10 @@ class Sociogram(object):
                 self.set_selection(self.canvas.get_vertex(lbl))
             else:
                 self.set_selection(self.canvas.get_edge(tlbl, flbl))
+                if rel in self.selection.rels:
+                    num = self.selection.rels.index(rel)
+                    self.pick_rel(relnum = num)
+                    self.builder.get_object("rel_combo").set_active(num)
             
             #center the selection
             self.center_on(self.selection)

@@ -246,9 +246,9 @@ class AggLine(GooCanvas.CanvasGroup):
         if rels != None:
             for rel in rels:
                 self._add_rel(rel)
-        self.calc_width()
-        self.calc_label()
-            
+            self.calc_width()
+            self.calc_label()
+            self.rels = sorted(self.rels, key=attrgetter('weight', 'label'), reverse=True)
         
         #draw if we're able
         if painter != None: self.draw()
@@ -276,13 +276,12 @@ class AggLine(GooCanvas.CanvasGroup):
         fname = self.origin.label
         tname = self.dest.label
         
-        #iterate through all three label fields, showing bidir, to, then from labels
-        for weight, lbl in self.labels_both:
-            outtext.append("Both <b>"+lbl+"</b>")
-        for weight, lbl in self.labels_to:
-            outtext.append(fname+" <b>"+lbl+"</b> "+tname)
-        for weight, lbl in self.labels_from:
-            outtext.append(tname+" <b>"+lbl+"</b> "+fname)
+        for rel in self.rels:
+            if rel.mutual:
+                text = "Both <b>"+rel.label+"</b>"
+            else:
+                text = rel.from_node+" <b>"+rel.label+"</b> "+rel.to_node
+            outtext.append(text)
         
         out = "\n".join(outtext)
         tooltip.set_markup(out) #set our tooltip
@@ -292,9 +291,7 @@ class AggLine(GooCanvas.CanvasGroup):
     
     def get_heaviest(self):
         '''Find the relationship with the highest weight.'''
-        allrels = self.labels_both + self.labels_to + self.labels_from
-        allrels = sorted(self.rels, key=attrgetter('weight', 'label'))
-        return allrels[-1]
+        return self.rels[0]
     
     def add_rel(self, rel):
         '''Add properties from a relationship object.'''
@@ -302,6 +299,7 @@ class AggLine(GooCanvas.CanvasGroup):
         
         self.calc_width() #calculate new average weight
         self.calc_label() #calculate new label text
+        self.rels = sorted(self.rels, key=attrgetter('weight', 'label'), reverse=True)
     
     def _add_rel(self, rel):
         '''Internal function to add relationship properties without any recalculating.'''

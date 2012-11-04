@@ -59,6 +59,9 @@ class Relationship(Node):
         '''Determine whether this relationship terminates at node.'''
         return self.to_node == node
 
+    def __str__(self):
+        return " ".join((self.from_node, self.label, self.to_node))
+
 class Sociograph(nx.Graph):
     '''Maintain independent data model using a networkx graph.'''
     

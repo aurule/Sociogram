@@ -48,6 +48,8 @@ def paint(edge):
     font = edge.stylesheet.text_fontdesc
     #the label field is a dict of three labels, each a list of [weight,text]
     label = edge.label
+    origin = edge.origin.label
+    dest = edge.dest.label
     
     cx = center['x']
     cy = center['y']
@@ -66,10 +68,12 @@ def paint(edge):
     boty = -ny*3 + cy
     
     #make the label
-    tpart = '< '+label['to'][1] if label['to'] else '';
-    fpart = label['from'][1]+' >' if label['from'] else '';
-    toptext = tpart+"\t"+fpart
-    bottext = '< '+label['bidir'][1]+' >' if label['bidir'] else '';
+    parts = []
+    if label['to']: parts.append(' '.join((origin, label['to'][1], dest)))
+    if label['from']: parts.append(' '.join((dest, label['from'][1], origin)))
+    toptext = "; ".join(parts)
+    
+    bottext = 'Both '+label['bidir'][1] if label['bidir'] else '';
     
     toplbl = GooCanvas.CanvasText(parent=edge, text=toptext, alignment="center", fill_color_rgba=text_color, font_desc=font, anchor=GooCanvas.CanvasAnchorType.SOUTH, x=topx, y=topy)
     botlbl = GooCanvas.CanvasText(parent=edge, text=bottext, alignment="center", fill_color_rgba=text_color, font_desc=font, anchor=GooCanvas.CanvasAnchorType.NORTH, x=botx, y=boty)
