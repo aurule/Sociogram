@@ -2530,13 +2530,16 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
                                 <property name="tooltip_text" translatable="yes">Originating node of the relationship</property>
                                 <property name="has_entry">True</property>
                                 <property name="entry_text_column">0</property>
-                                <signal name="changed" handler="data.update_terminus" swapped="no"/>
                                 <child internal-child="entry">
                                   <object class="GtkEntry" id="from_combo_entry">
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
                                     <property name="secondary_icon_activatable">False</property>
                                     <property name="secondary_icon_sensitive">False</property>
+                                    <signal name="changed" handler="app.check_endpoint" swapped="no"/>
+                                    <signal name="activate" handler="data.update_origin" swapped="no"/>
+                                    <signal name="key-press-event" handler="app.cancel_endpoint" swapped="no"/>
+                                    <signal name="focus-out-event" handler="data.update_origin" swapped="no"/>
                                   </object>
                                 </child>
                               </object>
@@ -2579,11 +2582,14 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
                                 <property name="tooltip_text" translatable="yes">Destination node for the relationship</property>
                                 <property name="has_entry">True</property>
                                 <property name="entry_text_column">0</property>
-                                <signal name="changed" handler="data.update_terminus" swapped="no"/>
                                 <child internal-child="entry">
                                   <object class="GtkEntry" id="to_combo_entry">
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
+                                    <signal name="changed" handler="app.check_endpoint" swapped="no"/>
+                                    <signal name="activate" handler="data.update_dest" swapped="no"/>
+                                    <signal name="key-press-event" handler="app.cancel_endpoint" swapped="no"/>
+                                    <signal name="focus-out-event" handler="data.update_dest" swapped="no"/>
                                   </object>
                                 </child>
                               </object>

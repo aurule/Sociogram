@@ -29,7 +29,7 @@ class Sociogram(object):
     
     def __init__(self):
         '''Set up internals and instantiate/fix up GUI using Gtk.Builder.'''
-        self.G = nx.Graph() # instantiate the graph for storage and positioning
+        self.G = Graph.Sociograph() # instantiate the graph for storage and positioning
         #placeholders for selecting objects
         self.selection = None
         self.seltype = None
@@ -214,12 +214,15 @@ class Sociogram(object):
             "app.cancel_newname": self.cancel_name_edit,
             "app.set_selattr": self.set_attr_selection,
             "app.zoom_changed": self.update_zoom,
+            "app.check_endpoint": self.check_endpoint,
+            "app.cancel_endpoint": self.cancel_endpoint,
             "data.add": self.show_dev_error,
             "data.copyattrs": self.show_dev_error,
             "data.pasteattrs": self.do_paste,
             "data.delsel": self.delete_selection,
             "data.update_lbl": self.update_lbl,
-            "data.update_terminus": self.update_terminus,
+            "data.update_origin": self.update_origin,
+            "data.update_dest": self.update_dest,
             "data.update_weight": self.update_weight,
             "data.update_bidir": self.update_bidir,
             "data.newattr": self.add_attr,
@@ -336,7 +339,10 @@ class Sociogram(object):
             tnode = self.to_dlg.get_text()
             weight = self.builder.get_object("weight_spin_dlg").get_value()
             bidir = self.builder.get_object("bidir_new").get_active()
-            rel = self._add_rel(lbl, fnode, tnode, weight, bidir, paste)
+            rel, new_edge = self._add_rel(lbl, fnode, tnode, weight, bidir, paste)
+            if not new_edge:
+                #TODO just do a refresh if possible
+                pass
         else:
             node = self._add_node(lbl, paste)
         
@@ -348,6 +354,39 @@ class Sociogram(object):
             #get proper node
             obj = self.canvas.get_vertex(lbl)
         self.set_selection(obj)
+    
+    def _add_node(self, lbl, paste=False):
+        '''Internal function. Add a node and handle bookkeeping.'''
+        #make sure the node doesn't already exist
+        if lbl in self.G: 
+            self.show_dup_node_error()
+            return
+        
+        #create object and update data
+        node = Graph.Node(lbl)
+        self.G.add_node(lbl, {"node": node}) #add to graph
+        self.node_lbl_store.append([lbl]) #update name list for the dropdowns
+        
+        if paste:
+            self._paste_attrs(node)
+    
+    def _add_rel(self, lbl, fname, tname, weight, bidir, paste):
+        '''Internal function. Add a relationship and handle bookkeeping.'''
+        #make sure both nodes exist
+        if fname not in self.G:
+            raise Errors.MissingNode("Node %s not in graph." % fname)
+        if tname not in self.G:
+            raise Errors.MissingNode("Node %s not in graph." % tname)
+        
+        #create relationship object
+        rel = Graph.Relationship(lbl, fname, tname, weight, bidir)
+        
+        new_edge = self.G.add_rel(rel)
+        
+        if paste:
+            self._paste_attrs(rel)
+        
+        return (rel, new_edge)
     
     def hide_addbox_controls(self, widget, data=None):
         '''Event handler. Toggles visibility of Relationship-specific fields in the Add Object dialog based on selected Type.'''
@@ -375,40 +414,6 @@ class Sociogram(object):
         sense = haslbl and hasnodes and diffnodes and nodes_exist        
         
         self.builder.get_object("new_ok").set_sensitive(sense)
-    
-    def _add_node(self, lbl, paste=False):
-        '''Internal function. Add a node and handle bookkeeping.'''
-        #make sure the node doesn't already exist
-        if lbl in self.G: 
-            self.show_dup_node_error()
-            return
-        
-        #create object and update data
-        node = Graph.Node(lbl)
-        self.G.add_node(lbl, {"node": node}) #add to graph
-        self.node_lbl_store.append([lbl]) #update name list for the dropdowns
-        
-        if paste:
-            self._paste_attrs(node)
-    
-    def _add_rel(self, lbl, fname, tname, weight, bidir, paste):
-        '''Internal function. Add a relationship and handle bookkeeping.'''
-        #make sure both nodes exist
-        if fname not in self.G:
-            raise Errors.MissingNode("Node %s not in graph." % fname)
-        if tname not in self.G:
-            raise Errors.MissingNode("Node %s not in graph." % tname)
-        
-        #create relationship object
-        rel = Graph.Relationship(lbl, fname, tname, weight, bidir)
-        #update existing edge if possible, otherwise add new edge
-        if self.G.has_edge(fname, tname):
-            self.G[fname][tname]['rels'].append(rel)
-        else:
-            self.G.add_edge(fname, tname, rels=[rel])
-        
-        if paste:
-            self._paste_attrs(node)
     
     # Picks the appropriate object to paste into, then passes off to _paste_attrs.
     def do_paste(self, widget, data=None):
@@ -524,21 +529,13 @@ class Sociogram(object):
             self.selection.remove()
             self.clear_select()
         else:
-            #remove relationship
-            flbl = self.seldata.from_node
-            tlbl = self.seldata.to_node
-            
-            if len(self.G[flbl][tlbl]['rels']) == 1:
-                #if there's only one rel for this edge, remove the whole edge
-                self.G.remove_edge(flbl, tlbl)
+            killed_edge = self.G.remove_rel(self.seldata)
+            if not killed_edge:
+                #TODO in this case, we only need to refresh the graph, not redraw it
+                pass
+            else:
                 self.selection.remove()
                 self.clear_select()
-            else:
-                #if the edge has more than one rel, just remove this rel
-                for rel in self.G[flbl][tlbl]['rels']:
-                    if rel.uid == seldata.uid:
-                        rel.remove(seldata)
-                #TODO in this case, we only need to refresh the graph, not redraw it
         
         self.redraw()
     
@@ -756,6 +753,11 @@ class Sociogram(object):
         if oldlbl == newlbl:
             return
         
+        #reset field if it was submitted blank
+        if newlbl == "":
+            widget.set_text(oldlbl)
+            return
+        
         if self.seltype == 'node':
             #change the internal object's label
             self.seldata.label = newlbl
@@ -785,17 +787,89 @@ class Sociogram(object):
             
             self.redraw()
     
-    def update_terminus(self, widget, data=None):
-        '''Event handler. Update selected relationship's endpoints and redraw it.'''
-        pass
+    def check_endpoint(self, widget, data=None):
+        '''Event handler. Warn if desired endpoint does not exist.'''
+        
+        if widget == None or self.seltype != 'edge':
+            return
+        
+        newlbl = widget.get_text()
+        if newlbl not in self.G:
+            widget.set_icon_from_stock(Gtk.EntryIconPosition.SECONDARY, Gtk.STOCK_DIALOG_ERROR)
+            widget.set_icon_tooltip_text(Gtk.EntryIconPosition.SECONDARY, _("No such node"))
+            widget.set_icon_activatable(Gtk.EntryIconPosition.SECONDARY, False)
+        else:
+            widget.set_icon_from_stock(Gtk.EntryIconPosition.SECONDARY, None)
+    
+    def cancel_endpoint(self, widget, data=None):
+        '''Event handler. Reset name field if Esc key pressed.'''
+        kvn = Gdk.keyval_name(data.keyval)
+        if kvn == 'Escape':
+            widget.set_text(self.seldata.from_node)
+    
+    def update_origin(self, widget, data=None):
+        '''Event handler. Update selected relationship's origin.'''
+        if self.selection == None:
+            return
+        
+        new_origin = widget.get_text()
+        if new_origin == self.seldata.from_node:
+            return
+        
+        #reset field if it was submitted blank
+        if new_origin == "":
+            widget.set_text(self.seldata.from_node)
+            return
+        
+        #if our new origin is our old destination, swap the two
+        if new_origin == self.seldata.to_node:
+            self.G.move_rel(self.seldata, origin=new_origin, dest=self.seldata.from_node)
+            #now that it's been updated, we can just assign the real to_node value
+            self.to_main.set_text(self.seldata.to_node)
+            #TODO just refresh in this case
+        else:
+            #otherwise, change the origin only
+            self.G.move_rel(self.seldata, origin=new_origin)
+        
+        self.redraw()
+    
+    def update_dest(self, widget, data=None):
+        '''Event handler. Update selected relationship's destination.'''
+        if self.selection == None:
+            return
+        
+        new_dest = widget.get_text()
+        if new_dest == self.seldata.to_node:
+            return
+        
+        #reset field if it was submitted blank
+        if new_dest == "":
+            widget.set_text(self.seldata.to_node)
+            return
+        
+        #if our new origin is our old destination, swap the two
+        if new_dest == self.seldata.from_node:
+            self.G.move_rel(self.seldata, origin=self.seldata.to_node, dest=new_dest)
+            #now that it's been updated, we can just assign the real to_node value
+            self.from_main.set_text(self.seldata.from_node)
+            #TODO just refresh in this case
+        else:
+            #otherwise, change the origin only
+            self.G.move_rel(self.seldata, dest=new_dest)
+
+        self.redraw()
     
     def update_weight(self, widget, data=None):
         '''Event handler. Update selected relationship's weight and redraw it.'''
-        pass
+        self.seldata.weight = widget.get_value()
+        #TODO refresh instead of fully redrawing
+        self.redraw()
     
     def update_bidir(self, widget, data=None):
         '''Event handler. Update selected relationship's bidir property and redraw it.'''
-        pass
+        self.seldata.mutual = widget.get_active()
+        #TODO refresh instead of fully redrawing
+        self.redraw()
     
     def update_attrs(self, widget, path=None, text=None, col=None):
         '''Event handler. Change name or value of currently selected attribute.'''

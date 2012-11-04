@@ -1,4 +1,5 @@
 from uuid import uuid4
+import networkx as nx
 import Errors
 
 # Represents graph nodes (people, places, groups, etc.)
@@ -57,3 +58,58 @@ class Relationship(Node):
     def ends_at(self, node):
         '''Determine whether this relationship terminates at node.'''
         return self.to_node == node
+
+class Sociograph(nx.Graph):
+    '''Maintain independent data model using a networkx graph.'''
+    
+    def __init__(self):
+        nx.Graph.__init__(self)
+    
+    def add_rel(self, rel):
+        '''Add a relationship, creating an edge if necessary.'''
+        fname = rel.from_node
+        tname = rel.to_node
+        
+        #update existing edge if possible, otherwise add new edge
+        if self.has_edge(fname, tname):
+            self[fname][tname]['rels'].append(rel)
+            new_edge = False
+        else:
+            self.add_edge(fname, tname, rels=[rel])
+            new_edge = True
+        
+        return new_edge
+    
+    def remove_rel(self, rel):
+        '''Remove a relationship, as well as its edge if possible.'''
+        
+        #remove relationship
+        flbl = rel.from_node
+        tlbl = rel.to_node
+        rel_list = self[flbl][tlbl]['rels']
+        
+        if len(rel_list) == 1 and rel_list[0].uid == rel.uid:
+            #if there's only one rel for this edge, remove the whole edge
+            self.remove_edge(flbl, tlbl)
+            return True
+        else:
+            #if the edge has more than one rel, just remove this rel
+            for k in rel_list:
+                if k.uid == rel.uid:
+                    rel_list.remove(rel)
+                    ret = True
+            if ret:
+                return True
+        
+        #relationship doesn't exist
+        return None
+    
+    def move_rel(self, rel, origin=None, dest=None):
+        '''Move a relationship from one edge to another.'''
+        if origin == None and dest == None:
+            return
+        
+        self.remove_rel(rel)
+        if origin: rel.from_node = origin
+        if dest: rel.to_node = dest
+        self.add_rel(rel)

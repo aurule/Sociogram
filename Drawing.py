@@ -222,7 +222,7 @@ class AggLine(GooCanvas.CanvasGroup):
         '''Create a new aggregate line.'''
         GooCanvas.CanvasGroup.__init__(self, **args)
 
-        self.type = 'rel'
+        self.type = 'edge'
         self.start_arrow = False
         self.end_arrow = False
         self.width = 5
