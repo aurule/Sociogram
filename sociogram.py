@@ -300,15 +300,6 @@ class Sociogram(object):
     
     def show_add(self, widget, data=None):
         '''Show Add Object dialog after resetting field defaults and ensuring sane Relationship availability.'''
-        #clear the dialog's values
-        self.builder.get_object("newtypesel").set_active(0)
-        self.builder.get_object("name_entry_dlg").set_text('')
-        self.from_dlg.set_text('')
-        self.to_dlg.set_text('')
-        self.builder.get_object("weight_spin_dlg").set_value(5)
-        self.builder.get_object("bidir_new").set_active(False)
-        self.builder.get_object("use_copied_attrs").set_active(False)
-        
         #show the thing
         self.builder.get_object("new_type_box").set_sensitive(self.G.order() > 1) #disallow Relationships unless we have enough nodes
         self.builder.get_object("name_entry_dlg").grab_focus() #focus on the label field
@@ -347,6 +338,15 @@ class Sociogram(object):
             #get proper node
             obj = self.canvas.get_vertex(lbl)
         self.set_selection(obj)
+        
+        #clear the dialog's values
+        self.builder.get_object("newtypesel").set_active(0)
+        self.builder.get_object("name_entry_dlg").set_text('')
+        self.from_dlg.set_text('')
+        self.to_dlg.set_text('')
+        self.builder.get_object("weight_spin_dlg").set_value(5)
+        self.builder.get_object("bidir_new").set_active(False)
+        self.builder.get_object("use_copied_attrs").set_active(False)
     
     def _add_node(self, lbl, paste=False):
         '''Internal function. Add a node and handle bookkeeping.'''
@@ -460,6 +460,7 @@ class Sociogram(object):
     
     def set_selection(self, selobj, obj=None, event=None):
         '''Event handler and standalone. Mark selobj as selected and update ui.'''
+        print "selecting"
         #clear the old selection
         self.clear_select()
         
@@ -471,13 +472,13 @@ class Sociogram(object):
         self.selection.set_selected(True)
         
         #grab data and update UI
-        if selobj.type == 'node':
+        if self.seltype == 'node':
             self.seldata = selobj.node
             self.activate_node_controls()
-        else:
+        elif self.seltype == 'edge':
             #activate all edit controls
             self.activate_all_controls()
-
+            
             #automatically select the edge's most heavily weighted relationship
             self.seldata = selobj.get_heaviest()
             
@@ -854,13 +855,23 @@ class Sociogram(object):
     
     def update_weight(self, widget, data=None):
         '''Event handler. Update selected relationship's weight and redraw it.'''
-        self.seldata.weight = widget.get_value()
+        oldw = self.seldata.weight
+        neww = widget.get_value()
+        
+        if oldw == neww: return
+        
+        self.seldata.weight = neww
         #TODO refresh instead of fully redrawing
         self.redraw()
     
     def update_bidir(self, widget, data=None):
         '''Event handler. Update selected relationship's bidir property and redraw it.'''
-        self.seldata.mutual = widget.get_active()
+        oldb = self.seldata.weight
+        newb = widget.get_active()
+        
+        if oldb == newb: return
+        
+        self.seldata.mutual = newb
         #TODO refresh instead of fully redrawing
         self.redraw()
     
