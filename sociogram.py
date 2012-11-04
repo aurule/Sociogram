@@ -62,34 +62,22 @@ class Sociogram(object):
         from_combo.set_model(self.node_lbl_store)
         self.from_main = self.builder.get_object("from_combo_entry")
         self.from_main.set_completion(completions[0])
-        #from_combo.pack_start(textcell, True)
-        #from_combo.add_attribute(textcell, 'text', 0)
-        #from_combo.set_id_column(0)
         
         to_combo = self.builder.get_object("to_combo")
         to_combo.set_model(self.node_lbl_store)
         self.to_main = self.builder.get_object("to_combo_entry")
         self.to_main.set_completion(completions[1])
-        #to_combo.pack_start(textcell, True)
-        #to_combo.add_attribute(textcell, 'text', 0)
-        #to_combo.set_id_column(0)
         
         #populate from_combo_dlg and to_combo_dlg from the same model as above
         from_combo_dlg = self.builder.get_object("from_combo_dlg")
         from_combo_dlg.set_model(self.node_lbl_store)
         self.from_dlg = self.builder.get_object("from_combo_dlg_entry")
         self.from_dlg.set_completion(completions[2])
-        #from_combo_dlg.pack_start(textcell, True)
-        #from_combo_dlg.add_attribute(textcell, 'text', 0)
-        #from_combo_dlg.set_id_column(0)
         
         to_combo_dlg = self.builder.get_object("to_combo_dlg")
         to_combo_dlg.set_model(self.node_lbl_store)
         self.to_dlg = self.builder.get_object("to_combo_dlg_entry")
         self.to_dlg.set_completion(completions[3])
-        #to_combo_dlg.pack_start(textcell, True)
-        #to_combo_dlg.add_attribute(textcell, 'text', 0)
-        #to_combo_dlg.set_id_column(0)
         
         #add completion to toolbar node search field
         searchbar = self.builder.get_object("search_entry")
@@ -107,9 +95,9 @@ class Sociogram(object):
         self.attr_store = Gtk.ListStore(str, str, bool, str)
         adisp = self.builder.get_object("attrstree")
         adisp.set_model(self.attr_store)
-        col1 = Gtk.TreeViewColumn("Name", editname, text=0)
-        col1.set_sort_column_id(0)
-        col1.set_expand(True)
+        self.namecol = Gtk.TreeViewColumn("Name", editname, text=0)
+        self.namecol.set_sort_column_id(0)
+        self.namecol.set_expand(True)
         col2 = Gtk.TreeViewColumn("Value", editval, text=1)
         col2.set_sort_column_id(1)
         col2.set_expand(True)
@@ -117,7 +105,7 @@ class Sociogram(object):
         togglecell.connect("toggled", self.update_attrs, None, 2)
         col3 = Gtk.TreeViewColumn("Visible", togglecell, active=2)
         col3.set_sort_column_id(2)
-        adisp.append_column(col1)
+        adisp.append_column(self.namecol)
         adisp.append_column(col2)
         adisp.append_column(col3)
 
@@ -270,8 +258,8 @@ class Sociogram(object):
         #   mark/store those nodes and paths
         #   trigger a special canvas.freshen operation
     
-    def add_attr(self, widget=None, data=None):
-        '''Event handler and standalone. Adds an attribute to the current selection.'''
+    def add_attr(self, widget, data=None):
+        '''Event handler. Adds an attribute to the current selection.'''
         if self.selection == None:
             return
         
@@ -279,6 +267,11 @@ class Sociogram(object):
         uid = self.seldata.add_attr(("attribute", "value", False))
         #add to attr_store, since it's obviously selected
         self.attr_store.append(("attribute", "value", False, uid))
+        #start editing right away
+        self.builder.get_object("attrstree").set_cursor(len(self.attr_store)-1, self.namecol, True)
+    
+    def next_field(self, widget, data=None):
+        pass
     
     def del_attr(self, widget, data=None):
         '''Event handler. Removes the currently highlighted attribute from the current selection.'''
