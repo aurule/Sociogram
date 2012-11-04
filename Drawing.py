@@ -4,7 +4,7 @@ import networkx as nx
 from textwrap import TextWrapper
 from numpy import mean
 from math import sqrt
-from operator import itemgetter
+from operator import itemgetter, attrgetter
 
 import Errors
 import painters
@@ -82,10 +82,12 @@ class Canvas(GooCanvas.Canvas):
                 ring.set_properties(radius_x=coords['radius'], radius_y=coords['radius'], center_x=coords['x'], center_y=coords['y'])
             
             #iterate through edges and draw each according to its stored relationships
-            for snode, enode, props in subg.edges_iter(data=True):
+            for snode, enode in subg.edges_iter():
+                #get relationship list from original graph to ensure we store references to the correct objects, instead of their copies
+                rels = G[snode][enode]['rels']
                 #TODO assign style info to object based on style rules
                 #   change painter if necessary
-                line = AggLine(parent=cbox, fnode=cbox.vertices[snode], tnode=cbox.vertices[enode], rels=props['rels'], painter=painters.edge.line, sheet=self.edge_default_stylesheet)
+                line = AggLine(parent=cbox, fnode=cbox.vertices[snode], tnode=cbox.vertices[enode], rels=rels, painter=painters.edge.line, sheet=self.edge_default_stylesheet)
                 cbox.edges.append(line)
                 
                 line.connect("button-press-event", self.line_callback)
@@ -141,6 +143,17 @@ class Canvas(GooCanvas.Canvas):
         for subg in self.cboxes:
             if label in subg.vertices:
                 return subg.vertices[label]
+        
+        return None
+    
+    def get_edge(self, tlbl, flbl):
+        '''Find the edge between nodes tlbl and flbl.'''
+        for subg in self.cboxes:
+            #pick the right box
+            if tlbl in subg.vertices and flbl in subg.vertices:
+                #test every edge
+                for edge in subg.edges:
+                    if edge.spans(tlbl, flbl): return edge
         
         return None
     
@@ -219,10 +232,12 @@ class AggLine(GooCanvas.CanvasGroup):
         self.labels_both = []
         self.labels_from = []
         self.labels_to = []
+        self.rels = []
         self.label = {'bidir': '', 'from': '', 'to': ''}
         self.painter = painter
         self.selected = False
         self.stylesheet = sheet
+        self.selring = None
         
         if sheet == None:
             self.stylesheet = Stylesheet()
@@ -239,6 +254,18 @@ class AggLine(GooCanvas.CanvasGroup):
         if painter != None: self.draw()
         
         self.connect("query-tooltip", self.rel_tooltip)
+    
+    def spans(self, lbl1, lbl2):
+        '''Return whether or not we touch vertices with labels lbl1 and lbl2.'''
+        if lbl1 == lbl2: return False
+        
+        ends = (lbl1, lbl2)
+
+        olbl = self.origin.label
+        dlbl = self.dest.label
+        
+        if (olbl in ends) and (dlbl in ends): return True
+        return False
     
     def rel_tooltip(self, me, x, y, kbd, tooltip):
         '''Event handler to set a tooltip message containing our relationships.'''
@@ -263,6 +290,12 @@ class AggLine(GooCanvas.CanvasGroup):
         #reply that this event has been handled
         return True
     
+    def get_heaviest(self):
+        '''Find the relationship with the highest weight.'''
+        allrels = self.labels_both + self.labels_to + self.labels_from
+        allrels = sorted(self.rels, key=attrgetter('weight', 'label'))
+        return allrels[-1]
+    
     def add_rel(self, rel):
         '''Add properties from a relationship object.'''
         self._add_rel(rel)
@@ -272,6 +305,7 @@ class AggLine(GooCanvas.CanvasGroup):
     
     def _add_rel(self, rel):
         '''Internal function to add relationship properties without any recalculating.'''
+        self.rels.append(rel)
         #add labels and arrows according to directionality
         if rel.mutual:
             self.labels_both.append([rel.weight, rel.label])
@@ -325,7 +359,11 @@ class AggLine(GooCanvas.CanvasGroup):
     def set_selected(self, state):
         '''Mark our selected status and draw selection ring.'''
         self.selected = state
-        self.painter.show_selected(state)
+        
+        if self.selected:
+            self.selring = self.painter.show_selected(self)
+        else:
+            self.selring.remove()
     
     def clear_rels(self):
         '''Clear out all relationship-derived data.'''

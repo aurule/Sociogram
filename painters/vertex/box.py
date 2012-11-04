@@ -29,4 +29,6 @@ def show_selected(vertex):
     coords = vertex.get_xyr()
     stroke = vertex.stylesheet.sel_color
     ring = GooCanvas.CanvasEllipse(parent=vertex.parent, radius_x=coords['radius'], radius_y=coords['radius'], center_x=coords['x'], center_y=coords['y'], fill_color_rgba=0x00000000, stroke_color_rgba=stroke)
+    ring.lower(vertex)
+    
     return ring

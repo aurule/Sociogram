@@ -34,6 +34,7 @@ class Sociogram(object):
         self.selection = None
         self.seltype = None
         self.selattr = None
+        self.seldata = None
         self.highlight_dist = 1
         self.highlight = False
         
@@ -126,7 +127,7 @@ class Sociogram(object):
         self.canvas = Drawing.Canvas(parent=self.builder.get_object("canvas_scroll"), has_tooltip=True)
         #attach callbacks
         self.canvas.node_callback = self.node_clicked
-        self.canvas.line_callback = self.nothing#show_dev_error
+        self.canvas.line_callback = self.line_clicked
         self.canvas.key_handler = self.canvas_key_handler
         self.canvas.connect("button-press-event", self.canvas_clicked)
         self.canvas.connect("scroll-event", self.scroll_handler)
@@ -138,6 +139,7 @@ class Sociogram(object):
         sheet.stroke_color = 0x000000ff
         sheet.set_fontdesc('sans normal 11')
         sheet.sel_color = 0xff0000ff
+        sheet.sel_width = 1
         sheet.text_color = 0x000000ff
         sheet.set_fontdesc('sans normal 11')
         
@@ -239,7 +241,7 @@ class Sociogram(object):
         if hand:
             cursor = Gdk.Cursor(Gdk.CursorType.HAND1)
         else:
-            cursor = Gdk.Cursor(Gdk.CursorType.LEFT_PTR)
+            cursor = None
         rwin = self.builder.get_object("canvas_eventbox").get_window()
         rwin.set_cursor(cursor)
     
@@ -270,14 +272,10 @@ class Sociogram(object):
         if self.selection == None:
             return
         
-        if self.seltype == "node":
-            #add to underlying Node object
-            uid = self.selection.node.add_attr(("attribute", "value", False))
-            #add to attr_store, since it's obviously selected
-            self.attr_store.append(("attribute", "value", False, uid))
-        else:
-            #TODO add relationship
-            pass
+        #add to underlying Node object
+        uid = self.seldata.add_attr(("attribute", "value", False))
+        #add to attr_store, since it's obviously selected
+        self.attr_store.append(("attribute", "value", False, uid))
     
     def del_attr(self, widget, data=None):
         '''Event handler. Removes the currently highlighted attribute from the current selection.'''
@@ -285,17 +283,12 @@ class Sociogram(object):
             return
         
         #remove from underlying Node object
-        self.selection.node.del_attr(self.selattr)
+        self.seldata.del_attr(self.selattr)
         
-        #find and remove from attr_store
-        if self.seltype == "node":
-            for row in self.attr_store:
-                if row[3] == self.selattr:
-                    self.attr_store.remove(row.iter)
-                    break
-        else:
-            #TODO remove relationship
-            pass
+        for row in self.attr_store:
+            if row[3] == self.selattr:
+                self.attr_store.remove(row.iter)
+                break
     
     def set_attr_selection(self, widget, data=None):
         '''Event handler. Update internal selection var whenever the attribute selection cursor changes.'''
@@ -349,9 +342,10 @@ class Sociogram(object):
         
         self.redraw()
         if "Rel" in obj_type:
-            #TODO get selectable relationship
-            obj = None
+            #get proper edge
+            obj = self.canvas.get_edge(fnode, tnode)
         else:
+            #get proper node
             obj = self.canvas.get_vertex(lbl)
         self.set_selection(obj)
     
@@ -477,23 +471,35 @@ class Sociogram(object):
         self.selection = selobj
         self.seltype = selobj.type
         self.selection.set_selected(True)
-        self.canvas.grab_focus(selobj)
         
         #grab data and update UI
-        self.builder.get_object("name_entry").set_text(selobj.label)
         if selobj.type == 'node':
+            self.seldata = selobj.node
             self.activate_node_controls()
-            #populate self.attr_store from Node object's attributes
-            for uid in self.selection.node.attributes.iterkeys():
-                attr = self.selection.node.attributes[uid]
-                self.attr_store.append((attr['name'], attr['value'], attr['visible'], uid))
         else:
+            #activate all edit controls
             self.activate_all_controls()
-            #TODO populate from a single relationship object, not the aggline
-            self.from_combo.set_text(selobj.origin.label)
-            self.from_combo.set_text(selobj.dest.label)
-            self.builder.get_object("weight_spin").set_value(selobj.weight)
-            self.builder.get_object("").set_active(selobj.bidir)
+
+            #automatically select the edge's most heavily weighted relationship
+            self.seldata = selobj.get_heaviest()
+            
+            #populate edit controls for that relationship
+            weight = self.seldata.weight
+            bidir = self.seldata.mutual
+            tlbl = self.seldata.to_node
+            flbl = self.seldata.from_node
+            
+            self.to_main.set_text(tlbl)
+            self.from_main.set_text(flbl)
+            self.builder.get_object("weight_spin").set_value(weight)
+            self.builder.get_object("bidir").set_active(bidir)
+        
+        #populate common fields
+        self.builder.get_object("name_entry").set_text(self.seldata.label)
+        #populate self.attr_store from selected graph object's attributes
+        for uid in self.seldata.attributes.iterkeys():
+            attr = self.seldata.attributes[uid]
+            self.attr_store.append((attr['name'], attr['value'], attr['visible'], uid))
         
         self.builder.get_object("canvas_eventbox").grab_focus() #set keyboard focus
     
@@ -503,17 +509,38 @@ class Sociogram(object):
             self.selection.set_selected(False)        
             self.selection = None
             self.seltype = None
+            self.seldata = None
             self.attr_store.clear()
         
         self.disable_all_controls()
     
     def delete_selection(self, widget=None, data=None):
         '''Event handler and standalone. Delete selected object.'''
-        if self.selection != None:
-            self.G.remove_node(self.selection.label)
+        if self.selection == None:
+            return
+        
+        if self.seltype == 'node':
+            self.G.remove_node(self.seldata.label)
             self.selection.remove()
             self.clear_select()
-            self.redraw()
+        else:
+            #remove relationship
+            flbl = self.seldata.from_node
+            tlbl = self.seldata.to_node
+            
+            if len(self.G[flbl][tlbl]['rels']) == 1:
+                #if there's only one rel for this edge, remove the whole edge
+                self.G.remove_edge(flbl, tlbl)
+                self.selection.remove()
+                self.clear_select()
+            else:
+                #if the edge has more than one rel, just remove this rel
+                for rel in self.G[flbl][tlbl]['rels']:
+                    if rel.uid == seldata.uid:
+                        rel.remove(seldata)
+                #TODO in this case, we only need to refresh the graph, not redraw it
+        
+        self.redraw()
     
     def activate_node_controls(self):
         '''Make only node-compatable selection-specific controls sensitive to input.'''
@@ -571,6 +598,16 @@ class Sociogram(object):
     
     def node_clicked(self, selobj, obj=None, event=None):
         '''Event handler. Select and otherwise perform UI actions on node click.'''
+        self.set_selection(selobj)
+        btn = event.get_button()
+        
+        #TODO handle the right-click menu
+        if btn[1] == 3L:
+            self.show_dev_error()
+            #use menu.popup function
+    
+    def line_clicked(self, selobj, obj=None, event=None):
+        '''Event handler. Draw clicked edge as "selected".'''
         self.set_selection(selobj)
         btn = event.get_button()
         
@@ -692,11 +729,11 @@ class Sociogram(object):
     def check_label(self, widget, data=None):
         '''Event handler. Warn if edited label is already used.'''
         
-        if widget == None or self.selection == None:
+        if widget == None or self.seltype != 'node':
             return
         
         newlbl = widget.get_text()
-        if newlbl != self.selection.label and newlbl in self.G:
+        if newlbl != self.seldata.label and newlbl in self.G:
             widget.set_icon_from_stock(Gtk.EntryIconPosition.SECONDARY, Gtk.STOCK_DIALOG_ERROR)
             widget.set_icon_tooltip_text(Gtk.EntryIconPosition.SECONDARY, _("Label already used"))
             widget.set_icon_activatable(Gtk.EntryIconPosition.SECONDARY, False)
@@ -707,7 +744,7 @@ class Sociogram(object):
         '''Event handler. Reset name field if Esc key pressed.'''
         kvn = Gdk.keyval_name(data.keyval)
         if kvn == 'Escape':
-            widget.set_text(self.selection.label)
+            widget.set_text(self.seldata.label)
     
     def update_lbl(self, widget, data=None):
         '''Event handler. Update selection's label and redraw it.'''
@@ -715,32 +752,38 @@ class Sociogram(object):
             return
         
         newlbl = widget.get_text()
-        oldlbl = self.selection.label
+        oldlbl = self.seldata.label
         if oldlbl == newlbl:
             return
         
-        #change the internal object's label
-        self.G.node[oldlbl]['node'].label = newlbl
+        if self.seltype == 'node':
+            #change the internal object's label
+            self.seldata.label = newlbl
+            
+            #remove old label from the liststore and add the new one
+            for row in self.node_lbl_store:
+                if row[0] == oldlbl:
+                    self.node_lbl_store.remove(row.iter)
+                    break
+            self.node_lbl_store.append([newlbl])
+            
+            #update internal relationship objects' to and from node labels
+            for n in self.G[oldlbl]:
+                for rel in self.G[oldlbl][n]['rels']:
+                    if rel.from_node == oldlbl: rel.from_node = newlbl
+                    if rel.to_node == oldlbl: rel.to_node = newlbl
+            
+            #change the graph node's key
+            nx.relabel_nodes(self.G, {oldlbl:newlbl}, False)
         
-        #remove old label from the liststore and add the new one
-        for row in self.node_lbl_store:
-            if row[0] == oldlbl:
-                self.node_lbl_store.remove(row.iter)
-                break
-        self.node_lbl_store.append([newlbl])
-        
-        #update internal relationship objects' to and from node labels
-        for n in self.G[oldlbl]:
-            for rel in self.G[oldlbl][n]['rels']:
-                if rel.from_node == oldlbl: rel.from_node = newlbl
-                if rel.to_node == oldlbl: rel.to_node = newlbl
-        
-        #change the graph node's key
-        nx.relabel_nodes(self.G, {oldlbl:newlbl}, False)
-        
-        #redraw and reselect the new node
-        self.canvas.redraw(self.G)
-        self.set_selection(self.canvas.get_vertex(newlbl))
+            #redraw and reselect the new node
+            self.redraw()
+        else:
+            self.seldata.label = newlbl
+            tlbl = self.seldata.to_node
+            flbl = self.seldata.from_node
+            
+            self.redraw()
     
     def update_terminus(self, widget, data=None):
         '''Event handler. Update selected relationship's endpoints and redraw it.'''
@@ -764,23 +807,17 @@ class Sociogram(object):
         else:
             self.attr_store[path][col] = not self.attr_store[path][col]
         
-        if self.seltype == 'node':
-            attr = self.selection.node.attributes[self.selattr]
-            val = self.attr_store[path][col]
-            if col==0:
-                attr['name'] = val
-            elif col==1:
-                attr['value'] = val
-            elif col==2:
-                attr['visible'] = val
-        else:
-            #TODO update internal relationship object's attribute
-            pass
+        attr = self.seldata.attributes[self.selattr]
+        val = self.attr_store[path][col]
+        if col==0:
+            attr['name'] = val
+        elif col==1:
+            attr['value'] = val
+        elif col==2:
+            attr['visible'] = val
         
-        sel = self.selection.label
-        self.canvas.redraw(self.G)
-        self.attr_store.clear()
-        self.set_selection(self.canvas.get_vertex(sel))
+        #TODO refresh only, no need for a complete redraw
+        self.redraw()
     
     def toggle_widget(self, widget, data=None):
         '''Event handler and standalone. Toggle passed widget.'''
@@ -827,21 +864,26 @@ class Sociogram(object):
         seltype = None
         if self.seltype == 'node':
             seltype = 'node'
-            lbl = self.selection.label
+            lbl = self.seldata.label
         elif self.seltype == 'edge':
-            #TODO get edge selection data
-            pass
+            seltype = 'edge'
+            #get edge selection data
+            tlbl = self.seldata.to_node
+            flbl = self.seldata.from_node
         
         self.canvas.scroll_to(0, 0)
         self.canvas.redraw(self.G)
+        
+        #reset the cursor
+        rwin = self.builder.get_object("canvas_eventbox").get_window()
+        rwin.set_cursor(None)
         
         #get back our selection
         if seltype != None:
             if seltype == 'node':
                 self.set_selection(self.canvas.get_vertex(lbl))
             else:
-                #TODO select old edge
-                pass
+                self.set_selection(self.canvas.get_edge(tlbl, flbl))
             
             #center the selection
             self.center_on(self.selection)

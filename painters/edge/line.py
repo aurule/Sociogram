@@ -3,8 +3,8 @@ from math import sqrt, atan, degrees
 
 import util
 
-def paint(edge):
-    '''Draw lobj, an AggLine, as a simple line with text labels along its length.'''
+def _adj_coords(edge):
+    '''Adjust endpoint coordinates for node radii.'''
     
     spos = edge.origin.get_xyr() #x, y, radius
     epos = edge.dest.get_xyr() #x, y, radius
@@ -24,14 +24,20 @@ def paint(edge):
     endx = spos['x'] - dx*(mag - epos['radius'])
     endy = spos['y'] - dy*(mag - epos['radius'])
     
+    return (startx, starty, endx, endy, dx, dy)
+
+def paint(edge):
+    '''Draw lobj, an AggLine, as a simple line with text labels along its length.'''
+    startx, starty, endx, endy, dx, dy = _adj_coords(edge)
+    
     #construct the points
     pts = util.mkpoints([(startx, starty), (endx, endy)])
     
     #get style data from edge stylesheet
     sheet = edge.stylesheet
-    stroke = edge.stylesheet.stroke_color
-    text_color = edge.stylesheet.text_color
-    font = edge.stylesheet.text_fontdesc
+    stroke = sheet.stroke_color
+    text_color = sheet.text_color
+    font = sheet.text_fontdesc
     
     #draw the line
     GooCanvas.CanvasPolyline(end_arrow=edge.end_arrow, start_arrow=edge.start_arrow, points=pts, parent=edge, arrow_length=9, arrow_tip_length=7, arrow_width=7, line_width=edge.width/2, stroke_color_rgba=stroke)
@@ -46,15 +52,7 @@ def paint(edge):
     cx = center['x']
     cy = center['y']
     
-    #first get the rotation
-    dx = spos['x'] - epos['x']
-    dy = spos['y'] - epos['y']
     deg = degrees(atan(dy/dx))
-    
-    #then find the offset
-    mag = sqrt(dx*dx + dy*dy)
-    dx = dx/mag
-    dy = dy/mag
     
     #Pick which perpendicular based on dx to keep it "above" the line (bottoms
     #of letters always face the line).
@@ -64,7 +62,6 @@ def paint(edge):
     #multiply for distance from the line, and adj to eminate from the center coords
     topx = nx*3 + cx
     topy = ny*3 + cy
-    
     botx = -nx*3 + cx
     boty = -ny*3 + cy
     
@@ -81,5 +78,22 @@ def paint(edge):
     toplbl.rotate(deg, topx, topy)
     botlbl.rotate(deg, botx, boty)
 
-def show_selected(vertex):
-    pass
+def show_selected(edge):
+    '''Draw a highlight outline around the edge.'''
+    startx, starty, endx, endy, dx, dy = _adj_coords(edge)
+    
+    #construct the points
+    pts = util.mkpoints([(startx, starty), (endx, endy)])
+    sheet = edge.stylesheet
+    stroke = sheet.sel_color
+    width = edge.width/2 + sheet.sel_width*2
+    
+    arrow_len = 10*(edge.width/2)/width
+    arrow_tip_len = 7*(edge.width/2)/width
+    arrow_width = 9*(edge.width/2)/width
+    
+    #draw the line
+    highlight = GooCanvas.CanvasPolyline(end_arrow=edge.end_arrow, start_arrow=edge.start_arrow, arrow_length=arrow_len, arrow_tip_length=arrow_tip_len, arrow_width=arrow_width, points=pts, parent=edge, line_width=width, stroke_color_rgba=stroke)
+    highlight.lower(edge.get_child(0))
+    
+    return highlight
