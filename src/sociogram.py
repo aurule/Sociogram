@@ -37,6 +37,7 @@ class Sociogram(object):
         self.seldata = None
         self.highlight_dist = 1
         self.highlight = False
+        self.savepath = None
         
         self.builder = Gtk.Builder()
         self.builder.add_from_file("ui/sociogram.ui")
@@ -179,10 +180,10 @@ class Sociogram(object):
         # TODO once functionality is finalized, remove redundant signals
         handlers_main = {
             "app.quit": Gtk.main_quit,
-            "app.newfile": self.show_dev_error,
-            "app.openfile": self.show_dev_error,
-            "app.savefile": self.show_dev_error,
-            "app.saveas": self.show_dev_error,
+            "app.newfile": self.make_new,
+            "app.openfile": self.openfile,
+            "app.savefile": self.save,
+            "app.saveas": self.save_new,
             "app.do_export": self.show_dev_error,
             "app.help": self.show_dev_error,
             "app.undo": self.show_dev_error,
@@ -233,6 +234,50 @@ class Sociogram(object):
     
     def nothing(self, a=None, b=None, c=None):
         print 'nothing'
+    
+    def make_new(self, widget=None, data=None):
+        '''Event handler and standalone. Wipe the current data and load defaults.'''
+        #TODO warn about closing current document
+        self.clear_select()
+        
+        del self.G
+        self.G = Graph.Sociograph()
+        
+        self.redraw()
+    
+    def openfile(self, widget=None, data=None):
+        '''Event handler and standalone. Pick a file and load from it.'''
+        open_dlg = self.builder.get_object("open_dlg")
+        if self.savepath != None:
+            open_dlg.set_uri(self.savepath)
+        
+        response = open_dlg.run()
+        open_dlg.hide()
+        
+        if response:
+            self.savepath = open_dlg.get_uri()
+            #TODO read from file
+    
+    def save(self, widget=None, data=None):
+        '''Event handler and standalone. Save to known path.'''
+        if self.savepath == None:
+            self.save_new()
+            return
+        
+        #TODO write to the file
+    
+    def save_new(self, widget=None, data=None):
+        '''Event handler and standalone. Pick save location, then save.'''
+        save_dlg = self.builder.get_object("save_dlg") 
+        if self.savepath != None:
+            save_dlg.set_uri(self.savepath)
+        
+        response = save_dlg.run()
+        save_dlg.hide()
+        
+        if response:
+            self.savepath = save_dlg.get_uri()
+            self.save()
     
     def update_pointer(self, widget, data=None, extra=None, hand=None):
         '''Event handler to pick the pointer used on the graph.'''
