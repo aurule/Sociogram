@@ -3,13 +3,13 @@ Sociogram
 
 A Gtk program to visualize social networks.
 
-The source presented here is currently under heavy development and not suitable for serious use. It has only been tested on an Ubuntu 12.04 64-bit system.
+The source presented here is currently under heavy development and not suitable for serious use. It has only been tested on an Ubuntu 12.10 64-bit system.
 
 Requirements
 ============
 
 * Gtk+ 3.4 (or higher) with gobject-introspection (gi) libraries
-* goocanvas 2.0.1
+* goocanvas 2.0.1 (or higher)
 * networkx 1.6
 * python 2.7.3
 * python bindings for gtk, goocanvas, and networkx
@@ -32,10 +32,10 @@ Planned for Release
 Finished
 -------
 * arbitrary nodes and relationships
-* arbitrary name:value attribute pairs on nodes
-* drawing! (except subgraph packing)
+* arbitrary name:value attribute pairs on nodes and relationships
+* drawing!
 * search nodes by label
-* zooming and panning (except best fit)
+* zooming and panning
 
 The Future
 ---------
@@ -49,6 +49,7 @@ The Future
 * image styles, like post-it and yarn, polaroids, etc.
 * customizable images for each node
 * background color/texture, with builtins like corkboard and paper
+* relationships with one or both endpoints being other relationships, like in a family tree
 
 Documentation
 ============
@@ -72,4 +73,4 @@ Sociogram could really use some custom icons, especially one for the program its
 
 Internationalization
 -----------------
-I'm planning to make the whole program compatable with i18n, but not until it's more complete. If you'd like to help translate, watch this space! Or, you can send me a message to that effect and I'll let you know when it's ready.
+I'm planning to make the whole program compatable with i18n, but not until it's more complete. If you'd like to help translate, watch this space! Or you can send me a message to that effect and I'll let you know when it's ready.
