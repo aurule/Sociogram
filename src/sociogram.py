@@ -274,9 +274,10 @@ class Sociogram(object):
         
         response = save_dlg.run()
         save_dlg.hide()
+        uri = save_dlg.get_uri()
         
-        if response:
-            self.savepath = save_dlg.get_uri()
+        if uri != None:
+            self.savepath = uri
             self.save()
     
     def update_pointer(self, widget, data=None, extra=None, hand=None):
