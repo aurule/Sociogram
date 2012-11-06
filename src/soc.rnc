@@ -1,0 +1,41 @@
+start = Document
+
+## Represents settings and data for the document.
+Document = element sociogram.document {
+    attribute version { text },
+    element settings { settingsContent },
+    element data { graphContent }
+}
+
+## Represents document-specific settings.
+settingsContent = element settings {
+    element scale { xsd:float }
+}
+
+## Represents simplified graph data.
+graphContent =
+    ## Any number of nodes are allowed.
+    element node { commonContent }*,
+    ## Any number of relationships are allowed.
+    element rel {
+        commonContent,
+        element origin { text },
+        element destination { text },
+        element weight { xsd:integer },
+        element mutual { xsd:boolean }
+    }*
+
+commonContent =
+    ## UID's are UUID4 strings
+    element uid { text },
+    ## Node labels must be unique, but rel labels are arbitrary.
+    element label { text },
+    ## Every node and rel can have any number of attrs.
+    element attr { attrContent }*
+
+## Represents attribute data, reused by both nodes and rels.
+attrContent = 
+    element uid { text },
+    element name { text },
+    element value { text },
+    element visible { xsd:boolean }
