@@ -1728,8 +1728,11 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
     <signal name="value-changed" handler="app.zoom_changed" swapped="no"/>
   </object>
   <object class="GtkFileFilter" id="soc_filter">
+    <mime-types>
+      <mime-type>application/xml</mime-type>
+    </mime-types>
     <patterns>
-      <pattern>*.soc</pattern>
+      <pattern>*.xml</pattern>
     </patterns>
   </object>
   <object class="GtkWindow" id="sociogram_main">
@@ -1737,6 +1740,9 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
     <property name="title" translatable="yes">Sociogram</property>
     <property name="default_width">950</property>
     <property name="default_height">700</property>
+    <accel-groups>
+      <group name="accelgroup1"/>
+    </accel-groups>
     <signal name="window-state-event" handler="app.track_fs" swapped="no"/>
     <signal name="delete-event" handler="app.quit" swapped="no"/>
     <child>

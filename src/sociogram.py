@@ -4,11 +4,15 @@
 from __future__ import division
 from gi.repository import Gtk, GooCanvas, Gdk
 import networkx as nx
+import xml.etree.ElementTree as et
 
 #import local libraries
 import Errors
 import Graph
 import Drawing
+from ETree import sub_element as sub
+
+version = "preview 1"
 
 class Sociogram(object):
     #TODO:
@@ -255,8 +259,10 @@ class Sociogram(object):
         open_dlg.hide()
         
         if response:
-            self.savepath = open_dlg.get_uri()
+            self.savepath = open_dlg.get_filename()
             #TODO read from file
+            #TODO warn if load version is not our own
+            #TODO send "opened" message through status bar
     
     def save(self, widget=None, data=None):
         '''Event handler and standalone. Save to known path.'''
@@ -264,17 +270,63 @@ class Sociogram(object):
             self.save_new()
             return
         
-        #TODO write to the file
+        #construct XML
+        #create base element and record program version
+        root = et.Element('sociogram', attrib={'version':version})
+        
+        #create settings
+        settings = sub(root, 'settings')
+        sub(settings, 'scale', self.scale_adj.get_value())
+        
+        #create data holder
+        data = sub(root, 'data')
+        #create nodes
+        for node in self.G.nodes_iter():
+            n = self.G.node[node]['node']
+            node = sub(data, 'node')
+            #store uid, label, attributes
+            uid = sub(node, 'uid', n.uid)
+            label = sub(node, 'label', n.label)
+            for aid, aval in n.attributes.iteritems():
+                attr = sub(node, 'attr')
+                sub(attr, 'uid', aid)
+                sub(attr, 'name', aval['name'])
+                sub(attr, 'value', aval['value'])
+                sub(attr, 'visible', aval['visible'])
+        
+        for f, t in self.G.edges_iter():
+            for e in self.G[f][t]['rels']:
+                edge = sub(data, 'rel')
+                #store uid, label attributes, origin, destination, weight, mutual
+                sub(edge, 'uid', e.uid)
+                sub(edge, 'label', e.label)
+                for aid, aval in e.attributes.iteritems():
+                    attr = sub(edge, 'attr')
+                    sub(attr, 'uid', aid)
+                    sub(attr, 'name', aval['name'])
+                    sub(attr, 'value', aval['value'])
+                    sub(attr, 'visible', aval['visible'])
+                sub(edge, 'origin', e.from_node)
+                sub(edge, 'dest', e.to_node)
+                sub(edge, 'weight', e.weight)
+                sub(edge, 'mutual', e.mutual)
+        
+        #write xml to self.savepath
+        tree = et.ElementTree(element=root)
+        tree.write(self.savepath, encoding="UTF-8")
+        #TODO send "saved" message through status bar
     
     def save_new(self, widget=None, data=None):
         '''Event handler and standalone. Pick save location, then save.'''
         save_dlg = self.builder.get_object("save_dlg") 
         if self.savepath != None:
-            save_dlg.set_uri(self.savepath)
+            save_dlg.set_filename(self.savepath)
+        else:
+            save_dlg.set_current_name("sociogram.xml")
         
         response = save_dlg.run()
         save_dlg.hide()
-        uri = save_dlg.get_uri()
+        uri = save_dlg.get_filename()
         
         if uri != None:
             self.savepath = uri

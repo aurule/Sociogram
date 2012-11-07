@@ -20,7 +20,7 @@ graphContent =
     element rel {
         commonContent,
         element origin { text },
-        element destination { text },
+        element dest { text },
         element weight { xsd:integer },
         element mutual { xsd:boolean }
     }*
