@@ -50,6 +50,7 @@ The Future
 * customizable images for each node
 * background color/texture, with builtins like corkboard and paper
 * relationships with one or both endpoints being other relationships, like in a family tree
+* import graph data from other formats (DOT file, csv, anything supported by networkx, etc.)
 
 Documentation
 ============

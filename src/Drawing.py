@@ -16,6 +16,7 @@ class Canvas(GooCanvas.Canvas):
     def __init__(self, vsheet=None, esheet=None, **args):
         '''Create a Canvas object. **args are passed to GooCanvas.Canvas constructor.'''
         GooCanvas.Canvas.__init__(self, **args)
+        
         self.set_properties(automatic_bounds=True,
                             integer_layout=False,
                             bounds_from_origin=False,
@@ -164,7 +165,7 @@ class Canvas(GooCanvas.Canvas):
     def get_bounds(self):
         '''Return the bounds for our master box.'''
         return self.gbox.get_bounds()
-
+    
 class Packer(object):
     '''Tree for packing rectangles into an area.'''
     def __init__(self, x, y, width, height):
