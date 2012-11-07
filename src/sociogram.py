@@ -240,8 +240,8 @@ class Sociogram(object):
         #TODO warn about closing current document
         self.clear_select()
         
-        del self.G
-        self.G = Graph.Sociograph()
+        self.zoom_reset()
+        self.G.clear()
         
         self.redraw()
     

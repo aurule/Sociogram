@@ -1,7 +1,7 @@
 start = Document
 
 ## Represents settings and data for the document.
-Document = element sociogram.document {
+Document = element sociogram {
     attribute version { text },
     element settings { settingsContent },
     element data { graphContent }
