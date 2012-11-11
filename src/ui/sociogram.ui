@@ -13,7 +13,6 @@
     <property name="skip_pager_hint">True</property>
     <property name="transient_for">sociogram_main</property>
     <property name="program_name">Sociogram</property>
-    <property name="version">0.1 ALPHA 1</property>
     <property name="copyright" translatable="yes">Copyright (c) 2012 Peter Andrews</property>
     <property name="license" translatable="yes">Copyright (c) 2012 Peter Andrews
 
@@ -408,6 +407,11 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
     <property name="step_increment">1</property>
     <property name="page_increment">2</property>
   </object>
+  <object class="GtkImage" id="close_icon">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="stock">gtk-delete</property>
+  </object>
   <object class="GtkImage" id="colorfilter_menu_icon">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
@@ -418,38 +422,38 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
     <property name="can_focus">False</property>
     <property name="stock">gtk-close</property>
   </object>
-  <object class="GtkDialog" id="dup_err_dlg">
+  <object class="GtkMessageDialog" id="dup_err_dlg">
     <property name="can_focus">False</property>
     <property name="border_width">5</property>
-    <property name="title" translatable="yes">Error: Node Exists</property>
     <property name="modal">True</property>
     <property name="window_position">center-on-parent</property>
     <property name="destroy_with_parent">True</property>
     <property name="type_hint">dialog</property>
     <property name="skip_taskbar_hint">True</property>
     <property name="skip_pager_hint">True</property>
+    <property name="urgency_hint">True</property>
+    <property name="transient_for">sociogram_main</property>
+    <property name="message_type">error</property>
+    <property name="buttons">ok</property>
+    <property name="text" translatable="yes">A node with that label already exists.</property>
     <child internal-child="vbox">
-      <object class="GtkBox" id="dialog-vbox11">
+      <object class="GtkBox" id="messagedialog-vbox">
         <property name="can_focus">False</property>
         <property name="orientation">vertical</property>
         <property name="spacing">2</property>
         <child internal-child="action_area">
-          <object class="GtkButtonBox" id="dialog-action_area11">
-            <property name="can_focus">False</property>
+          <object class="GtkButtonBox" id="messagedialog-action_area">
+            <property name="can_focus">True</property>
+            <property name="has_focus">True</property>
+            <property name="is_focus">True</property>
+            <property name="can_default">True</property>
+            <property name="has_default">True</property>
             <property name="layout_style">end</property>
             <child>
-              <object class="GtkButton" id="err_duplicate_ok">
-                <property name="label">gtk-ok</property>
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">False</property>
-                <property name="use_stock">True</property>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">0</property>
-              </packing>
+              <placeholder/>
+            </child>
+            <child>
+              <placeholder/>
             </child>
           </object>
           <packing>
@@ -459,233 +463,15 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
             <property name="position">0</property>
           </packing>
         </child>
-        <child>
-          <object class="GtkBox" id="box4">
-            <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <child>
-              <object class="GtkImage" id="image1">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="stock">gtk-dialog-error</property>
-                <property name="icon-size">6</property>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">0</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkLabel" id="err_dup_lbl">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="label" translatable="yes">A node with that label already exists.</property>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">1</property>
-              </packing>
-            </child>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">1</property>
-          </packing>
-        </child>
       </object>
     </child>
-    <action-widgets>
-      <action-widget response="0">err_duplicate_ok</action-widget>
-    </action-widgets>
   </object>
   <object class="GtkEntryCompletion" id="entrycompletion1"/>
-  <object class="GtkDialog" id="export_dlg">
+  <object class="GtkImage" id="help_icon">
+    <property name="visible">True</property>
     <property name="can_focus">False</property>
-    <property name="border_width">5</property>
-    <property name="title" translatable="yes">Export Diagram</property>
-    <property name="modal">True</property>
-    <property name="window_position">center-on-parent</property>
-    <property name="destroy_with_parent">True</property>
-    <property name="type_hint">dialog</property>
-    <property name="skip_taskbar_hint">True</property>
-    <property name="transient_for">sociogram_main</property>
-    <child internal-child="vbox">
-      <object class="GtkBox" id="dialog-vbox4">
-        <property name="can_focus">False</property>
-        <property name="orientation">vertical</property>
-        <property name="spacing">2</property>
-        <child internal-child="action_area">
-          <object class="GtkButtonBox" id="dialog-action_area4">
-            <property name="can_focus">False</property>
-            <property name="layout_style">end</property>
-            <child>
-              <object class="GtkButton" id="export_cancel">
-                <property name="label">gtk-cancel</property>
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">False</property>
-                <property name="use_stock">True</property>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">0</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkButton" id="export_ok">
-                <property name="label" translatable="yes">_Export</property>
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">False</property>
-                <property name="use_underline">True</property>
-                <signal name="activate" handler="app.do_export" swapped="no"/>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">1</property>
-              </packing>
-            </child>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="pack_type">end</property>
-            <property name="position">0</property>
-          </packing>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-      </object>
-    </child>
-    <action-widgets>
-      <action-widget response="0">export_cancel</action-widget>
-      <action-widget response="0">export_ok</action-widget>
-    </action-widgets>
-  </object>
-  <object class="GtkDialog" id="find_dlg">
-    <property name="can_focus">False</property>
-    <property name="border_width">5</property>
-    <property name="title" translatable="yes">Find...</property>
-    <property name="window_position">center-on-parent</property>
-    <property name="type_hint">normal</property>
-    <property name="skip_pager_hint">True</property>
-    <property name="transient_for">sociogram_main</property>
-    <child internal-child="vbox">
-      <object class="GtkBox" id="dialog-vbox14">
-        <property name="can_focus">False</property>
-        <property name="orientation">vertical</property>
-        <property name="spacing">2</property>
-        <child internal-child="action_area">
-          <object class="GtkButtonBox" id="dialog-action_area14">
-            <property name="can_focus">False</property>
-            <property name="layout_style">end</property>
-            <child>
-              <object class="GtkButton" id="find_dlg_cancel">
-                <property name="label">gtk-cancel</property>
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">True</property>
-                <property name="use_stock">True</property>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">0</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkButton" id="find_dlg_search">
-                <property name="label">gtk-find</property>
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="can_default">True</property>
-                <property name="has_default">True</property>
-                <property name="receives_default">True</property>
-                <property name="use_stock">True</property>
-                <signal name="clicked" handler="app.deep_find" swapped="no"/>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">1</property>
-              </packing>
-            </child>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="pack_type">end</property>
-            <property name="position">0</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkBox" id="box6">
-            <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="orientation">vertical</property>
-            <property name="homogeneous">True</property>
-            <child>
-              <object class="GtkBox" id="box7">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="spacing">3</property>
-                <child>
-                  <object class="GtkLabel" id="find_name_lbl">
-                    <property name="visible">True</property>
-                    <property name="can_focus">False</property>
-                    <property name="label" translatable="yes">Node Name:</property>
-                  </object>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">True</property>
-                    <property name="position">0</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkEntry" id="find_name_entry">
-                    <property name="visible">True</property>
-                    <property name="can_focus">True</property>
-                    <property name="invisible_char">●</property>
-                    <property name="activates_default">True</property>
-                  </object>
-                  <packing>
-                    <property name="expand">True</property>
-                    <property name="fill">True</property>
-                    <property name="position">1</property>
-                  </packing>
-                </child>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">0</property>
-              </packing>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-          </object>
-          <packing>
-            <property name="expand">True</property>
-            <property name="fill">True</property>
-            <property name="position">1</property>
-          </packing>
-        </child>
-      </object>
-    </child>
-    <action-widgets>
-      <action-widget response="0">find_dlg_cancel</action-widget>
-      <action-widget response="0">find_dlg_search</action-widget>
-    </action-widgets>
+    <property name="stock">gtk-help</property>
+    <property name="icon-size">1</property>
   </object>
   <object class="GtkAdjustment" id="highlight_adj">
     <property name="lower">1</property>
@@ -699,19 +485,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
     <property name="step_increment">1</property>
     <property name="page_increment">10</property>
   </object>
-  <object class="GtkImage" id="image2">
-    <property name="visible">True</property>
-    <property name="can_focus">False</property>
-    <property name="stock">gtk-help</property>
-    <property name="icon-size">1</property>
-  </object>
-  <object class="GtkImage" id="image4">
-    <property name="visible">True</property>
-    <property name="can_focus">False</property>
-    <property name="icon_name">document-open-recent</property>
-    <property name="icon-size">1</property>
-  </object>
-  <object class="GtkImage" id="image5">
+  <object class="GtkImage" id="new_icon">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
     <property name="icon_name">contact-new</property>
@@ -1095,36 +869,38 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
       <action-widget response="0">node_style_ok</action-widget>
     </action-widgets>
   </object>
-  <object class="GtkDialog" id="not_implemented_err">
+  <object class="GtkMessageDialog" id="not_implemented_err">
     <property name="can_focus">False</property>
     <property name="border_width">5</property>
+    <property name="modal">True</property>
     <property name="window_position">center-on-parent</property>
+    <property name="destroy_with_parent">True</property>
     <property name="type_hint">dialog</property>
     <property name="skip_taskbar_hint">True</property>
     <property name="skip_pager_hint">True</property>
+    <property name="urgency_hint">True</property>
     <property name="transient_for">sociogram_main</property>
+    <property name="message_type">error</property>
+    <property name="buttons">ok</property>
+    <property name="text" translatable="yes">Functionality not yet implemented.</property>
     <child internal-child="vbox">
-      <object class="GtkBox" id="dialog-vbox12">
+      <object class="GtkBox" id="messagedialog-vbox1">
         <property name="can_focus">False</property>
         <property name="orientation">vertical</property>
         <property name="spacing">2</property>
         <child internal-child="action_area">
-          <object class="GtkButtonBox" id="dialog-action_area12">
-            <property name="can_focus">False</property>
+          <object class="GtkButtonBox" id="messagedialog-action_area1">
+            <property name="can_focus">True</property>
+            <property name="has_focus">True</property>
+            <property name="is_focus">True</property>
+            <property name="can_default">True</property>
+            <property name="has_default">True</property>
             <property name="layout_style">end</property>
             <child>
-              <object class="GtkButton" id="err_not_implemented_ok">
-                <property name="label">gtk-ok</property>
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">True</property>
-                <property name="use_stock">True</property>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">1</property>
-              </packing>
+              <placeholder/>
+            </child>
+            <child>
+              <placeholder/>
             </child>
           </object>
           <packing>
@@ -1134,47 +910,8 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
             <property name="position">0</property>
           </packing>
         </child>
-        <child>
-          <object class="GtkBox" id="box5">
-            <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <child>
-              <object class="GtkImage" id="image3">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="stock">gtk-dialog-error</property>
-                <property name="icon-size">6</property>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">0</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkLabel" id="err_not_implemented_lbl">
-                <property name="visible">True</property>
-                <property name="can_focus">False</property>
-                <property name="label" translatable="yes">Functionality not yet implemented.</property>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">1</property>
-              </packing>
-            </child>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="position">1</property>
-          </packing>
-        </child>
       </object>
     </child>
-    <action-widgets>
-      <action-widget response="0">err_not_implemented_ok</action-widget>
-    </action-widgets>
   </object>
   <object class="GtkFileChooserDialog" id="open_dlg">
     <property name="can_focus">False</property>
@@ -1434,6 +1171,12 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
       <application>Sociogram</application>
     </applications>
   </object>
+  <object class="GtkImage" id="recents_icon">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="icon_name">document-open-recent</property>
+    <property name="icon-size">1</property>
+  </object>
   <object class="GtkDialog" id="rel_style_popup">
     <property name="can_focus">False</property>
     <property name="border_width">5</property>
@@ -1656,91 +1399,6 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
       <action-widget response="0">rel_style_ok</action-widget>
     </action-widgets>
   </object>
-  <object class="GtkFileChooserDialog" id="save_dlg">
-    <property name="can_focus">False</property>
-    <property name="border_width">5</property>
-    <property name="title" translatable="yes">Save File</property>
-    <property name="role">GtkFileChooserDialog</property>
-    <property name="modal">True</property>
-    <property name="destroy_with_parent">True</property>
-    <property name="type_hint">dialog</property>
-    <property name="skip_pager_hint">True</property>
-    <property name="transient_for">sociogram_main</property>
-    <property name="action">save</property>
-    <property name="do_overwrite_confirmation">True</property>
-    <property name="filter">soc_filter</property>
-    <property name="preview_widget_active">False</property>
-    <child internal-child="vbox">
-      <object class="GtkBox" id="filechooserdialog-vbox1">
-        <property name="can_focus">False</property>
-        <property name="orientation">vertical</property>
-        <property name="spacing">2</property>
-        <child internal-child="action_area">
-          <object class="GtkButtonBox" id="filechooserdialog-action_area1">
-            <property name="can_focus">False</property>
-            <property name="layout_style">end</property>
-            <child>
-              <object class="GtkButton" id="save_dlg_cancel">
-                <property name="label">gtk-cancel</property>
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">True</property>
-                <property name="use_stock">True</property>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">0</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkButton" id="save_dlg_ok">
-                <property name="label">gtk-save</property>
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">True</property>
-                <property name="use_stock">True</property>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">1</property>
-              </packing>
-            </child>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="pack_type">end</property>
-            <property name="position">0</property>
-          </packing>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-      </object>
-    </child>
-    <action-widgets>
-      <action-widget response="0">save_dlg_cancel</action-widget>
-      <action-widget response="0">save_dlg_ok</action-widget>
-    </action-widgets>
-  </object>
-  <object class="GtkAdjustment" id="scale_adj">
-    <property name="lower">50</property>
-    <property name="upper">200</property>
-    <property name="value">100</property>
-    <property name="step_increment">20</property>
-    <property name="page_increment">10</property>
-    <signal name="value-changed" handler="app.zoom_changed" swapped="no"/>
-  </object>
-  <object class="GtkFileFilter" id="soc_filter">
-    <mime-types>
-      <mime-type>application/xml</mime-type>
-    </mime-types>
-    <patterns>
-      <pattern>*.xml</pattern>
-    </patterns>
-  </object>
   <object class="GtkWindow" id="sociogram_main">
     <property name="can_focus">False</property>
     <property name="title" translatable="yes">Sociogram</property>
@@ -1796,7 +1454,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
                         <property name="label" translatable="yes">Open Recent</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="image">image4</property>
+                        <property name="image">recents_icon</property>
                         <property name="use_stock">False</property>
                         <child type="submenu">
                           <object class="GtkRecentChooserMenu" id="menu_recent_sub">
@@ -1843,7 +1501,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
                         <property name="label" translatable="yes">_Export...</property>
                         <property name="use_underline">True</property>
                         <accelerator key="e" signal="activate" modifiers="GDK_SHIFT_MASK | GDK_CONTROL_MASK"/>
-                        <signal name="activate" handler="app.show_dlg" object="export_dlg" swapped="yes"/>
+                        <signal name="activate" handler="app.do_export" swapped="no"/>
                       </object>
                     </child>
                     <child>
@@ -1884,7 +1542,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
                         <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
                         <accelerator key="f" signal="activate" modifiers="GDK_CONTROL_MASK"/>
-                        <signal name="activate" handler="app.show_dlg" object="find_dlg" swapped="yes"/>
+                        <signal name="activate" handler="app.do_find" swapped="no"/>
                       </object>
                     </child>
                     <child>
@@ -1927,7 +1585,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="tooltip_text" translatable="yes">Add a new node or relationship</property>
-                        <property name="image">image5</property>
+                        <property name="image">new_icon</property>
                         <property name="use_stock">False</property>
                         <accelerator key="n" signal="activate" modifiers="GDK_CONTROL_MASK"/>
                         <signal name="activate" handler="app.show_add" swapped="no"/>
@@ -2175,7 +1833,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
                         <property name="can_focus">False</property>
                         <property name="tooltip_text" translatable="yes">Read the help documentation</property>
                         <property name="use_underline">True</property>
-                        <property name="image">image2</property>
+                        <property name="image">help_icon</property>
                         <property name="use_stock">False</property>
                         <accelerator key="F1" signal="activate"/>
                         <signal name="activate" handler="app.help" swapped="no"/>
@@ -2939,6 +2597,163 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
         </child>
       </object>
     </child>
+  </object>
+  <object class="GtkFileChooserDialog" id="save_dlg">
+    <property name="can_focus">False</property>
+    <property name="border_width">5</property>
+    <property name="title" translatable="yes">Save File</property>
+    <property name="role">GtkFileChooserDialog</property>
+    <property name="modal">True</property>
+    <property name="destroy_with_parent">True</property>
+    <property name="type_hint">dialog</property>
+    <property name="skip_pager_hint">True</property>
+    <property name="transient_for">sociogram_main</property>
+    <property name="action">save</property>
+    <property name="do_overwrite_confirmation">True</property>
+    <property name="filter">soc_filter</property>
+    <property name="preview_widget_active">False</property>
+    <child internal-child="vbox">
+      <object class="GtkBox" id="filechooserdialog-vbox1">
+        <property name="can_focus">False</property>
+        <property name="orientation">vertical</property>
+        <property name="spacing">2</property>
+        <child internal-child="action_area">
+          <object class="GtkButtonBox" id="filechooserdialog-action_area1">
+            <property name="can_focus">False</property>
+            <property name="layout_style">end</property>
+            <child>
+              <object class="GtkButton" id="save_dlg_cancel">
+                <property name="label">gtk-cancel</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <property name="use_stock">True</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkButton" id="save_dlg_ok">
+                <property name="label">gtk-save</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <property name="use_stock">True</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="pack_type">end</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+      </object>
+    </child>
+    <action-widgets>
+      <action-widget response="0">save_dlg_cancel</action-widget>
+      <action-widget response="0">save_dlg_ok</action-widget>
+    </action-widgets>
+  </object>
+  <object class="GtkMessageDialog" id="savewarn_dlg">
+    <property name="can_focus">False</property>
+    <property name="border_width">5</property>
+    <property name="window_position">center-on-parent</property>
+    <property name="destroy_with_parent">True</property>
+    <property name="type_hint">dialog</property>
+    <property name="skip_taskbar_hint">True</property>
+    <property name="skip_pager_hint">True</property>
+    <property name="urgency_hint">True</property>
+    <property name="transient_for">sociogram_main</property>
+    <property name="message_type">warning</property>
+    <property name="buttons">cancel</property>
+    <property name="text" translatable="yes">Save the changes to X before closing?</property>
+    <property name="secondary_text" translatable="yes">If you don't save, changes from the last N minutes will be lost.</property>
+    <child internal-child="vbox">
+      <object class="GtkBox" id="messagedialog-vbox2">
+        <property name="can_focus">False</property>
+        <property name="orientation">vertical</property>
+        <property name="spacing">2</property>
+        <child internal-child="action_area">
+          <object class="GtkButtonBox" id="messagedialog-action_area2">
+            <property name="can_focus">False</property>
+            <property name="layout_style">end</property>
+            <child>
+              <object class="GtkButton" id="savewarn_close">
+                <property name="label" translatable="yes">Close _Without Saving</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <property name="image">close_icon</property>
+                <property name="use_underline">True</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+                <property name="non_homogeneous">True</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkButton" id="savewarn_save">
+                <property name="label">gtk-save</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="has_focus">True</property>
+                <property name="is_focus">True</property>
+                <property name="can_default">True</property>
+                <property name="has_default">True</property>
+                <property name="receives_default">True</property>
+                <property name="use_stock">True</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">False</property>
+                <property name="position">2</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="pack_type">end</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+      </object>
+    </child>
+    <action-widgets>
+      <action-widget response="2">savewarn_close</action-widget>
+      <action-widget response="5">savewarn_save</action-widget>
+    </action-widgets>
+  </object>
+  <object class="GtkAdjustment" id="scale_adj">
+    <property name="lower">50</property>
+    <property name="upper">200</property>
+    <property name="value">100</property>
+    <property name="step_increment">20</property>
+    <property name="page_increment">10</property>
+    <signal name="value-changed" handler="app.zoom_changed" swapped="no"/>
+  </object>
+  <object class="GtkFileFilter" id="soc_filter">
+    <mime-types>
+      <mime-type>application/xml</mime-type>
+    </mime-types>
+    <patterns>
+      <pattern>*.xml</pattern>
+    </patterns>
   </object>
   <object class="GtkDialog" id="style_dlg">
     <property name="can_focus">False</property>

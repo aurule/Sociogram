@@ -12,8 +12,6 @@ import Graph
 import Drawing
 from ETree import sub_element as sub
 
-
-
 class Sociogram(object):
     def __init__(self):
         '''Set up internals and instantiate/fix up GUI using Gtk.Builder.'''
@@ -27,6 +25,7 @@ class Sociogram(object):
         self.highlight_dist = 1
         self.highlight = False
         self.savepath = None
+        self.dirty = False
         
         self.builder = Gtk.Builder()
         self.builder.add_from_file("ui/sociogram.ui")
@@ -153,10 +152,14 @@ class Sociogram(object):
         self.find_dlg = self.builder.get_object("find_dlg")
         self.save_dlg = self.builder.get_object("save_dlg")
         self.open_dlg = self.builder.get_object("open_dlg")
+        self.save_warning = self.builder.get_object("savewarn_dlg")
         
         self.hscroll = self.builder.get_object("horiz_scroll_adj")
         self.vscroll = self.builder.get_object("vertical_scroll_adj")
         self.scale_adj = self.builder.get_object("scale_adj")
+        
+        #set our version string
+        self.builder.get_object("about_dlg").set_version(self.version)
         
         #initialize our fullscreen tracker
         self.fullscreen = False
@@ -174,6 +177,7 @@ class Sociogram(object):
             "app.savefile": self.save,
             "app.saveas": self.save_new,
             "app.do_export": self.show_dev_error,
+            "app.do_find": self.show_dev_error,
             "app.help": self.show_dev_error,
             "app.undo": self.show_dev_error,
             "app.redo": self.show_dev_error,
@@ -224,10 +228,30 @@ class Sociogram(object):
     def nothing(self, a=None, b=None, c=None):
         print 'nothing'
     
+    def set_dirty(self, val):
+        '''Mark the current file as "dirty", indicating unsaved changes.'''
+        if val == self.dirty: return
+        
+        self.dirty = val
+        #TODO update UI indicator
+    
     def make_new(self, widget=None, data=None):
         '''Event handler and standalone. Wipe the current data and load defaults.'''
-        #TODO warn about closing current document
+        if self.dirty:
+            #warn about closing current document
+            response = self.save_warning.run()
+            self.save_warning.hide()
+            if response == 5:
+                self.save() #save it and continue
+            elif response == 2:
+                pass #the "close anyway" option
+            else:
+                return #cancel
+        
         self.clear_select()
+        self.rel_store.clear()
+        self.attr_store.clear()
+        self.node_lbl_store.clear()
         
         self.zoom_reset()
         self.G.clear()
@@ -236,7 +260,17 @@ class Sociogram(object):
     
     def openfile(self, widget=None, data=None):
         '''Event handler and standalone. Pick a file and load from it.'''
-        #TODO warn about closing current document
+        if self.dirty:
+            #warn about closing current document
+            response = self.save_warning.run()
+            self.save_warning.hide()
+            if response == 5:
+                self.save() #save it and continue
+            elif response == 2:
+                pass #the "close anyway" option
+            else:
+                return #cancel
+        
         open_dlg = self.builder.get_object("open_dlg")
         if self.savepath != None:
             open_dlg.set_filename(self.savepath)
@@ -244,6 +278,9 @@ class Sociogram(object):
         response = open_dlg.run()
         open_dlg.hide()
         if response:
+            #clear existing data
+            self.make_new()
+            
             self.savepath = open_dlg.get_filename()
             tree = et.parse(self.savepath)
             root = tree.getroot()
@@ -271,7 +308,7 @@ class Sociogram(object):
                     val = a.find('value').text
                     vis = True if a.find('visible').text == "True" else False
                     u = a.find('uid').text
-                    attrs.append((name, val, vis, uid))
+                    attrs.append((name, val, vis, u))
                 
                 self._add_node(label, uid=uid, attrs=attrs)
             
@@ -287,7 +324,7 @@ class Sociogram(object):
                     val = a.find('value').text
                     vis = True if a.find('visible').text == "True" else False
                     u = a.find('uid').text
-                    attrs.append((name, val, vis, uid))
+                    attrs.append((name, val, vis, u))
                 
                 origin = edge.find('origin').text
                 dest = edge.find('dest').text
@@ -304,6 +341,8 @@ class Sociogram(object):
         if self.savepath == None:
             self.save_new()
             return
+        
+        if not self.dirty: return
         
         #construct XML
         #create base element and record program version
@@ -349,6 +388,8 @@ class Sociogram(object):
         #write xml to self.savepath
         tree = et.ElementTree(element=root)
         tree.write(self.savepath, encoding="UTF-8")
+        
+        self.set_dirty(False)
         #TODO send "saved" message through status bar
     
     def save_new(self, widget=None, data=None):
@@ -365,6 +406,7 @@ class Sociogram(object):
         
         if uri != None:
             self.savepath = uri
+            self.set_dirty(True)
             self.save()
     
     def update_pointer(self, widget, data=None, extra=None, hand=None):
@@ -409,6 +451,8 @@ class Sociogram(object):
         self.attr_store.append(("attribute", "value", False, uid))
         #start editing right away
         self.builder.get_object("attrstree").set_cursor(len(self.attr_store)-1, self.namecol, True)
+        
+        self.set_dirty(True)
     
     def next_field(self, widget, data=None):
         pass
@@ -425,6 +469,8 @@ class Sociogram(object):
             if row[3] == self.selattr:
                 self.attr_store.remove(row.iter)
                 break
+        
+        self.set_dirty(True)
     
     def set_attr_selection(self, widget, data=None):
         '''Event handler. Update internal selection var whenever the attribute selection cursor changes.'''
@@ -446,38 +492,38 @@ class Sociogram(object):
         response = self.add_item_dlg.run()
         self.add_item_dlg.hide()
         
-        #don't add anything unless the OK button was pressed
-        if response != 4:
-            return
-        
-        #otherwise, add a new object
-        obj_type = self.builder.get_object("newtypesel").get_active_text()
-        
-        lbl = self.builder.get_object("name_entry_dlg").get_text()
-        
-        #get the rest of our data
-        paste = self.builder.get_object("use_copied_attrs").get_active()
-        if "Rel" in obj_type:
-            #grab extra data fields
-            fnode = self.from_dlg.get_text()
-            tnode = self.to_dlg.get_text()
-            weight = self.builder.get_object("weight_spin_dlg").get_value()
-            bidir = self.builder.get_object("bidir_new").get_active()
-            rel, new_edge = self._add_rel(lbl, fnode, tnode, weight, bidir, paste)
-            if not new_edge:
-                #TODO just do a refresh if possible
-                pass
-        else:
-            node = self._add_node(lbl, paste)
-        
-        self.redraw()
-        if "Rel" in obj_type:
-            #get proper edge
-            obj = self.canvas.get_edge(fnode, tnode)
-        else:
-            #get proper node
-            obj = self.canvas.get_vertex(lbl)
-        self.set_selection(obj)
+        #only add things if the OK button was pressed
+        if response == 4:
+            #add a new object
+            obj_type = self.builder.get_object("newtypesel").get_active_text()
+            
+            lbl = self.builder.get_object("name_entry_dlg").get_text()
+            
+            #get the rest of our data
+            paste = self.builder.get_object("use_copied_attrs").get_active()
+            if "Rel" in obj_type:
+                #grab extra data fields
+                fnode = self.from_dlg.get_text()
+                tnode = self.to_dlg.get_text()
+                weight = self.builder.get_object("weight_spin_dlg").get_value()
+                bidir = self.builder.get_object("bidir_new").get_active()
+                rel, new_edge = self._add_rel(lbl, fnode, tnode, weight, bidir, paste)
+                if not new_edge:
+                    #TODO just do a refresh if possible
+                    pass
+            else:
+                node = self._add_node(lbl, paste)
+            
+            self.set_dirty(True)
+            
+            self.redraw()
+            if "Rel" in obj_type:
+                #get proper edge
+                obj = self.canvas.get_edge(fnode, tnode)
+            else:
+                #get proper node
+                obj = self.canvas.get_vertex(lbl)
+            self.set_selection(obj)
         
         #clear the dialog's values
         self.builder.get_object("newtypesel").set_active(0)
@@ -551,8 +597,11 @@ class Sociogram(object):
     # Picks the appropriate object to paste into, then passes off to _paste_attrs.
     def do_paste(self, widget, data=None):
         '''Event handler. Trigger paste operation for selected item.'''
-        if self.selection != None:
-            self._paste_attrs(self.selection)
+        if self.selection == None: return
+        
+        self._paste_attrs(self.selection)
+        
+        self.set_dirty(True)
     
     # Internal function to overwrite target object's attributes with those from
     # the clipboard.
@@ -693,8 +742,9 @@ class Sociogram(object):
             else:
                 self.selection.remove()
                 self.clear_select()
-        
         self.redraw()
+        
+        self.set_dirty(True)
     
     def activate_node_controls(self):
         '''Make only node-compatable selection-specific controls sensitive to input.'''
@@ -940,15 +990,14 @@ class Sociogram(object):
             
             #change the graph node's key
             nx.relabel_nodes(self.G, {oldlbl:newlbl}, False)
-        
-            #redraw and reselect the new node
-            self.redraw()
         else:
             self.seldata.label = newlbl
             tlbl = self.seldata.to_node
             flbl = self.seldata.from_node
-            
-            self.redraw()
+        
+        self.redraw()
+        
+        self.set_dirty(True)
     
     def check_endpoint(self, widget, data=None):
         '''Event handler. Warn if desired endpoint does not exist.'''
@@ -995,6 +1044,7 @@ class Sociogram(object):
             self.G.move_rel(self.seldata, origin=new_origin)
         
         self.redraw()
+        self.set_dirty(True)
     
     def update_dest(self, widget, data=None):
         '''Event handler. Update selected relationship's destination.'''
@@ -1021,6 +1071,7 @@ class Sociogram(object):
             self.G.move_rel(self.seldata, dest=new_dest)
 
         self.redraw()
+        self.set_dirty(True)
     
     def update_weight(self, widget, data=None):
         '''Event handler. Update selected relationship's weight and redraw it.'''
@@ -1034,6 +1085,7 @@ class Sociogram(object):
         self.seldata.weight = neww
         #TODO refresh instead of fully redrawing
         self.redraw()
+        self.set_dirty(True)
     
     def update_bidir(self, widget, data=None):
         '''Event handler. Update selected relationship's bidir property and redraw it.'''
@@ -1047,6 +1099,7 @@ class Sociogram(object):
         self.seldata.mutual = newb
         #TODO refresh instead of fully redrawing
         self.redraw()
+        self.set_dirty(True)
     
     def update_attrs(self, widget, path=None, text=None, col=None):
         '''Event handler. Change name or value of currently selected attribute.'''
@@ -1069,6 +1122,7 @@ class Sociogram(object):
         
         #TODO refresh only, no need for a complete redraw
         self.redraw()
+        self.set_dirty(True)
     
     def toggle_widget(self, widget, data=None):
         '''Event handler and standalone. Toggle passed widget.'''

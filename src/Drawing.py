@@ -55,7 +55,7 @@ class Canvas(GooCanvas.Canvas):
         #get locations from the graph
         components = nx.connected_component_subgraphs(G)
         for subg in components:
-            locations = nx.spring_layout(subg, scale=150*subg.order())
+            locations = nx.spring_layout(subg, scale=250*subg.order())
             cbox = SubGraph(parent = self.gbox, locs=locations, graph=subg)
             self.cboxes.append(cbox)
             

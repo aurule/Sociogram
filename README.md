@@ -18,32 +18,39 @@ Features
 =======
 I have a lot planned for this program, but it'll have to come in a bit at a time.
 
-Planned for Release
+First Preview Release
+---------------------
+This release is a preview showcasing the basic features of Sociogram. Most features are not yet implemented. This is what does work:
+* add, remove, and edit arbitrary nodes and relationships
+* add, remove and edit arbitrary name:value attribute pairs on nodes and relationships
+* diagrams are correctly drawn
+* diagrams can be zoomed and panned
+    * zooming uses Ctrl + mouse scroll wheel
+    * panning uses the scroll handles on the diagram
+    * vertical panning can be done with the mouse scroll wheel
+    * horizontal panning can be done with Shift + mouse scroll wheel
+* search for nodes by their label (only from the main window)
+* save and load data from custom xml files
+
+Planned for Version 1.0
 -----------------
-* arbitrary nodes and relationships
-* arbitrary name:value attribute pairs on nodes and relationships
+These are what's left to implement before the first gold release.
 * rule-based styling for node appearance
 * rule-based styling for relationship dropdowns, and maybe relationship appearance
 * export to pdf, hopefully jpg, maybe other formats
 * "highlight mode", where everything except the currently selected node, its links, and some number of connected nodes are grayed out
-* search nodes by label
-* save/load from xml
-
-Finished
--------
-* arbitrary nodes and relationships
-* arbitrary name:value attribute pairs on nodes and relationships
-* drawing!
-* search nodes by label
-* zooming and panning
+* search for nodes and relationships by label using the Find popup
+* unlimited undo/redo for changes to the diagram
+* basic in-app help docs
+* attribute copy/paste between nodes and relationships
 
 The Future
 ---------
 * attribute "tag cloud"
 * determine/show shared, linked nodes between (connected) subgraphs (i.e. the AND of two subgraphs)
 * determine/show shortest and longest paths between two connected nodes
-* static node placement
-* search nodes (and relationships) by attribute as well as label
+* pin nodes in place to prevent automatic rearrangement
+* search by attribute as well as label
 * style key, with one-click enable/disable for individual rules
 * style rule option to make a thing invisible
 * image styles, like post-it and yarn, polaroids, etc.
@@ -51,6 +58,7 @@ The Future
 * background color/texture, with builtins like corkboard and paper
 * relationships with one or both endpoints being other relationships, like in a family tree
 * import graph data from other formats (DOT file, csv, anything supported by networkx, etc.)
+* add notes to each node, relationship, and the diagram as a whole
 
 Documentation
 ============
