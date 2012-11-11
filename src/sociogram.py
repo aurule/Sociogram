@@ -12,27 +12,12 @@ import Graph
 import Drawing
 from ETree import sub_element as sub
 
-version = "preview 1"
+
 
 class Sociogram(object):
-    #TODO:
-    #nodes are stored in a networkx.Graph(node.label, node=node)
-    #adding checks for the label in networkx.Graph.nodes()
-    #removing uses G.remove_node(label)
-    #   this *should* take care of object dereferencing, since the Graph is the only place with refs. Still, if that doesn't work properly, this method should do the trick:
-    #   first iterates through neighbors using G[label] list
-    #   gathers relationships from each link G[label][n]
-    #   del each relationship, then the subject node
-    #   finally, G.remove_node(label)
-    
-    #relationships are stored in the same nx graph using Graph.add_edge(node, node, rels=[rel1, rel2, ...])
-    #updates:
-    #   first, make sure label1 in G is true
-    #   if G.has_edge(node, node), append or remove rels from the dict at G[node][node]['rels']
-    #   if not, add_edge(node, node, rels)
-    
     def __init__(self):
         '''Set up internals and instantiate/fix up GUI using Gtk.Builder.'''
+        self.version = "preview 1"
         self.G = Graph.Sociograph() # instantiate the graph for storage and positioning
         #placeholders for selecting objects
         self.selection = None
@@ -251,17 +236,67 @@ class Sociogram(object):
     
     def openfile(self, widget=None, data=None):
         '''Event handler and standalone. Pick a file and load from it.'''
+        #TODO warn about closing current document
         open_dlg = self.builder.get_object("open_dlg")
         if self.savepath != None:
-            open_dlg.set_uri(self.savepath)
+            open_dlg.set_filename(self.savepath)
         
         response = open_dlg.run()
         open_dlg.hide()
-        
         if response:
             self.savepath = open_dlg.get_filename()
-            #TODO read from file
-            #TODO warn if load version is not our own
+            tree = et.parse(self.savepath)
+            root = tree.getroot()
+            
+            if self.version != root.attrib['version']:
+                #TODO warn that we're opening a version other than our own
+                pass
+            
+            #import document-specific settings
+            settings = root.find('settings')
+            scale = settings.find('scale').text
+            self.scale_adj.set_value(float(scale))
+            
+            #import document data
+            data = root.find('data')
+            for node in data.iter('node'):
+                #add node
+                uid = node.find('uid').text
+                label = node.find('label').text
+                
+                #construct attributes list
+                attrs = []
+                for a in node.iter('attr'):
+                    name = a.find('name').text
+                    val = a.find('value').text
+                    vis = True if a.find('visible').text == "True" else False
+                    u = a.find('uid').text
+                    attrs.append((name, val, vis, uid))
+                
+                self._add_node(label, uid=uid, attrs=attrs)
+            
+            for edge in data.iter('rel'):
+                #add edge
+                uid = edge.find('uid').text
+                label = edge.find('label').text
+                
+                #construct attributes list
+                attrs = []
+                for a in edge.iter('attr'):
+                    name = a.find('name').text
+                    val = a.find('value').text
+                    vis = True if a.find('visible').text == "True" else False
+                    u = a.find('uid').text
+                    attrs.append((name, val, vis, uid))
+                
+                origin = edge.find('origin').text
+                dest = edge.find('dest').text
+                mutual = True if edge.find('mutual').text == "True" else False
+                weight = int(float(edge.find('weight').text))
+                
+                self._add_rel(label, origin, dest, weight, mutual, attrs=attrs, uid=uid)
+            
+            self.redraw()
             #TODO send "opened" message through status bar
     
     def save(self, widget=None, data=None):
@@ -272,7 +307,7 @@ class Sociogram(object):
         
         #construct XML
         #create base element and record program version
-        root = et.Element('sociogram', attrib={'version':version})
+        root = et.Element('sociogram', attrib={'version':self.version})
         
         #create settings
         settings = sub(root, 'settings')
@@ -453,7 +488,7 @@ class Sociogram(object):
         self.builder.get_object("bidir_new").set_active(False)
         self.builder.get_object("use_copied_attrs").set_active(False)
     
-    def _add_node(self, lbl, paste=False):
+    def _add_node(self, lbl, paste=False, attrs=None, uid=None):
         '''Internal function. Add a node and handle bookkeeping.'''
         #make sure the node doesn't already exist
         if lbl in self.G: 
@@ -461,14 +496,14 @@ class Sociogram(object):
             return
         
         #create object and update data
-        node = Graph.Node(lbl)
+        node = Graph.Node(lbl, attrs=attrs, uid=uid)
         self.G.add_node(lbl, {"node": node}) #add to graph
         self.node_lbl_store.append([lbl]) #update name list for the dropdowns
         
         if paste:
             self._paste_attrs(node)
     
-    def _add_rel(self, lbl, fname, tname, weight, bidir, paste):
+    def _add_rel(self, lbl, fname, tname, weight, bidir, paste=False, attrs=None, uid=None):
         '''Internal function. Add a relationship and handle bookkeeping.'''
         #make sure both nodes exist
         if fname not in self.G:
@@ -477,7 +512,7 @@ class Sociogram(object):
             raise Errors.MissingNode("Node %s not in graph." % tname)
         
         #create relationship object
-        rel = Graph.Relationship(lbl, fname, tname, weight, bidir)
+        rel = Graph.Relationship(lbl, fname, tname, weight, bidir, attrs, uid)
         
         new_edge = self.G.add_rel(rel)
         

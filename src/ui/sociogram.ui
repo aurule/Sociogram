@@ -1239,7 +1239,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
     </child>
     <action-widgets>
       <action-widget response="0">open_dlg_cancel</action-widget>
-      <action-widget response="0">open_dlg_ok</action-widget>
+      <action-widget response="5">open_dlg_ok</action-widget>
     </action-widgets>
   </object>
   <object class="GtkDialog" id="paste_warning_dlg">
@@ -1424,9 +1424,15 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
     </action-widgets>
   </object>
   <object class="GtkRecentFilter" id="recents_filter">
+    <mime-types>
+      <mime-type>application/xml</mime-type>
+    </mime-types>
     <patterns>
-      <pattern>*.soc</pattern>
+      <pattern>*.xml</pattern>
     </patterns>
+    <applications>
+      <application>Sociogram</application>
+    </applications>
   </object>
   <object class="GtkDialog" id="rel_style_popup">
     <property name="can_focus">False</property>

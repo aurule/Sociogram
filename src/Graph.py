@@ -8,10 +8,14 @@ class Node(object):
 
     # set up our label, uuid, and attributes (if given)
     # attrs format: [(name, val, vis=False), (name, val, vis=False), ...]
-    def __init__(self, lbl, attrs=None):
+    # uid field in attributes is optional, and must be the fourth part of any tuple
+    def __init__(self, lbl, attrs=None, uid=None):
         '''Create a node.'''
         self.label = lbl
-        self.uid = uuid4()
+        if uid == None:
+            self.uid = str(uuid4())
+        else:
+            self.uid = uid
         self.attributes = {}
         
         if attrs != None:
@@ -20,7 +24,11 @@ class Node(object):
     
     def add_attr(self, attr):
         '''Add an attribute.'''
-        uid = str(uuid4())
+        if len(attr) == 4:
+            uid = attr[3]
+        else:
+            uid = str(uuid4())
+        
         self.attributes[uid] = {"name": attr[0], "value": attr[1], "visible": attr[2]}
         return uid
     
@@ -39,9 +47,9 @@ class Relationship(Node):
     '''Handle storage and interaction with node-to-node relationships, and their attributes.'''
 
     #wgt is an int; bidir is bool
-    def __init__(self, lbl, fnode, tnode, wgt, bidir, attrs=None):
+    def __init__(self, lbl, fnode, tnode, wgt, bidir, attrs=None, uid=None):
         '''Create a relationship.'''
-        Node.__init__(self, lbl, attrs)
+        Node.__init__(self, lbl, attrs, uid)
         self.from_node = fnode
         self.to_node = tnode
         self.weight = wgt
