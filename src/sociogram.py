@@ -84,7 +84,7 @@ class Sociogram(object):
         editval.connect("edited", self.update_attrs, 1)
         
         self.attr_store = Gtk.ListStore(str, str, bool, str)
-        #self.attr_store.set_sort_column_id(0, Gtk.SortType.DESCENDING)
+        self.attr_store.set_sort_column_id(0, Gtk.SortType.ASCENDING)
         self.attr_disp = self.builder.get_object("attrstree")
         self.attr_disp.set_rules_hint(True)
         self.attr_disp.set_model(self.attr_store)
