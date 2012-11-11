@@ -5,6 +5,8 @@ from __future__ import division
 from gi.repository import Gtk, GooCanvas, Gdk
 import networkx as nx
 import xml.etree.ElementTree as et
+from time import time
+from os.path import basename
 
 #import local libraries
 import Errors
@@ -25,6 +27,7 @@ class Sociogram(object):
         self.highlight_dist = 1
         self.highlight = False
         self.savepath = None
+        self.lastsave = time()
         self.dirty = False
         
         self.builder = Gtk.Builder()
@@ -81,8 +84,10 @@ class Sociogram(object):
         editval.connect("edited", self.update_attrs, 1)
         
         self.attr_store = Gtk.ListStore(str, str, bool, str)
-        adisp = self.builder.get_object("attrstree")
-        adisp.set_model(self.attr_store)
+        #self.attr_store.set_sort_column_id(0, Gtk.SortType.DESCENDING)
+        self.attr_disp = self.builder.get_object("attrstree")
+        self.attr_disp.set_rules_hint(True)
+        self.attr_disp.set_model(self.attr_store)
         self.namecol = Gtk.TreeViewColumn("Name", editname, text=0)
         self.namecol.set_sort_column_id(0)
         self.namecol.set_expand(True)
@@ -93,9 +98,9 @@ class Sociogram(object):
         togglecell.connect("toggled", self.update_attrs, None, 2)
         col3 = Gtk.TreeViewColumn("Visible", togglecell, active=2)
         col3.set_sort_column_id(2)
-        adisp.append_column(self.namecol)
-        adisp.append_column(col2)
-        adisp.append_column(col3)
+        self.attr_disp.append_column(self.namecol)
+        self.attr_disp.append_column(col2)
+        self.attr_disp.append_column(col3)
 
         
         self.rel_store = Gtk.ListStore(str, str)
@@ -153,6 +158,7 @@ class Sociogram(object):
         self.save_dlg = self.builder.get_object("save_dlg")
         self.open_dlg = self.builder.get_object("open_dlg")
         self.save_warning = self.builder.get_object("savewarn_dlg")
+        self.save_close_warning = self.builder.get_object("savewarn_close_dlg")
         
         self.hscroll = self.builder.get_object("horiz_scroll_adj")
         self.vscroll = self.builder.get_object("vertical_scroll_adj")
@@ -171,7 +177,7 @@ class Sociogram(object):
         # Attach handlers to signals described in the .ui file.
         # TODO once functionality is finalized, remove redundant signals
         handlers_main = {
-            "app.quit": Gtk.main_quit,
+            "app.quit": self.do_quit,
             "app.newfile": self.make_new,
             "app.openfile": self.openfile,
             "app.savefile": self.save,
@@ -183,7 +189,6 @@ class Sociogram(object):
             "app.redo": self.show_dev_error,
             "app.search": self.find_node,
             "app.reset_search_icon": self.set_search_icon,
-            "app.selattr": self.show_dev_error,
             "app.toggle_widget": self.toggle_widget,
             "app.toggle_fs": self.toggle_fullscreen,
             "app.track_fs": self.track_fullscreen,
@@ -200,7 +205,6 @@ class Sociogram(object):
             "app.zoom_reset": self.zoom_reset,
             "app.zoom_fit": self.zoom_fit,
             "app.cancel_newname": self.cancel_name_edit,
-            "app.set_selattr": self.set_attr_selection,
             "app.zoom_changed": self.update_zoom,
             "app.check_endpoint": self.check_endpoint,
             "app.cancel_endpoint": self.cancel_endpoint,
@@ -228,25 +232,49 @@ class Sociogram(object):
     def nothing(self, a=None, b=None, c=None):
         print 'nothing'
     
+    def do_quit(self, widget=None, data=None):
+        '''Handle quitting.'''
+        self.confirm_discard(closing=True)
+        
+        Gtk.main_quit()
+    
     def set_dirty(self, val):
         '''Mark the current file as "dirty", indicating unsaved changes.'''
         if val == self.dirty: return
         
         self.dirty = val
+        if not self.dirty:
+            self.lastsave = time()
+        
         #TODO update UI indicator
+    
+    def confirm_discard(self, closing=False):
+        '''Prompt the user to save unfinished changes, if necessary.
+        Returns True if it's OK to continue, and False if not.'''
+        if self.dirty:
+            #warn about closing current document
+            dlg = self.save_close_warning if closing else self.save_warning
+            if self.savepath == None:
+                dlg.set_markup("Save your changes before closing?")
+            else:
+                dlg.set_markup("Save your changes to %s before closing?" %basename(self.savepath))
+            
+            period = int((time() - self.lastsave)/60)
+            dlg.format_secondary_text("If you don't save, changes from the last %s minutes will be lost." %period)
+            response = dlg.run()
+            dlg.hide()
+
+            if response == 5:
+                self.save() #save it and continue
+            elif response != 2:
+                return False #cancel and prevent any further action
+            
+        #either we've saved or been told not to, so clear the calling function to go ahead
+        return True
     
     def make_new(self, widget=None, data=None):
         '''Event handler and standalone. Wipe the current data and load defaults.'''
-        if self.dirty:
-            #warn about closing current document
-            response = self.save_warning.run()
-            self.save_warning.hide()
-            if response == 5:
-                self.save() #save it and continue
-            elif response == 2:
-                pass #the "close anyway" option
-            else:
-                return #cancel
+        if not self.confirm_discard(): return
         
         self.clear_select()
         self.rel_store.clear()
@@ -260,16 +288,7 @@ class Sociogram(object):
     
     def openfile(self, widget=None, data=None):
         '''Event handler and standalone. Pick a file and load from it.'''
-        if self.dirty:
-            #warn about closing current document
-            response = self.save_warning.run()
-            self.save_warning.hide()
-            if response == 5:
-                self.save() #save it and continue
-            elif response == 2:
-                pass #the "close anyway" option
-            else:
-                return #cancel
+        if not self.confirm_discard(): return
         
         open_dlg = self.builder.get_object("open_dlg")
         if self.savepath != None:
@@ -447,10 +466,11 @@ class Sociogram(object):
         
         #add to underlying Node object
         uid = self.seldata.add_attr(("attribute", "value", False))
-        #add to attr_store, since it's obviously selected
-        self.attr_store.append(("attribute", "value", False, uid))
+        #add to the store
+        newrow = self.attr_store.append(("attribute", "value", False, uid))
+        path = self.attr_store.get_path(newrow)
         #start editing right away
-        self.builder.get_object("attrstree").set_cursor(len(self.attr_store)-1, self.namecol, True)
+        self.attr_disp.set_cursor(path, self.namecol, True)
         
         self.set_dirty(True)
     
@@ -459,30 +479,51 @@ class Sociogram(object):
     
     def del_attr(self, widget, data=None):
         '''Event handler. Removes the currently highlighted attribute from the current selection.'''
-        if self.selection == None or self.selattr == None:
+        
+        tree_selection = self.attr_disp.get_selection()
+        if self.selection == None or tree_selection == None:
             return
         
-        #remove from underlying Node object
-        self.seldata.del_attr(self.selattr)
+        selrow = tree_selection.get_selected()[1]
+        auid = self.attr_store.get_value(selrow, 3)
         
-        for row in self.attr_store:
-            if row[3] == self.selattr:
-                self.attr_store.remove(row.iter)
-                break
+        #remove from underlying Node object
+        self.seldata.del_attr(auid)
+        #now from the store
+        self.attr_store.remove(selrow)
         
         self.set_dirty(True)
     
-    def set_attr_selection(self, widget, data=None):
-        '''Event handler. Update internal selection var whenever the attribute selection cursor changes.'''
-        tree_selection = widget.get_selection()
-        if tree_selection == None:
-            self.selattr = None
-            return
+    def update_attrs(self, widget, path=None, text=None, col=None):
+        '''Event handler. Change name or value of currently selected attribute.'''
         
-        (model, pathlist) = tree_selection.get_selected_rows()
-        for path in pathlist :
-            tree_iter = model.get_iter(path)
-            self.selattr = model.get_value(tree_iter,3)
+        tree_selection = self.attr_disp.get_selection()
+        if self.selection == None or tree_selection == None:
+            return
+            
+        #get the attribute ID
+        #selrow = tree_selection.get_selected()[1]
+        auid = self.attr_store[path][3]
+        
+        #update attribute
+        attr = self.seldata.attributes[auid]
+        if col==0:
+            attr['name'] = text
+        elif col==1:
+            attr['value'] = text
+        elif col==2:
+            attr['visible'] = not attr['visible']
+        
+        #update store
+        #once we do this, the original path is no longer valid
+        if text != None:
+            self.attr_store[path][col] = text
+        else:
+            self.attr_store[path][col] = attr['visible']
+        
+        #TODO refresh only, no need for a complete redraw
+        self.redraw()
+        self.set_dirty(True)
     
     def show_add(self, widget, data=None):
         '''Show Add Object dialog after resetting field defaults and ensuring sane Relationship availability.'''
@@ -1098,29 +1139,6 @@ class Sociogram(object):
         
         self.seldata.mutual = newb
         #TODO refresh instead of fully redrawing
-        self.redraw()
-        self.set_dirty(True)
-    
-    def update_attrs(self, widget, path=None, text=None, col=None):
-        '''Event handler. Change name or value of currently selected attribute.'''
-        if self.selection == None or self.selattr == None:
-            return
-        
-        if text != None:
-            self.attr_store[path][col] = text
-        else:
-            self.attr_store[path][col] = not self.attr_store[path][col]
-        
-        attr = self.seldata.attributes[self.selattr]
-        val = self.attr_store[path][col]
-        if col==0:
-            attr['name'] = val
-        elif col==1:
-            attr['value'] = val
-        elif col==2:
-            attr['visible'] = val
-        
-        #TODO refresh only, no need for a complete redraw
         self.redraw()
         self.set_dirty(True)
     
