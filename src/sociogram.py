@@ -548,23 +548,32 @@ class Sociogram(object):
                 weight = self.builder.get_object("weight_spin_dlg").get_value()
                 bidir = self.builder.get_object("bidir_new").get_active()
                 rel, new_edge = self._add_rel(lbl, fnode, tnode, weight, bidir, paste)
-                if not new_edge:
-                    #TODO just do a refresh if possible
-                    pass
+                
+                #just do a refresh when possible
+                do_refresh = not new_edge
             else:
+                do_refresh = False #adding a node always requres a full redraw
                 node = self._add_node(lbl, paste)
+            
+            if do_refresh:
+                # Since we can only refresh on certain types of new relationship,
+                # we can ignore the "select a node" case.
+                obj = self.canvas.get_edge(fnode, tnode)
+                self.refresh(rel)
+                self.set_selection(obj, rel=rel)
+            else:
+                #this is the normal case
+                self.redraw()
+                
+                if "Rel" in obj_type:
+                    obj = self.canvas.get_edge(fnode, tnode) #get proper edge
+                else:
+                    obj = self.canvas.get_vertex(lbl) #get proper node
+                
+                self.set_selection(obj)
             
             self.set_dirty(True)
             
-            self.redraw()
-            if "Rel" in obj_type:
-                #get proper edge
-                obj = self.canvas.get_edge(fnode, tnode)
-            else:
-                #get proper node
-                obj = self.canvas.get_vertex(lbl)
-            self.set_selection(obj)
-        
         #clear the dialog's values
         self.builder.get_object("newtypesel").set_active(0)
         self.builder.get_object("name_entry_dlg").set_text('')
@@ -687,7 +696,7 @@ class Sociogram(object):
         widget.set_icon_tooltip_text(Gtk.EntryIconPosition.SECONDARY, _("Search"))
         widget.set_icon_activatable(Gtk.EntryIconPosition.SECONDARY, True)
     
-    def set_selection(self, selobj, obj=None, event=None):
+    def set_selection(self, selobj, obj=None, event=None, rel=None):
         '''Event handler and standalone. Mark selobj as selected and update ui.'''
         #clear the old selection
         self.clear_select()
@@ -713,6 +722,7 @@ class Sociogram(object):
             #populate self.rel_store from the edge
             for rel in self.selection.rels:
                 self.rel_store.append((str(rel), str(rel.uid)))
+            #TODO if we were given a rel to select, select it. otherwise, default to 0.
             self.builder.get_object("rel_combo").set_active(0)
         
         self._refresh_edit_controls()
@@ -778,7 +788,8 @@ class Sociogram(object):
             killed_edge = self.G.remove_rel(self.seldata)
             if not killed_edge:
                 #in this case, we only need to refresh the graph, not redraw it
-                self.refresh(self.seldata)
+                self.refresh(self.seldata, "deleted")
+                self.clear_select()
             else:
                 self.selection.remove()
                 self.clear_select()

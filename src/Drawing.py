@@ -97,15 +97,15 @@ class Canvas(GooCanvas.Canvas):
         
         self.pack()
         
-    def refresh(self, obj, oldlbl = None):
+    def refresh(self, obj, data = None):
         '''Update visuals without calculating a new layout.'''
         if obj.type == "node":
             subg = None
-            if not oldlbl == None:
+            if not data == None:
                 # If a node got relabeled, we can still avoid a full redraw. However,
                 # the subgraph needs to do some rejiggering.
-                subg = self.get_container(oldlbl)
-                subg.refresh_node(obj.label, oldlbl)
+                subg = self.get_container(data)
+                subg.refresh_node(obj.label, data)
             
             #redraw vertex and all edges touching it
             v = self.get_vertex(obj.label)
@@ -123,7 +123,10 @@ class Canvas(GooCanvas.Canvas):
         elif obj.type == "rel":
             #redraw edge
             e = self.get_edge(obj.from_node, obj.to_node)
-            e.add_rel(obj)
+            if data == "deleted":
+                e.remove_rel(obj)
+            else:
+                e.add_rel(obj)
             e.draw()
             
     def pack(self):
@@ -353,6 +356,15 @@ class AggLine(GooCanvas.CanvasGroup):
             self.rels.remove(rel)
         
         self.rels.append(rel)
+    
+    def remove_rel(self, rel):
+        '''Remove a relationship.'''
+        if self.rels.count(rel):
+            self.rels.remove(rel)
+        
+        self.calc_width() #calculate new average weight
+        self.calc_label() #calculate new label text
+        self.rels = sorted(self.rels, key=attrgetter('weight', 'label'), reverse=True)
     
     def calc_width(self):
         '''Calculate line width from relationship weights.'''

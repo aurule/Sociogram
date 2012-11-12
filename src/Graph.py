@@ -101,21 +101,19 @@ class Sociograph(nx.Graph):
         tlbl = rel.to_node
         rel_list = self[flbl][tlbl]['rels']
         
+        killed = None
         if len(rel_list) == 1 and rel_list[0].uid == rel.uid:
             #if there's only one rel for this edge, remove the whole edge
             self.remove_edge(flbl, tlbl)
-            return True
+            killed = True
         else:
             #if the edge has more than one rel, just remove this rel
             for k in rel_list:
                 if k.uid == rel.uid:
                     rel_list.remove(rel)
-                    ret = True
-            if ret:
-                return True
+                    killed = False
         
-        #relationship doesn't exist
-        return None
+        return killed
     
     def move_rel(self, rel, origin=None, dest=None):
         '''Move a relationship from one edge to another.'''
