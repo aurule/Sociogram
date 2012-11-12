@@ -100,23 +100,26 @@ class Canvas(GooCanvas.Canvas):
     def refresh(self, obj, oldlbl = None):
         '''Update visuals without calculating a new layout.'''
         if obj.type == "node":
+            subg = None
             if not oldlbl == None:
                 # If a node got relabeled, we can still avoid a full redraw. However,
                 # the subgraph needs to do some rejiggering.
                 subg = self.get_container(oldlbl)
-                subg.refresh_node(obj, oldlbl)
+                subg.refresh_node(obj.label, oldlbl)
             
             #redraw vertex and all edges touching it
             v = self.get_vertex(obj.label)
             
             #update vertex data
-            v.node = obj
-            v.label = obj.label
-            v.text = self.textwrap.fill(obj.label)
+            #v.node is a reference, and that object has already been updated
+            v.label = v.node.label
+            v.text = self.textwrap.fill(v.label)
             
             v.draw()
+            if not subg == None: subg.add_spacer(v.label) #rejigger spacer
+            #redraw all adjacent edges
             for e in self.get_edges(obj.label):
-                e.draw() #redraw all lines which touch
+                e.draw()
         elif obj.type == "rel":
             #redraw edge
             e = self.get_edge(obj.from_node, obj.to_node)
@@ -264,8 +267,8 @@ class AggLine(GooCanvas.CanvasGroup):
         self.end_arrow = False
         self.width = 5
         self.weights = []
-        self.origin = fnode #Node object
-        self.dest = tnode #Node object
+        self.origin = fnode #vertex object
+        self.dest = tnode #vertex object
         self.labels_both = []
         self.labels_from = []
         self.labels_to = []
@@ -540,22 +543,28 @@ class SubGraph(GooCanvas.CanvasGroup):
         self.spacers = {} #dict of spacing rings for each vertex
         self.edges = []
     
-    def refresh_node(self, obj, oldlbl):
+    def refresh_node(self, newlbl, oldlbl):
         '''Relabel an existing node without recalculating.'''
-        #TODO update self.vertices with new label
-        # update self.edges with new label
-        # update self.G with new label
-        newlbl = obj.label
-
+        # Note: Because each AggLine stores its origin and destination nodes as
+        # references to Vertex objects, we only need to update the vertices.
+        
+        #update internal vertices list
         self.vertices[newlbl] = self.vertices[oldlbl]
         del self.vertices[oldlbl]
-        v = self.vertices[newlbl]
-        '''
-        for e in self.edges:
-            if e.touches(oldlbl):
-                e.shift(oldlbl, obj)
-        '''
+        
+        #nix the old (and now likely incorrect) spacer
+        #calling function will probably want to have us add a new one with add_spacer
+        del self.spacers[oldlbl]
+        
+        #relabel our subgraph
         nx.relabel_nodes(self.G, {oldlbl:newlbl}, False)
+    
+    def add_spacer(self, vname):
+        '''Add a spacer for the vertex named "vname".'''
+        v = self.vertices[vname]
+        coords = v.get_xyr()
+        ring = GooCanvas.CanvasEllipse(parent=self, fill_color_rgba=0x00000000, stroke_color_rgba=0x00000000, radius_x=coords['radius'], radius_y=coords['radius'], center_x=coords['x'], center_y=coords['y'])
+        ring.lower(v)
 
 class Stylesheet(object):
     '''Defines styling properties for a vertex or edge.'''
