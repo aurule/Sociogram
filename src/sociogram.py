@@ -22,7 +22,6 @@ class Sociogram(object):
         #placeholders for selecting objects
         self.selection = None
         self.seltype = None
-        self.selattr = None
         self.seldata = None
         self.highlight_dist = 1
         self.highlight = False
@@ -255,12 +254,12 @@ class Sociogram(object):
             #warn about closing current document
             dlg = self.save_close_warning if closing else self.save_warning
             if self.savepath == None:
-                dlg.set_markup("Save your changes before closing?")
+                dlg.set_markup(_("Save your changes before closing?"))
             else:
-                dlg.set_markup("Save your changes to %s before closing?" %basename(self.savepath))
+                dlg.set_markup(_("Save your changes to %s before closing?") %basename(self.savepath))
             
             period = int((time() - self.lastsave)/60)
-            dlg.format_secondary_text("If you don't save, changes from the last %s minutes will be lost." %period)
+            dlg.format_secondary_text(_("If you don't save, changes from the last %s minutes will be lost.") %period)
             response = dlg.run()
             dlg.hide()
 
@@ -521,8 +520,8 @@ class Sociogram(object):
         else:
             self.attr_store[path][col] = attr['visible']
         
-        #TODO refresh only, no need for a complete redraw
-        self.redraw()
+        #refresh only, no need for a complete redraw
+        self.refresh(self.seldata)
         self.set_dirty(True)
     
     def show_add(self, widget, data=None):
@@ -778,12 +777,12 @@ class Sociogram(object):
         else:
             killed_edge = self.G.remove_rel(self.seldata)
             if not killed_edge:
-                #TODO in this case, we only need to refresh the graph, not redraw it
-                pass
+                #in this case, we only need to refresh the graph, not redraw it
+                self.refresh(self.seldata)
             else:
                 self.selection.remove()
                 self.clear_select()
-        self.redraw()
+                self.redraw()
         
         self.set_dirty(True)
     
@@ -1036,8 +1035,7 @@ class Sociogram(object):
             tlbl = self.seldata.to_node
             flbl = self.seldata.from_node
         
-        self.redraw()
-        
+        self.refresh(self.seldata, oldlbl)
         self.set_dirty(True)
     
     def check_endpoint(self, widget, data=None):
@@ -1079,12 +1077,12 @@ class Sociogram(object):
             self.G.move_rel(self.seldata, origin=new_origin, dest=self.seldata.from_node)
             #now that it's been updated, we can just assign the real to_node value
             self.to_main.set_text(self.seldata.to_node)
-            #TODO just refresh in this case
+            #just refresh in this case
+            self.refresh(self.seldata)
         else:
             #otherwise, change the origin only
             self.G.move_rel(self.seldata, origin=new_origin)
-        
-        self.redraw()
+            self.redraw()
         self.set_dirty(True)
     
     def update_dest(self, widget, data=None):
@@ -1106,12 +1104,13 @@ class Sociogram(object):
             self.G.move_rel(self.seldata, origin=self.seldata.to_node, dest=new_dest)
             #now that it's been updated, we can just assign the real to_node value
             self.from_main.set_text(self.seldata.from_node)
-            #TODO just refresh in this case
+            #just refresh in this case
+            self.refresh(self.seldata)
         else:
             #otherwise, change the origin only
             self.G.move_rel(self.seldata, dest=new_dest)
-
-        self.redraw()
+            self.redraw()
+        
         self.set_dirty(True)
     
     def update_weight(self, widget, data=None):
@@ -1124,8 +1123,8 @@ class Sociogram(object):
         if oldw == neww: return
         
         self.seldata.weight = neww
-        #TODO refresh instead of fully redrawing
-        self.redraw()
+        #refresh instead of fully redrawing
+        self.refresh(self.seldata)
         self.set_dirty(True)
     
     def update_bidir(self, widget, data=None):
@@ -1138,8 +1137,8 @@ class Sociogram(object):
         if oldb == newb: return
         
         self.seldata.mutual = newb
-        #TODO refresh instead of fully redrawing
-        self.redraw()
+        #refresh instead of fully redrawing
+        self.refresh(self.seldata)
         self.set_dirty(True)
     
     def toggle_widget(self, widget, data=None):
@@ -1216,7 +1215,13 @@ class Sociogram(object):
             
             #center the selection
             self.center_on(self.selection)
-
+    
+    def refresh(self, touch, oldlbl=None):
+        '''Redraw the diagram without updating node positions.'''
+        self.selection.set_selected(False)
+        self.canvas.refresh(touch, oldlbl)
+        self.selection.set_selected(True)
+    
 def _(text):
     '''Get translated text where possible.'''
     #TODO grab translated text

@@ -12,6 +12,7 @@ class Node(object):
     def __init__(self, lbl, attrs=None, uid=None):
         '''Create a node.'''
         self.label = lbl
+        self.type = "node"
         if uid == None:
             self.uid = str(uuid4())
         else:
@@ -54,6 +55,7 @@ class Relationship(Node):
         self.to_node = tnode
         self.weight = wgt
         self.mutual = bidir
+        self.type = "rel"
     
     def touches(self, node):
         '''Determine whether this relationship eminates or terminates at node.'''

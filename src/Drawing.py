@@ -97,10 +97,31 @@ class Canvas(GooCanvas.Canvas):
         
         self.pack()
         
-    def freshen(self):
+    def refresh(self, obj, oldlbl = None):
         '''Update visuals without calculating a new layout.'''
-        for sub in self.cboxes:
-            sub.freshen()
+        if obj.type == "node":
+            if not oldlbl == None:
+                # If a node got relabeled, we can still avoid a full redraw. However,
+                # the subgraph needs to do some rejiggering.
+                subg = self.get_container(oldlbl)
+                subg.refresh_node(obj, oldlbl)
+            
+            #redraw vertex and all edges touching it
+            v = self.get_vertex(obj.label)
+            
+            #update vertex data
+            v.node = obj
+            v.label = obj.label
+            v.text = self.textwrap.fill(obj.label)
+            
+            v.draw()
+            for e in self.get_edges(obj.label):
+                e.draw() #redraw all lines which touch
+        elif obj.type == "rel":
+            #redraw edge
+            e = self.get_edge(obj.from_node, obj.to_node)
+            e.add_rel(obj)
+            e.draw()
             
     def pack(self):
         '''Pack component subgraphs into the drawing space.'''
@@ -158,9 +179,24 @@ class Canvas(GooCanvas.Canvas):
         
         return None
     
-    def get_agglines(self, label):
+    def get_edges(self, label):
         '''Find all agglines which touch node label.'''
-        pass
+        ret = []
+        for subg in self.cboxes:
+            #pick the right box
+            if label in subg.vertices:
+                for edge in subg.edges:
+                    if edge.touches(label): ret.append(edge)
+        
+        return ret
+    
+    def get_container(self, label):
+        '''Find subgraph which contains vertex object labeled "label".'''
+        for subg in self.cboxes:
+            if label in subg.vertices:
+                return subg
+        
+        return None
     
     def get_bounds(self):
         '''Return the bounds for our master box.'''
@@ -268,6 +304,11 @@ class AggLine(GooCanvas.CanvasGroup):
         if (olbl in ends) and (dlbl in ends): return True
         return False
     
+    def touches(self, label):
+        '''Determine if one of our endpoints has the given label.'''
+        ends = (self.origin.label, self.dest.label)
+        return label in ends
+    
     def rel_tooltip(self, me, x, y, kbd, tooltip):
         '''Event handler to set a tooltip message containing our relationships.'''
         if not (self.start_arrow or self.end_arrow):
@@ -304,32 +345,45 @@ class AggLine(GooCanvas.CanvasGroup):
     
     def _add_rel(self, rel):
         '''Internal function to add relationship properties without any recalculating.'''
-        self.rels.append(rel)
-        #add labels and arrows according to directionality
-        if rel.mutual:
-            self.labels_both.append([rel.weight, rel.label])
-            if not (self.start_arrow and self.end_arrow):
-                self.start_arrow = True
-                self.end_arrow = True
-        else:
-            if rel.ends_at(self.origin.label):
-                self.labels_from.append([rel.weight, rel.label])
-                if not self.start_arrow:
-                    self.start_arrow = True
-            if rel.ends_at(self.dest.label):
-                self.labels_to.append([rel.weight, rel.label])
-                if not self.end_arrow:
-                    self.end_arrow = True
+        #if the new relationship has the same id as one already added, remove the old one first
+        if self.rels.count(rel):
+            self.rels.remove(rel)
         
-        #store weight
-        self.weights.append(rel.weight)
+        self.rels.append(rel)
     
     def calc_width(self):
         '''Calculate line width from relationship weights.'''
+        del self.weights[:]
+        for rel in self.rels:
+            #store weights for other potential uses
+            self.weights.append(rel.weight)
+            
         self.width = mean(self.weights)
 
     def calc_label(self):
         '''Decide on label text, given label weights and directions.'''
+        self.start_arrow = False
+        self.end_arrow = False
+        del self.labels_both[:]
+        del self.labels_from[:]
+        del self.labels_to[:]
+        for rel in self.rels:
+            #add labels and arrows according to directionality
+            if rel.mutual:
+                self.labels_both.append([rel.weight, rel.label])
+                if not (self.start_arrow and self.end_arrow):
+                    self.start_arrow = True
+                    self.end_arrow = True
+            else:
+                if rel.ends_at(self.origin.label):
+                    self.labels_from.append([rel.weight, rel.label])
+                    if not self.start_arrow:
+                        self.start_arrow = True
+                if rel.ends_at(self.dest.label):
+                    self.labels_to.append([rel.weight, rel.label])
+                    if not self.end_arrow:
+                        self.end_arrow = True
+        
         #sort by weight, then by text
         lbl_bidir = sorted(self.labels_both, key=itemgetter(0, 1))
         lbl_from = sorted(self.labels_from, key=itemgetter(0, 1))
@@ -350,8 +404,8 @@ class AggLine(GooCanvas.CanvasGroup):
             return
         
         #remove any child objects we have
-        if self.get_n_children():
-            self.get_child(0).remove()
+        for x in reversed(xrange(self.get_n_children())):
+            self.get_child(x).remove()
         
         shape = self.painter.paint(self)
     
@@ -377,6 +431,11 @@ class AggLine(GooCanvas.CanvasGroup):
         y = (xyr1['y'] + xyr2['y']) / 2
         
         return {'x':x, 'y':y, 'radius':0}
+    
+    def shift(self, oldlbl, new_obj):
+        '''Change an endpoint to use a new object.'''
+        if self.origin.label == oldlbl: self.origin = new_obj
+        elif self.dest.label == oldlbl: self.dest = new_obj
 
 class Vertex(GooCanvas.CanvasGroup):
     '''Represent a node on the canvas.'''
@@ -435,11 +494,11 @@ class Vertex(GooCanvas.CanvasGroup):
     def draw(self):
         '''Draw with our painter, then recalculate x, y, and radius.'''
         if self.painter == None:
-            return
+            return        
         
         #remove any child objects we have
-        if self.get_n_children():
-            self.get_child(0).remove()
+        for x in reversed(xrange(self.get_n_children())):
+            self.get_child(x).remove()
         
         #draw some new ones
         shape = self.painter.paint(self)
@@ -481,21 +540,22 @@ class SubGraph(GooCanvas.CanvasGroup):
         self.spacers = {} #dict of spacing rings for each vertex
         self.edges = []
     
-    def freshen(self):
-        '''Redraw the subgroup without recalculating anything.'''
-        for k, v in self.vertices.iteritems():
-            v.draw()
-            
-            #update spacer
-            coords = v.get_xyr()
-            self.spacers[v.label].set_properties(radius_x=coords['radius'], radius_y=coords['radius'], center_x=coords['x'], center_y=coords['y'])      
-        
-        for line in self.edges:
-            line.clear_rels()
-            #populate new rels from stored origin/dest and self.G
-            for rel in self.G[line.origin][line.dest]:
-                line.add_rel(rel)
-            line.draw()
+    def refresh_node(self, obj, oldlbl):
+        '''Relabel an existing node without recalculating.'''
+        #TODO update self.vertices with new label
+        # update self.edges with new label
+        # update self.G with new label
+        newlbl = obj.label
+
+        self.vertices[newlbl] = self.vertices[oldlbl]
+        del self.vertices[oldlbl]
+        v = self.vertices[newlbl]
+        '''
+        for e in self.edges:
+            if e.touches(oldlbl):
+                e.shift(oldlbl, obj)
+        '''
+        nx.relabel_nodes(self.G, {oldlbl:newlbl}, False)
 
 class Stylesheet(object):
     '''Defines styling properties for a vertex or edge.'''
