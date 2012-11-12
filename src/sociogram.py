@@ -737,8 +737,8 @@ class Sociogram(object):
         if rel == self.seldata: return
         
         self.seldata = rel
-        
         self._refresh_edit_controls()
+        self.builder.get_object("canvas_eventbox").grab_focus() #set keyboard focus
     
     def _refresh_edit_controls(self):
         '''Update contents of edit box controls.'''
@@ -788,8 +788,10 @@ class Sociogram(object):
             killed_edge = self.G.remove_rel(self.seldata)
             if not killed_edge:
                 #in this case, we only need to refresh the graph, not redraw it
+                sel = self.selection
                 self.refresh(self.seldata, "deleted")
                 self.clear_select()
+                self.set_selection(sel)
             else:
                 self.selection.remove()
                 self.clear_select()
