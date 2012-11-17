@@ -571,12 +571,13 @@ class Sociogram(object):
                 do_refresh = False #adding a node always requres a full redraw
                 node = self._add_node(lbl, paste)
             
+            # Since we can never refresh on node creation, we can ignore
+            # nodes completely.
             if do_refresh:
-                # Since we can only refresh on certain types of new relationship,
-                # we can ignore the "select a node" case.
+                #select the appropriate edge
                 obj = self.canvas.get_edge(fnode, tnode)
                 self.refresh(rel)
-                self.set_selection(obj, rel=rel)
+                self.set_selection(obj, srel=rel)
             else:
                 #this is the normal case
                 self.redraw()
@@ -712,7 +713,7 @@ class Sociogram(object):
         widget.set_icon_tooltip_text(Gtk.EntryIconPosition.SECONDARY, _("Search"))
         widget.set_icon_activatable(Gtk.EntryIconPosition.SECONDARY, True)
     
-    def set_selection(self, selobj, obj=None, event=None, rel=None):
+    def set_selection(self, selobj, obj=None, event=None, srel=None):
         '''Event handler and standalone. Mark selobj as selected and update ui.'''
         #clear the old selection
         self.clear_select()
@@ -736,10 +737,16 @@ class Sociogram(object):
             self.seldata = selobj.get_heaviest()
             
             #populate self.rel_store from the edge
-            for rel in self.selection.rels:
+            target = None if srel == None else srel.uid
+            active = 0
+            for idex, rel in enumerate(self.selection.rels):
                 self.rel_store.append((str(rel), str(rel.uid)))
-            #TODO if we were given a rel to select, select it. otherwise, default to 0.
-            self.builder.get_object("rel_combo").set_active(0)
+                if target == rel.uid:
+                    active = idex
+            
+            #select the target relationship
+            #if none was provided, this defaults to the topmost
+            self.builder.get_object("rel_combo").set_active(active)
         
         self._refresh_edit_controls()
         self.builder.get_object("canvas_eventbox").grab_focus() #set keyboard focus
