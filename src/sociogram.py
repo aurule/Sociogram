@@ -33,7 +33,7 @@ from ETree import sub_element as sub
 class Sociogram(object):
     def __init__(self):
         '''Set up internals and instantiate/fix up GUI using Gtk.Builder.'''
-        self.version = "preview 1"
+        self.version = "0.1"
         self.G = Graph.Sociograph() # instantiate the graph for storage and positioning
         #placeholders for selecting objects
         self.selection = None
