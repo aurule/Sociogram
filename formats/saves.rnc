@@ -9,7 +9,11 @@ Document = element sociogram {
 
 ## Represents document-specific settings.
 settingsContent = element settings {
-    element scale { xsd:float }
+    element scale { xsd:float },
+    element attrsort {
+        attribute direction { "asc" | "desc" },
+        element column { xsd:integer }
+    }
 }
 
 ## Represents simplified graph data.

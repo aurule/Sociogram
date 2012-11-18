@@ -1401,6 +1401,229 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
       <action-widget response="0">rel_style_ok</action-widget>
     </action-widgets>
   </object>
+  <object class="GtkFileChooserDialog" id="save_dlg">
+    <property name="can_focus">False</property>
+    <property name="border_width">5</property>
+    <property name="title" translatable="yes">Save File</property>
+    <property name="role">GtkFileChooserDialog</property>
+    <property name="modal">True</property>
+    <property name="destroy_with_parent">True</property>
+    <property name="type_hint">dialog</property>
+    <property name="skip_pager_hint">True</property>
+    <property name="transient_for">sociogram_main</property>
+    <property name="action">save</property>
+    <property name="do_overwrite_confirmation">True</property>
+    <property name="filter">soc_filter</property>
+    <property name="preview_widget_active">False</property>
+    <child internal-child="vbox">
+      <object class="GtkBox" id="filechooserdialog-vbox1">
+        <property name="can_focus">False</property>
+        <property name="orientation">vertical</property>
+        <property name="spacing">2</property>
+        <child internal-child="action_area">
+          <object class="GtkButtonBox" id="filechooserdialog-action_area1">
+            <property name="can_focus">False</property>
+            <property name="layout_style">end</property>
+            <child>
+              <object class="GtkButton" id="save_dlg_cancel">
+                <property name="label">gtk-cancel</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <property name="use_stock">True</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkButton" id="save_dlg_ok">
+                <property name="label">gtk-save</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <property name="use_stock">True</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="pack_type">end</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <placeholder/>
+        </child>
+      </object>
+    </child>
+    <action-widgets>
+      <action-widget response="0">save_dlg_cancel</action-widget>
+      <action-widget response="0">save_dlg_ok</action-widget>
+    </action-widgets>
+  </object>
+  <object class="GtkMessageDialog" id="savewarn_close_dlg">
+    <property name="can_focus">False</property>
+    <property name="border_width">5</property>
+    <property name="window_position">center-on-parent</property>
+    <property name="destroy_with_parent">True</property>
+    <property name="type_hint">dialog</property>
+    <property name="skip_taskbar_hint">True</property>
+    <property name="skip_pager_hint">True</property>
+    <property name="urgency_hint">True</property>
+    <property name="transient_for">sociogram_main</property>
+    <property name="message_type">warning</property>
+    <property name="text" translatable="yes">Save the changes to X before closing?</property>
+    <property name="secondary_text" translatable="yes">If you don't save, changes from the last N minutes will be lost.</property>
+    <child internal-child="vbox">
+      <object class="GtkBox" id="messagedialog-vbox8">
+        <property name="can_focus">False</property>
+        <property name="orientation">vertical</property>
+        <property name="spacing">2</property>
+        <child internal-child="action_area">
+          <object class="GtkButtonBox" id="messagedialog-action_area8">
+            <property name="can_focus">False</property>
+            <property name="layout_style">end</property>
+            <child>
+              <object class="GtkButton" id="savewarn_close1">
+                <property name="label" translatable="yes">Close _Without Saving</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <property name="image">close_icon1</property>
+                <property name="use_underline">True</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+                <property name="non_homogeneous">True</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkButton" id="savewarn_save1">
+                <property name="label">gtk-save</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="can_default">True</property>
+                <property name="has_default">True</property>
+                <property name="receives_default">True</property>
+                <property name="use_stock">True</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">False</property>
+                <property name="position">2</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="pack_type">end</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+      </object>
+    </child>
+    <action-widgets>
+      <action-widget response="2">savewarn_close1</action-widget>
+      <action-widget response="5">savewarn_save1</action-widget>
+    </action-widgets>
+  </object>
+  <object class="GtkMessageDialog" id="savewarn_dlg">
+    <property name="can_focus">False</property>
+    <property name="border_width">5</property>
+    <property name="window_position">center-on-parent</property>
+    <property name="destroy_with_parent">True</property>
+    <property name="type_hint">dialog</property>
+    <property name="skip_taskbar_hint">True</property>
+    <property name="skip_pager_hint">True</property>
+    <property name="urgency_hint">True</property>
+    <property name="transient_for">sociogram_main</property>
+    <property name="message_type">warning</property>
+    <property name="buttons">cancel</property>
+    <property name="text" translatable="yes">Save the changes to X before closing?</property>
+    <property name="secondary_text" translatable="yes">If you don't save, changes from the last N minutes will be lost.</property>
+    <child internal-child="vbox">
+      <object class="GtkBox" id="messagedialog-vbox2">
+        <property name="can_focus">False</property>
+        <property name="orientation">vertical</property>
+        <property name="spacing">2</property>
+        <child internal-child="action_area">
+          <object class="GtkButtonBox" id="messagedialog-action_area2">
+            <property name="can_focus">False</property>
+            <property name="layout_style">end</property>
+            <child>
+              <object class="GtkButton" id="savewarn_close">
+                <property name="label" translatable="yes">Close _Without Saving</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">True</property>
+                <property name="image">close_icon</property>
+                <property name="use_underline">True</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+                <property name="non_homogeneous">True</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkButton" id="savewarn_save">
+                <property name="label">gtk-save</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="has_focus">True</property>
+                <property name="is_focus">True</property>
+                <property name="can_default">True</property>
+                <property name="has_default">True</property>
+                <property name="receives_default">True</property>
+                <property name="use_stock">True</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">False</property>
+                <property name="position">2</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="pack_type">end</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+      </object>
+    </child>
+    <action-widgets>
+      <action-widget response="2">savewarn_close</action-widget>
+      <action-widget response="5">savewarn_save</action-widget>
+    </action-widgets>
+  </object>
+  <object class="GtkAdjustment" id="scale_adj">
+    <property name="lower">50</property>
+    <property name="upper">200</property>
+    <property name="value">100</property>
+    <property name="step_increment">20</property>
+    <property name="page_increment">10</property>
+    <signal name="value-changed" handler="app.zoom_changed" swapped="no"/>
+  </object>
+  <object class="GtkFileFilter" id="soc_filter">
+    <patterns>
+      <pattern>*.xml</pattern>
+    </patterns>
+  </object>
   <object class="GtkWindow" id="sociogram_main">
     <property name="can_focus">False</property>
     <property name="title" translatable="yes">Sociogram</property>
@@ -2556,6 +2779,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
                           <object class="GtkTreeView" id="attrstree">
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
+                            <property name="rules_hint">True</property>
                             <property name="search_column">0</property>
                             <property name="show_expanders">False</property>
                             <child internal-child="selection">
@@ -2599,229 +2823,6 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
         </child>
       </object>
     </child>
-  </object>
-  <object class="GtkFileChooserDialog" id="save_dlg">
-    <property name="can_focus">False</property>
-    <property name="border_width">5</property>
-    <property name="title" translatable="yes">Save File</property>
-    <property name="role">GtkFileChooserDialog</property>
-    <property name="modal">True</property>
-    <property name="destroy_with_parent">True</property>
-    <property name="type_hint">dialog</property>
-    <property name="skip_pager_hint">True</property>
-    <property name="transient_for">sociogram_main</property>
-    <property name="action">save</property>
-    <property name="do_overwrite_confirmation">True</property>
-    <property name="filter">soc_filter</property>
-    <property name="preview_widget_active">False</property>
-    <child internal-child="vbox">
-      <object class="GtkBox" id="filechooserdialog-vbox1">
-        <property name="can_focus">False</property>
-        <property name="orientation">vertical</property>
-        <property name="spacing">2</property>
-        <child internal-child="action_area">
-          <object class="GtkButtonBox" id="filechooserdialog-action_area1">
-            <property name="can_focus">False</property>
-            <property name="layout_style">end</property>
-            <child>
-              <object class="GtkButton" id="save_dlg_cancel">
-                <property name="label">gtk-cancel</property>
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">True</property>
-                <property name="use_stock">True</property>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">0</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkButton" id="save_dlg_ok">
-                <property name="label">gtk-save</property>
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">True</property>
-                <property name="use_stock">True</property>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">1</property>
-              </packing>
-            </child>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="pack_type">end</property>
-            <property name="position">0</property>
-          </packing>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-      </object>
-    </child>
-    <action-widgets>
-      <action-widget response="0">save_dlg_cancel</action-widget>
-      <action-widget response="0">save_dlg_ok</action-widget>
-    </action-widgets>
-  </object>
-  <object class="GtkMessageDialog" id="savewarn_close_dlg">
-    <property name="can_focus">False</property>
-    <property name="border_width">5</property>
-    <property name="window_position">center-on-parent</property>
-    <property name="destroy_with_parent">True</property>
-    <property name="type_hint">dialog</property>
-    <property name="skip_taskbar_hint">True</property>
-    <property name="skip_pager_hint">True</property>
-    <property name="urgency_hint">True</property>
-    <property name="transient_for">sociogram_main</property>
-    <property name="message_type">warning</property>
-    <property name="text" translatable="yes">Save the changes to X before closing?</property>
-    <property name="secondary_text" translatable="yes">If you don't save, changes from the last N minutes will be lost.</property>
-    <child internal-child="vbox">
-      <object class="GtkBox" id="messagedialog-vbox8">
-        <property name="can_focus">False</property>
-        <property name="orientation">vertical</property>
-        <property name="spacing">2</property>
-        <child internal-child="action_area">
-          <object class="GtkButtonBox" id="messagedialog-action_area8">
-            <property name="can_focus">False</property>
-            <property name="layout_style">end</property>
-            <child>
-              <object class="GtkButton" id="savewarn_close1">
-                <property name="label" translatable="yes">Close _Without Saving</property>
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">True</property>
-                <property name="image">close_icon1</property>
-                <property name="use_underline">True</property>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">0</property>
-                <property name="non_homogeneous">True</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkButton" id="savewarn_save1">
-                <property name="label">gtk-save</property>
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="can_default">True</property>
-                <property name="has_default">True</property>
-                <property name="receives_default">True</property>
-                <property name="use_stock">True</property>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">False</property>
-                <property name="position">2</property>
-              </packing>
-            </child>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="pack_type">end</property>
-            <property name="position">0</property>
-          </packing>
-        </child>
-      </object>
-    </child>
-    <action-widgets>
-      <action-widget response="2">savewarn_close1</action-widget>
-      <action-widget response="5">savewarn_save1</action-widget>
-    </action-widgets>
-  </object>
-  <object class="GtkMessageDialog" id="savewarn_dlg">
-    <property name="can_focus">False</property>
-    <property name="border_width">5</property>
-    <property name="window_position">center-on-parent</property>
-    <property name="destroy_with_parent">True</property>
-    <property name="type_hint">dialog</property>
-    <property name="skip_taskbar_hint">True</property>
-    <property name="skip_pager_hint">True</property>
-    <property name="urgency_hint">True</property>
-    <property name="transient_for">sociogram_main</property>
-    <property name="message_type">warning</property>
-    <property name="buttons">cancel</property>
-    <property name="text" translatable="yes">Save the changes to X before closing?</property>
-    <property name="secondary_text" translatable="yes">If you don't save, changes from the last N minutes will be lost.</property>
-    <child internal-child="vbox">
-      <object class="GtkBox" id="messagedialog-vbox2">
-        <property name="can_focus">False</property>
-        <property name="orientation">vertical</property>
-        <property name="spacing">2</property>
-        <child internal-child="action_area">
-          <object class="GtkButtonBox" id="messagedialog-action_area2">
-            <property name="can_focus">False</property>
-            <property name="layout_style">end</property>
-            <child>
-              <object class="GtkButton" id="savewarn_close">
-                <property name="label" translatable="yes">Close _Without Saving</property>
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="receives_default">True</property>
-                <property name="image">close_icon</property>
-                <property name="use_underline">True</property>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">0</property>
-                <property name="non_homogeneous">True</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkButton" id="savewarn_save">
-                <property name="label">gtk-save</property>
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="has_focus">True</property>
-                <property name="is_focus">True</property>
-                <property name="can_default">True</property>
-                <property name="has_default">True</property>
-                <property name="receives_default">True</property>
-                <property name="use_stock">True</property>
-              </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">False</property>
-                <property name="position">2</property>
-              </packing>
-            </child>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">True</property>
-            <property name="pack_type">end</property>
-            <property name="position">0</property>
-          </packing>
-        </child>
-      </object>
-    </child>
-    <action-widgets>
-      <action-widget response="2">savewarn_close</action-widget>
-      <action-widget response="5">savewarn_save</action-widget>
-    </action-widgets>
-  </object>
-  <object class="GtkAdjustment" id="scale_adj">
-    <property name="lower">50</property>
-    <property name="upper">200</property>
-    <property name="value">100</property>
-    <property name="step_increment">20</property>
-    <property name="page_increment">10</property>
-    <signal name="value-changed" handler="app.zoom_changed" swapped="no"/>
-  </object>
-  <object class="GtkFileFilter" id="soc_filter">
-    <patterns>
-      <pattern>*.xml</pattern>
-    </patterns>
   </object>
   <object class="GtkDialog" id="style_dlg">
     <property name="can_focus">False</property>

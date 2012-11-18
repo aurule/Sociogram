@@ -102,7 +102,6 @@ class Sociogram(object):
         self.attr_store = Gtk.ListStore(str, str, bool, str)
         self.attr_store.set_sort_column_id(0, Gtk.SortType.ASCENDING)
         self.attr_disp = self.builder.get_object("attrstree")
-        self.attr_disp.set_rules_hint(True)
         self.attr_disp.set_model(self.attr_store)
         self.namecol = Gtk.TreeViewColumn("Name", editname, text=0)
         self.namecol.set_sort_column_id(0)
@@ -346,6 +345,10 @@ class Sociogram(object):
             settings = root.find('settings')
             scale = settings.find('scale').text
             self.scale_adj.set_value(float(scale))
+            sortprefs = settings.find('attrsort')
+            sortdir = Gtk.SortType.ASCENDING if sortprefs.attrib['direction'] == "asc" else Gtk.SortType.DESCENDING
+            sortcol = int(sortprefs.text)
+            self.attr_store.set_sort_column_id(sortcol, sortdir)
             
             #import document data
             data = root.find('data')
@@ -404,6 +407,10 @@ class Sociogram(object):
         #create settings
         settings = sub(root, 'settings')
         sub(settings, 'scale', self.scale_adj.get_value())
+        sortcol, sortdir = self.attr_store.get_sort_column_id()
+        sortdir = "asc" if sortdir == Gtk.SortType.ASCENDING else 'desc'
+        sortset = sub(settings, 'attrsort', sortcol)
+        sortset.set('direction', sortdir)
         
         #create data holder
         data = sub(root, 'data')
