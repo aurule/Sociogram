@@ -22,7 +22,7 @@ from gi.repository import Gtk, GooCanvas, Gdk
 import networkx as nx
 import xml.etree.ElementTree as et
 from time import time
-from os.path import basename
+from os.path import basename, dirname
 
 #import local libraries
 import Errors
@@ -44,6 +44,7 @@ class Sociogram(object):
         self.savepath = None
         self.lastsave = time()
         self.dirty = False
+        self.title = "Untitled Diagram - Sociogram"
         
         self.builder = Gtk.Builder()
         self.builder.add_from_file("ui/sociogram.ui")
@@ -174,6 +175,8 @@ class Sociogram(object):
         self.open_dlg = self.builder.get_object("open_dlg")
         self.save_warning = self.builder.get_object("savewarn_dlg")
         self.save_close_warning = self.builder.get_object("savewarn_close_dlg")
+        self.savebtn = self.builder.get_object("savefilebtn")
+        self.savemenu = self.builder.get_object("menu_save")
         
         self.hscroll = self.builder.get_object("horiz_scroll_adj")
         self.vscroll = self.builder.get_object("vertical_scroll_adj")
@@ -187,6 +190,7 @@ class Sociogram(object):
         
         #show the main window
         self.window = self.builder.get_object("sociogram_main")
+        self.window.set_title(self.title)
         self.window.show_all()
         
         # Attach handlers to signals described in the .ui file.
@@ -253,6 +257,16 @@ class Sociogram(object):
         
         Gtk.main_quit()
     
+    def update_title(self):
+        '''Update our window's title.'''
+        if self.savepath == None:
+            self.title = "Untitled Diagram - Sociogram"
+        else:
+            #title appearance: basename (path) - Sociogram
+            self.title = "%s (%s) - Sociogram" % (basename(self.savepath), dirname(self.savepath))
+        
+        self.window.set_title(self.title)
+    
     def set_dirty(self, val):
         '''Mark the current file as "dirty", indicating unsaved changes.'''
         if val == self.dirty: return
@@ -260,8 +274,9 @@ class Sociogram(object):
         self.dirty = val
         if not self.dirty:
             self.lastsave = time()
-        
-        #TODO update UI indicator
+            self.window.set_title(self.title)
+        else:
+            self.window.set_title("*"+self.title)
     
     def confirm_discard(self, closing=False):
         '''Prompt the user to save unfinished changes, if necessary.
@@ -295,6 +310,9 @@ class Sociogram(object):
         self.rel_store.clear()
         self.attr_store.clear()
         self.node_lbl_store.clear()
+        self.savepath = None
+        self.set_dirty(False)
+        self.update_title()
         
         self.zoom_reset()
         self.G.clear()
@@ -316,6 +334,7 @@ class Sociogram(object):
             self.make_new()
             
             self.savepath = open_dlg.get_filename()
+            self.update_title()
             tree = et.parse(self.savepath)
             root = tree.getroot()
             
@@ -440,6 +459,7 @@ class Sociogram(object):
         
         if uri != None:
             self.savepath = uri
+            self.update_title()
             self.set_dirty(True)
             self.save()
     
