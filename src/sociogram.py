@@ -855,14 +855,25 @@ class Sociogram(object):
         self.activate_all_controls()
         
         #now explicitly disable relationship-only controls
-        self.builder.get_object("relbox").set_sensitive(False)
+        '''self.builder.get_object("relbox").set_sensitive(False)
         self.builder.get_object("frombox").set_sensitive(False)
         self.builder.get_object("tobox").set_sensitive(False)
-        self.builder.get_object("weightbox").set_sensitive(False)
+        self.builder.get_object("weightbox").set_sensitive(False)'''
+        #TODO hide rel controls
+        self.builder.get_object("relbox").hide()
+        self.builder.get_object("frombox").hide()
+        self.builder.get_object("tobox").hide()
+        self.builder.get_object("weightbox").hide()
     
     def activate_rel_controls(self):
         '''Show relationship controls.'''
         self.activate_all_controls()
+        #TODO hide rel controls
+        self.builder.get_object("relbox").show()
+        self.builder.get_object("frombox").show()
+        self.builder.get_object("tobox").show()
+        self.builder.get_object("weightbox").show()
+        #TODO show rel controls
     
     def activate_all_controls(self):
         '''Make all selection-specific controls sensitive to input.'''

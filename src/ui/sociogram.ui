@@ -604,7 +604,6 @@
     <property name="can_focus">False</property>
     <property name="stock">gtk-select-color</property>
   </object>
-  <object class="GtkEntryCompletion" id="entrycompletion1"/>
   <object class="GtkImage" id="done_icon">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
@@ -654,6 +653,7 @@
       </object>
     </child>
   </object>
+  <object class="GtkEntryCompletion" id="entrycompletion1"/>
   <object class="GtkImage" id="help_icon">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
@@ -1371,6 +1371,12 @@
       <action-widget response="0">close_prefs</action-widget>
     </action-widgets>
   </object>
+  <object class="GtkImage" id="recents_icon">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="icon_name">document-open-recent</property>
+    <property name="icon-size">1</property>
+  </object>
   <object class="GtkRecentFilter" id="recents_filter">
     <patterns>
       <pattern>*.xml</pattern>
@@ -1378,12 +1384,6 @@
     <applications>
       <application>Sociogram</application>
     </applications>
-  </object>
-  <object class="GtkImage" id="recents_icon">
-    <property name="visible">True</property>
-    <property name="can_focus">False</property>
-    <property name="icon_name">document-open-recent</property>
-    <property name="icon-size">1</property>
   </object>
   <object class="GtkDialog" id="rel_style_popup">
     <property name="can_focus">False</property>
@@ -2932,8 +2932,8 @@
                         <property name="homogeneous">True</property>
                         <child>
                           <object class="GtkBox" id="relbox">
-                            <property name="visible">True</property>
                             <property name="can_focus">False</property>
+                            <property name="no_show_all">True</property>
                             <property name="spacing">3</property>
                             <child>
                               <object class="GtkLabel" id="rel_label">
@@ -3017,8 +3017,8 @@
                         </child>
                         <child>
                           <object class="GtkBox" id="frombox">
-                            <property name="visible">True</property>
                             <property name="can_focus">False</property>
+                            <property name="no_show_all">True</property>
                             <property name="spacing">3</property>
                             <child>
                               <object class="GtkLabel" id="fromlbl">
@@ -3069,8 +3069,8 @@
                         </child>
                         <child>
                           <object class="GtkBox" id="tobox">
-                            <property name="visible">True</property>
                             <property name="can_focus">False</property>
+                            <property name="no_show_all">True</property>
                             <property name="spacing">3</property>
                             <child>
                               <object class="GtkLabel" id="tolbl">
@@ -3119,8 +3119,8 @@
                         </child>
                         <child>
                           <object class="GtkBox" id="weightbox">
-                            <property name="visible">True</property>
                             <property name="can_focus">False</property>
+                            <property name="no_show_all">True</property>
                             <property name="spacing">3</property>
                             <child>
                               <object class="GtkLabel" id="weightlbl">
