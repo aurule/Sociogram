@@ -127,7 +127,7 @@ class Sociogram(object):
 
         #create canvas object and add to the scroll window
         #VERY IMPORTANT. using the normal window.add() call fails, but setting the parent like this makes everything fine
-        self.canvas = Drawing.Canvas(parent=self.builder.get_object("canvas_scroll"), has_tooltip=True)
+        self.canvas = Drawing.Canvas(parent=self.builder.get_object("canvas_scroll"), has_tooltip=True, background_color="white")
         #attach callbacks
         self.canvas.node_callback = self.node_clicked
         self.canvas.line_callback = self.line_clicked
