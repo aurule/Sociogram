@@ -248,9 +248,11 @@
             <child>
               <object class="GtkButton" id="new_cancel">
                 <property name="label">gtk-cancel</property>
+                <property name="use_action_appearance">False</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">False</property>
+                <property name="use_action_appearance">False</property>
                 <property name="use_stock">True</property>
                 <property name="yalign">0.51999998092651367</property>
               </object>
@@ -263,12 +265,14 @@
             <child>
               <object class="GtkButton" id="new_ok">
                 <property name="label">gtk-add</property>
+                <property name="use_action_appearance">False</property>
                 <property name="visible">True</property>
                 <property name="sensitive">False</property>
                 <property name="can_focus">True</property>
                 <property name="can_default">True</property>
                 <property name="has_default">True</property>
                 <property name="receives_default">True</property>
+                <property name="use_action_appearance">False</property>
                 <property name="use_stock">True</property>
               </object>
               <packing>
@@ -526,11 +530,13 @@
             <child>
               <object class="GtkCheckButton" id="bidir_new">
                 <property name="label" translatable="yes">_Mutual</property>
+                <property name="use_action_appearance">False</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">False</property>
                 <property name="has_tooltip">True</property>
                 <property name="tooltip_markup" translatable="yes">Shows arrows on both ends of the relationship</property>
                 <property name="tooltip_text" translatable="yes">Shows arrows on both ends of the relationship</property>
+                <property name="use_action_appearance">False</property>
                 <property name="use_underline">True</property>
                 <property name="xalign">0</property>
                 <property name="image_position">right</property>
@@ -545,10 +551,12 @@
             <child>
               <object class="GtkCheckButton" id="use_copied_attrs">
                 <property name="label" translatable="yes">_Use copied attributes</property>
+                <property name="use_action_appearance">False</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">False</property>
                 <property name="tooltip_text" translatable="yes">Automatically paste copied attributes into new object</property>
+                <property name="use_action_appearance">False</property>
                 <property name="use_underline">True</property>
                 <property name="focus_on_click">False</property>
                 <property name="xalign">0</property>
@@ -596,6 +604,7 @@
     <property name="can_focus">False</property>
     <property name="stock">gtk-select-color</property>
   </object>
+  <object class="GtkEntryCompletion" id="entrycompletion1"/>
   <object class="GtkImage" id="done_icon">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
@@ -645,7 +654,6 @@
       </object>
     </child>
   </object>
-  <object class="GtkEntryCompletion" id="entrycompletion1"/>
   <object class="GtkImage" id="help_icon">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
@@ -691,9 +699,11 @@
             <child>
               <object class="GtkButton" id="node_style_cancel">
                 <property name="label">gtk-cancel</property>
+                <property name="use_action_appearance">False</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">False</property>
+                <property name="use_action_appearance">False</property>
                 <property name="use_stock">True</property>
               </object>
               <packing>
@@ -705,9 +715,11 @@
             <child>
               <object class="GtkButton" id="node_style_ok">
                 <property name="label">gtk-ok</property>
+                <property name="use_action_appearance">False</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">False</property>
+                <property name="use_action_appearance">False</property>
                 <property name="use_stock">True</property>
               </object>
               <packing>
@@ -847,9 +859,11 @@
                             </child>
                             <child>
                               <object class="GtkColorButton" id="node_color_btn">
+                                <property name="use_action_appearance">False</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">False</property>
+                                <property name="use_action_appearance">False</property>
                                 <property name="title" translatable="yes">Background Color</property>
                                 <property name="color">#e9e9b9b96e6e</property>
                               </object>
@@ -913,9 +927,11 @@
                             </child>
                             <child>
                               <object class="GtkColorButton" id="border_color">
+                                <property name="use_action_appearance">False</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">False</property>
+                                <property name="use_action_appearance">False</property>
                                 <property name="title" translatable="yes">Border Color</property>
                                 <property name="color">#000000000000</property>
                               </object>
@@ -985,9 +1001,11 @@
                         </child>
                         <child>
                           <object class="GtkFontButton" id="node_label_fontbtn">
+                            <property name="use_action_appearance">False</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">False</property>
+                            <property name="use_action_appearance">False</property>
                             <property name="font">Sans 12</property>
                             <property name="preview_text">The quick brown fox jumps over the lazy dog</property>
                             <property name="show_preview_entry">False</property>
@@ -1001,9 +1019,11 @@
                         </child>
                         <child>
                           <object class="GtkColorButton" id="node_label_colorbtn">
+                            <property name="use_action_appearance">False</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">False</property>
+                            <property name="use_action_appearance">False</property>
                             <property name="title" translatable="yes">Label Color</property>
                           </object>
                           <packing>
@@ -1115,9 +1135,11 @@
             <child>
               <object class="GtkButton" id="open_dlg_cancel">
                 <property name="label">gtk-cancel</property>
+                <property name="use_action_appearance">False</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
+                <property name="use_action_appearance">False</property>
                 <property name="use_stock">True</property>
               </object>
               <packing>
@@ -1129,9 +1151,11 @@
             <child>
               <object class="GtkButton" id="open_dlg_ok">
                 <property name="label">gtk-open</property>
+                <property name="use_action_appearance">False</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
+                <property name="use_action_appearance">False</property>
                 <property name="use_stock">True</property>
               </object>
               <packing>
@@ -1184,9 +1208,11 @@
             <child>
               <object class="GtkButton" id="paste_cancel">
                 <property name="label">gtk-cancel</property>
+                <property name="use_action_appearance">False</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">False</property>
+                <property name="use_action_appearance">False</property>
                 <property name="use_stock">True</property>
               </object>
               <packing>
@@ -1198,9 +1224,11 @@
             <child>
               <object class="GtkButton" id="paste_ok">
                 <property name="label">gtk-paste</property>
+                <property name="use_action_appearance">False</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">False</property>
+                <property name="use_action_appearance">False</property>
                 <property name="use_stock">True</property>
               </object>
               <packing>
@@ -1263,9 +1291,11 @@
             <child>
               <object class="GtkCheckButton" id="ignore_paste_warning">
                 <property name="label" translatable="yes">Don't show this warning again</property>
+                <property name="use_action_appearance">False</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">False</property>
+                <property name="use_action_appearance">False</property>
                 <property name="xalign">0</property>
                 <property name="draw_indicator">True</property>
               </object>
@@ -1311,9 +1341,11 @@
             <child>
               <object class="GtkButton" id="close_prefs">
                 <property name="label">gtk-close</property>
+                <property name="use_action_appearance">False</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">False</property>
+                <property name="use_action_appearance">False</property>
                 <property name="use_stock">True</property>
               </object>
               <packing>
@@ -1339,12 +1371,6 @@
       <action-widget response="0">close_prefs</action-widget>
     </action-widgets>
   </object>
-  <object class="GtkImage" id="recents_icon">
-    <property name="visible">True</property>
-    <property name="can_focus">False</property>
-    <property name="icon_name">document-open-recent</property>
-    <property name="icon-size">1</property>
-  </object>
   <object class="GtkRecentFilter" id="recents_filter">
     <patterns>
       <pattern>*.xml</pattern>
@@ -1352,6 +1378,12 @@
     <applications>
       <application>Sociogram</application>
     </applications>
+  </object>
+  <object class="GtkImage" id="recents_icon">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="icon_name">document-open-recent</property>
+    <property name="icon-size">1</property>
   </object>
   <object class="GtkDialog" id="rel_style_popup">
     <property name="can_focus">False</property>
@@ -1374,9 +1406,11 @@
             <child>
               <object class="GtkButton" id="rel_style_cancel">
                 <property name="label">gtk-cancel</property>
+                <property name="use_action_appearance">False</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">False</property>
+                <property name="use_action_appearance">False</property>
                 <property name="use_stock">True</property>
               </object>
               <packing>
@@ -1388,9 +1422,11 @@
             <child>
               <object class="GtkButton" id="rel_style_ok">
                 <property name="label">gtk-ok</property>
+                <property name="use_action_appearance">False</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">False</property>
+                <property name="use_action_appearance">False</property>
                 <property name="use_stock">True</property>
               </object>
               <packing>
@@ -1513,9 +1549,11 @@
                         </child>
                         <child>
                           <object class="GtkFontButton" id="rel_filter_label_font">
+                            <property name="use_action_appearance">False</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">False</property>
+                            <property name="use_action_appearance">False</property>
                             <property name="font">Sans 12</property>
                             <property name="preview_text">The quick brown fox jumps over the lazy dog</property>
                             <property name="show_preview_entry">False</property>
@@ -1529,9 +1567,11 @@
                         </child>
                         <child>
                           <object class="GtkColorButton" id="rel_filter_label_color">
+                            <property name="use_action_appearance">False</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">False</property>
+                            <property name="use_action_appearance">False</property>
                             <property name="title" translatable="yes">Label Color</property>
                           </object>
                           <packing>
@@ -1601,9 +1641,11 @@
             <child>
               <object class="GtkButton" id="save_dlg_cancel">
                 <property name="label">gtk-cancel</property>
+                <property name="use_action_appearance">False</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
+                <property name="use_action_appearance">False</property>
                 <property name="use_stock">True</property>
               </object>
               <packing>
@@ -1615,9 +1657,11 @@
             <child>
               <object class="GtkButton" id="save_dlg_ok">
                 <property name="label">gtk-save</property>
+                <property name="use_action_appearance">False</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
+                <property name="use_action_appearance">False</property>
                 <property name="use_stock">True</property>
               </object>
               <packing>
@@ -1667,9 +1711,11 @@
             <child>
               <object class="GtkButton" id="savewarn_close1">
                 <property name="label" translatable="yes">Close _without Saving</property>
+                <property name="use_action_appearance">False</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
+                <property name="use_action_appearance">False</property>
                 <property name="image">close_icon1</property>
                 <property name="use_underline">True</property>
               </object>
@@ -1683,11 +1729,13 @@
             <child>
               <object class="GtkButton" id="savewarn_save1">
                 <property name="label">gtk-save</property>
+                <property name="use_action_appearance">False</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="can_default">True</property>
                 <property name="has_default">True</property>
                 <property name="receives_default">True</property>
+                <property name="use_action_appearance">False</property>
                 <property name="use_stock">True</property>
               </object>
               <packing>
@@ -1735,9 +1783,11 @@
             <child>
               <object class="GtkButton" id="savewarn_close">
                 <property name="label" translatable="yes">Close _without Saving</property>
+                <property name="use_action_appearance">False</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
+                <property name="use_action_appearance">False</property>
                 <property name="image">close_icon</property>
                 <property name="use_underline">True</property>
               </object>
@@ -1751,6 +1801,7 @@
             <child>
               <object class="GtkButton" id="savewarn_save">
                 <property name="label">gtk-save</property>
+                <property name="use_action_appearance">False</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="has_focus">True</property>
@@ -1758,6 +1809,7 @@
                 <property name="can_default">True</property>
                 <property name="has_default">True</property>
                 <property name="receives_default">True</property>
+                <property name="use_action_appearance">False</property>
                 <property name="use_stock">True</property>
               </object>
               <packing>
@@ -1810,9 +1862,11 @@
             <child>
               <object class="GtkButton" id="close_search">
                 <property name="label">gtk-close</property>
+                <property name="use_action_appearance">False</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">True</property>
+                <property name="use_action_appearance">False</property>
                 <property name="use_stock">True</property>
               </object>
               <packing>
@@ -1824,11 +1878,13 @@
             <child>
               <object class="GtkButton" id="find_search">
                 <property name="label">gtk-find</property>
+                <property name="use_action_appearance">False</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="can_default">True</property>
                 <property name="has_default">True</property>
                 <property name="receives_default">True</property>
+                <property name="use_action_appearance">False</property>
                 <property name="use_stock">True</property>
               </object>
               <packing>
@@ -1911,9 +1967,11 @@
                         <child>
                           <object class="GtkCheckButton" id="search_node_lbl">
                             <property name="label" translatable="yes">_Node labels</property>
+                            <property name="use_action_appearance">False</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">False</property>
+                            <property name="use_action_appearance">False</property>
                             <property name="use_underline">True</property>
                             <property name="xalign">0</property>
                             <property name="active">True</property>
@@ -1928,9 +1986,11 @@
                         <child>
                           <object class="GtkCheckButton" id="search_rel_lbl">
                             <property name="label" translatable="yes">_Relationship labels</property>
+                            <property name="use_action_appearance">False</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">False</property>
+                            <property name="use_action_appearance">False</property>
                             <property name="use_underline">True</property>
                             <property name="xalign">0</property>
                             <property name="active">True</property>
@@ -1945,9 +2005,11 @@
                         <child>
                           <object class="GtkCheckButton" id="search_rel_origin">
                             <property name="label" translatable="yes">Relationship _origin</property>
+                            <property name="use_action_appearance">False</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">False</property>
+                            <property name="use_action_appearance">False</property>
                             <property name="use_underline">True</property>
                             <property name="xalign">0</property>
                             <property name="draw_indicator">True</property>
@@ -1961,9 +2023,11 @@
                         <child>
                           <object class="GtkCheckButton" id="search_rel_dest">
                             <property name="label" translatable="yes">Relationship _destination</property>
+                            <property name="use_action_appearance">False</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="receives_default">False</property>
+                            <property name="use_action_appearance">False</property>
                             <property name="use_underline">True</property>
                             <property name="xalign">0</property>
                             <property name="draw_indicator">True</property>
@@ -2032,6 +2096,7 @@
             <property name="can_focus">False</property>
             <child>
               <object class="GtkMenuItem" id="menuitem1">
+                <property name="use_action_appearance">False</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="label" translatable="yes">_File</property>
@@ -2043,6 +2108,7 @@
                     <child>
                       <object class="GtkImageMenuItem" id="menu_newfile">
                         <property name="label">gtk-new</property>
+                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="use_underline">True</property>
@@ -2053,6 +2119,7 @@
                     <child>
                       <object class="GtkImageMenuItem" id="menu_open">
                         <property name="label">gtk-open</property>
+                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="use_underline">True</property>
@@ -2064,6 +2131,7 @@
                     <child>
                       <object class="GtkImageMenuItem" id="menu_recents">
                         <property name="label" translatable="yes">Open Recent</property>
+                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="image">recents_icon</property>
@@ -2081,6 +2149,7 @@
                     <child>
                       <object class="GtkImageMenuItem" id="menu_save">
                         <property name="label">gtk-save</property>
+                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="use_underline">True</property>
@@ -2092,6 +2161,7 @@
                     <child>
                       <object class="GtkImageMenuItem" id="menu_saveas">
                         <property name="label">gtk-save-as</property>
+                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="use_underline">True</property>
@@ -2107,6 +2177,7 @@
                     </child>
                     <child>
                       <object class="GtkMenuItem" id="export_menu">
+                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="tooltip_text" translatable="yes">Export graph</property>
@@ -2125,6 +2196,7 @@
                     <child>
                       <object class="GtkImageMenuItem" id="menu_quit">
                         <property name="label">gtk-quit</property>
+                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="use_underline">True</property>
@@ -2138,6 +2210,7 @@
             </child>
             <child>
               <object class="GtkMenuItem" id="menuitem2">
+                <property name="use_action_appearance">False</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="label" translatable="yes">_Edit</property>
@@ -2149,6 +2222,7 @@
                     <child>
                       <object class="GtkImageMenuItem" id="menu_find">
                         <property name="label">gtk-find</property>
+                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="use_underline">True</property>
@@ -2166,6 +2240,7 @@
                     <child>
                       <object class="GtkImageMenuItem" id="menu_undo">
                         <property name="label">gtk-undo</property>
+                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="sensitive">False</property>
                         <property name="can_focus">False</property>
@@ -2177,6 +2252,7 @@
                     <child>
                       <object class="GtkImageMenuItem" id="menu_redo">
                         <property name="label">gtk-redo</property>
+                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="sensitive">False</property>
                         <property name="can_focus">False</property>
@@ -2194,6 +2270,7 @@
                     <child>
                       <object class="GtkImageMenuItem" id="menu_newobj">
                         <property name="label">Add</property>
+                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="tooltip_text" translatable="yes">Add a new node or relationship</property>
@@ -2206,9 +2283,10 @@
                     <child>
                       <object class="GtkImageMenuItem" id="menu_copy">
                         <property name="label">gtk-copy</property>
-                        <property name="visible">True</property>
+                        <property name="use_action_appearance">False</property>
                         <property name="sensitive">False</property>
                         <property name="can_focus">False</property>
+                        <property name="no_show_all">True</property>
                         <property name="tooltip_text" translatable="yes">Copy selected object's attributes</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
@@ -2218,9 +2296,10 @@
                     <child>
                       <object class="GtkImageMenuItem" id="menu_paste">
                         <property name="label">gtk-paste</property>
-                        <property name="visible">True</property>
+                        <property name="use_action_appearance">False</property>
                         <property name="sensitive">False</property>
                         <property name="can_focus">False</property>
+                        <property name="no_show_all">True</property>
                         <property name="tooltip_text" translatable="yes">Replace object's attributes</property>
                         <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
@@ -2230,6 +2309,7 @@
                     <child>
                       <object class="GtkImageMenuItem" id="menu_delete">
                         <property name="label">gtk-delete</property>
+                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="sensitive">False</property>
                         <property name="can_focus">False</property>
@@ -2248,6 +2328,7 @@
                     <child>
                       <object class="GtkImageMenuItem" id="menu_prefs">
                         <property name="label">gtk-preferences</property>
+                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="use_underline">True</property>
@@ -2261,6 +2342,7 @@
             </child>
             <child>
               <object class="GtkMenuItem" id="menuitem3">
+                <property name="use_action_appearance">False</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="label" translatable="yes">_View</property>
@@ -2271,6 +2353,7 @@
                     <property name="can_focus">False</property>
                     <child>
                       <object class="GtkMenuItem" id="zoom_menu">
+                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="label" translatable="yes">Zoom</property>
@@ -2282,6 +2365,7 @@
                             <child>
                               <object class="GtkImageMenuItem" id="Zoom 1:1">
                                 <property name="label">gtk-zoom-100</property>
+                                <property name="use_action_appearance">False</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
                                 <property name="tooltip_text" translatable="yes">Zoom to original scale.</property>
@@ -2293,6 +2377,7 @@
                             <child>
                               <object class="GtkImageMenuItem" id="Zoom In">
                                 <property name="label">gtk-zoom-in</property>
+                                <property name="use_action_appearance">False</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
                                 <property name="tooltip_text" translatable="yes">Increase zoom level</property>
@@ -2304,6 +2389,7 @@
                             <child>
                               <object class="GtkImageMenuItem" id="Zoom Out">
                                 <property name="label">gtk-zoom-out</property>
+                                <property name="use_action_appearance">False</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
                                 <property name="tooltip_text" translatable="yes">Decrease zoom level</property>
@@ -2315,6 +2401,7 @@
                             <child>
                               <object class="GtkImageMenuItem" id="Best Fit">
                                 <property name="label">gtk-zoom-fit</property>
+                                <property name="use_action_appearance">False</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
                                 <property name="tooltip_text" translatable="yes">Shrink or enlarge graph to fit window.</property>
@@ -2329,6 +2416,7 @@
                     </child>
                     <child>
                       <object class="GtkCheckMenuItem" id="menu_highlight">
+                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="tooltip_text" translatable="yes">Toggle highlighting of currently-selected node(s) and connected relationships</property>
@@ -2340,6 +2428,7 @@
                     </child>
                     <child>
                       <object class="GtkCheckMenuItem" id="menu_fullscreen">
+                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="label" translatable="yes">_Fullscreen</property>
@@ -2356,6 +2445,7 @@
                     </child>
                     <child>
                       <object class="GtkCheckMenuItem" id="menu_show_toolbar">
+                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="tooltip_text" translatable="yes">Show or hide the toolbar</property>
@@ -2367,6 +2457,7 @@
                     </child>
                     <child>
                       <object class="GtkCheckMenuItem" id="menu_show_statusbar">
+                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="tooltip_text" translatable="yes">Show or hide the statusbar</property>
@@ -2378,6 +2469,7 @@
                     </child>
                     <child>
                       <object class="GtkCheckMenuItem" id="menu_show_sidebar">
+                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="tooltip_text" translatable="yes">Show or hide sidebar</property>
@@ -2397,6 +2489,7 @@
                     <child>
                       <object class="GtkImageMenuItem" id="menu_colorfilter">
                         <property name="label" translatable="yes">_Style rules...</property>
+                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="tooltip_text" translatable="yes">Change the styling rules used to color and shape objects</property>
@@ -2415,6 +2508,7 @@
                     <child>
                       <object class="GtkImageMenuItem" id="menu_refresh">
                         <property name="label">gtk-refresh</property>
+                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="tooltip_text" translatable="yes">Refresh graph</property>
@@ -2430,6 +2524,7 @@
             </child>
             <child>
               <object class="GtkMenuItem" id="menuitem4">
+                <property name="use_action_appearance">False</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="label" translatable="yes">_Help</property>
@@ -2441,6 +2536,7 @@
                     <child>
                       <object class="GtkImageMenuItem" id="menu_doc">
                         <property name="label">_Help Docs</property>
+                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="tooltip_text" translatable="yes">Read the help documentation</property>
@@ -2454,6 +2550,7 @@
                     <child>
                       <object class="GtkImageMenuItem" id="menu_about">
                         <property name="label">gtk-about</property>
+                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="use_underline">True</property>
@@ -2477,15 +2574,14 @@
             <property name="visible">True</property>
             <property name="can_focus">False</property>
             <property name="show_arrow">False</property>
-            <style>
-              <class name="primary-toolbar"/>
-            </style>
             <child>
               <object class="GtkToolButton" id="newfilebtn">
+                <property name="use_action_appearance">False</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="tooltip_text" translatable="yes">New File</property>
                 <property name="halign">start</property>
+                <property name="use_action_appearance">False</property>
                 <property name="label" translatable="yes">New</property>
                 <property name="use_underline">True</property>
                 <property name="stock_id">gtk-new</property>
@@ -2498,9 +2594,11 @@
             </child>
             <child>
               <object class="GtkToolButton" id="openfilebtn">
+                <property name="use_action_appearance">False</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="tooltip_text" translatable="yes">Open File</property>
+                <property name="use_action_appearance">False</property>
                 <property name="is_important">True</property>
                 <property name="label" translatable="yes">Open</property>
                 <property name="use_underline">True</property>
@@ -2514,9 +2612,11 @@
             </child>
             <child>
               <object class="GtkToolButton" id="savefilebtn">
+                <property name="use_action_appearance">False</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="tooltip_text" translatable="yes">Save File</property>
+                <property name="use_action_appearance">False</property>
                 <property name="is_important">True</property>
                 <property name="label" translatable="yes">Save</property>
                 <property name="use_underline">True</property>
@@ -2540,9 +2640,11 @@
             </child>
             <child>
               <object class="GtkToolButton" id="undo">
+                <property name="use_action_appearance">False</property>
                 <property name="sensitive">False</property>
                 <property name="can_focus">False</property>
                 <property name="tooltip_text" translatable="yes">Undo</property>
+                <property name="use_action_appearance">False</property>
                 <property name="is_important">True</property>
                 <property name="label" translatable="yes">Undo</property>
                 <property name="use_underline">True</property>
@@ -2556,9 +2658,11 @@
             </child>
             <child>
               <object class="GtkToolButton" id="redo">
+                <property name="use_action_appearance">False</property>
                 <property name="sensitive">False</property>
                 <property name="can_focus">False</property>
                 <property name="tooltip_text" translatable="yes">Redo</property>
+                <property name="use_action_appearance">False</property>
                 <property name="label" translatable="yes">Redo</property>
                 <property name="use_underline">True</property>
                 <property name="stock_id">gtk-redo</property>
@@ -2580,9 +2684,11 @@
             </child>
             <child>
               <object class="GtkToolButton" id="newbtn">
+                <property name="use_action_appearance">False</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="tooltip_text" translatable="yes">Add a new node or relationship</property>
+                <property name="use_action_appearance">False</property>
                 <property name="is_important">True</property>
                 <property name="label" translatable="yes">Add</property>
                 <property name="icon_name">contact-new</property>
@@ -2595,10 +2701,13 @@
             </child>
             <child>
               <object class="GtkToolButton" id="copy">
+                <property name="use_action_appearance">False</property>
                 <property name="visible">True</property>
                 <property name="sensitive">False</property>
                 <property name="can_focus">False</property>
                 <property name="tooltip_text" translatable="yes">Copy selected item's attributes</property>
+                <property name="use_action_appearance">False</property>
+                <property name="visible_horizontal">False</property>
                 <property name="label" translatable="yes">Copy</property>
                 <property name="use_underline">True</property>
                 <property name="stock_id">gtk-copy</property>
@@ -2611,10 +2720,13 @@
             </child>
             <child>
               <object class="GtkToolButton" id="paste">
+                <property name="use_action_appearance">False</property>
                 <property name="visible">True</property>
                 <property name="sensitive">False</property>
                 <property name="can_focus">False</property>
                 <property name="tooltip_text" translatable="yes">Replace attributes</property>
+                <property name="use_action_appearance">False</property>
+                <property name="visible_horizontal">False</property>
                 <property name="label" translatable="yes">Paste</property>
                 <property name="use_underline">True</property>
                 <property name="stock_id">gtk-paste</property>
@@ -2627,10 +2739,12 @@
             </child>
             <child>
               <object class="GtkToolButton" id="del">
+                <property name="use_action_appearance">False</property>
                 <property name="visible">True</property>
                 <property name="sensitive">False</property>
                 <property name="can_focus">False</property>
                 <property name="tooltip_text" translatable="yes">Delete selected object(s)</property>
+                <property name="use_action_appearance">False</property>
                 <property name="label" translatable="yes">Delete</property>
                 <property name="use_underline">True</property>
                 <property name="stock_id">gtk-delete</property>
@@ -2653,9 +2767,11 @@
             </child>
             <child>
               <object class="GtkToggleToolButton" id="highlight_btn">
+                <property name="use_action_appearance">False</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="tooltip_text" translatable="yes">Toggle Highlight Mode</property>
+                <property name="use_action_appearance">False</property>
                 <property name="label" translatable="yes">Highlight Mode</property>
                 <property name="icon_name">view-fullscreen</property>
                 <signal name="toggled" handler="graph.toggle_highlight" swapped="no"/>
@@ -2667,8 +2783,10 @@
             </child>
             <child>
               <object class="GtkToolItem" id="spinnerbox">
+                <property name="use_action_appearance">False</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
+                <property name="use_action_appearance">False</property>
                 <child>
                   <object class="GtkSpinButton" id="highlight_radius">
                     <property name="visible">True</property>
@@ -2689,8 +2807,10 @@
             </child>
             <child>
               <object class="GtkToolItem" id="paddingbox">
+                <property name="use_action_appearance">False</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
+                <property name="use_action_appearance">False</property>
                 <child>
                   <placeholder/>
                 </child>
@@ -2701,8 +2821,10 @@
             </child>
             <child>
               <object class="GtkToolItem" id="findbox">
+                <property name="use_action_appearance">False</property>
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
+                <property name="use_action_appearance">False</property>
                 <child>
                   <object class="GtkEntry" id="search_entry">
                     <property name="visible">True</property>
@@ -2713,9 +2835,6 @@
                     <property name="secondary_icon_stock">gtk-find</property>
                     <property name="secondary_icon_tooltip_text" translatable="yes">Search</property>
                     <property name="placeholder_text">Find node</property>
-                    <style>
-                      <class name="primary-toolbar"/>
-                    </style>
                     <signal name="changed" handler="app.reset_search_icon" swapped="no"/>
                     <signal name="activate" handler="app.search" swapped="no"/>
                     <signal name="focus-out-event" handler="app.reset_search_icon" swapped="no"/>
@@ -3054,12 +3173,14 @@
                             <child>
                               <object class="GtkCheckButton" id="bidir">
                                 <property name="label" translatable="yes">_Mutual</property>
+                                <property name="use_action_appearance">False</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">False</property>
                                 <property name="has_tooltip">True</property>
                                 <property name="tooltip_markup" translatable="yes">Show arrows on both ends of the relationship</property>
                                 <property name="tooltip_text" translatable="yes">Show arrows on both ends of the relationship</property>
+                                <property name="use_action_appearance">False</property>
                                 <property name="use_underline">True</property>
                                 <property name="xalign">0</property>
                                 <property name="draw_indicator">True</property>
@@ -3114,9 +3235,11 @@
                             <property name="icon_size">2</property>
                             <child>
                               <object class="GtkToolButton" id="add_attr">
+                                <property name="use_action_appearance">False</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
                                 <property name="tooltip_text" translatable="yes">Add new attribute</property>
+                                <property name="use_action_appearance">False</property>
                                 <property name="label" translatable="yes">Add</property>
                                 <property name="use_underline">True</property>
                                 <property name="stock_id">gtk-add</property>
@@ -3129,9 +3252,11 @@
                             </child>
                             <child>
                               <object class="GtkToolButton" id="remove_attr">
+                                <property name="use_action_appearance">False</property>
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
                                 <property name="tooltip_text" translatable="yes">Remove selected attribute</property>
+                                <property name="use_action_appearance">False</property>
                                 <property name="label" translatable="yes">Remove</property>
                                 <property name="use_underline">True</property>
                                 <property name="stock_id">gtk-remove</property>
@@ -3231,9 +3356,11 @@
             <child>
               <object class="GtkButton" id="style_apply">
                 <property name="label">gtk-apply</property>
+                <property name="use_action_appearance">False</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">False</property>
+                <property name="use_action_appearance">False</property>
                 <property name="use_stock">True</property>
                 <signal name="activate" handler="graph.refresh" swapped="no"/>
               </object>
@@ -3246,9 +3373,11 @@
             <child>
               <object class="GtkButton" id="style_done">
                 <property name="label" translatable="yes">_Done</property>
+                <property name="use_action_appearance">False</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">False</property>
+                <property name="use_action_appearance">False</property>
                 <property name="image">done_icon</property>
                 <property name="use_underline">True</property>
               </object>
@@ -3282,9 +3411,11 @@
                     <property name="icon_size">2</property>
                     <child>
                       <object class="GtkToolButton" id="add_node_style">
+                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="tooltip_text" translatable="yes">Add a new node style rule</property>
+                        <property name="use_action_appearance">False</property>
                         <property name="label" translatable="yes">_Add</property>
                         <property name="use_underline">True</property>
                         <property name="stock_id">gtk-add</property>
@@ -3296,9 +3427,11 @@
                     </child>
                     <child>
                       <object class="GtkToolButton" id="edit_node_style">
+                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="tooltip_text" translatable="yes">Edit selected node style</property>
+                        <property name="use_action_appearance">False</property>
                         <property name="label" translatable="yes">_Edit</property>
                         <property name="use_underline">True</property>
                         <property name="stock_id">gtk-edit</property>
@@ -3310,10 +3443,12 @@
                     </child>
                     <child>
                       <object class="GtkToolButton" id="del_node_style">
+                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="tooltip_markup" translatable="yes">Delete selected node style(s)</property>
                         <property name="tooltip_text" translatable="yes">Delete selected node style(s)</property>
+                        <property name="use_action_appearance">False</property>
                         <property name="label" translatable="yes">_Delete</property>
                         <property name="use_underline">True</property>
                         <property name="stock_id">gtk-delete</property>
@@ -3335,9 +3470,11 @@
                     </child>
                     <child>
                       <object class="GtkToolButton" id="copy_node_style">
+                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="tooltip_text" translatable="yes">Copy node style rule</property>
+                        <property name="use_action_appearance">False</property>
                         <property name="label" translatable="yes">_Copy</property>
                         <property name="use_underline">True</property>
                         <property name="stock_id">gtk-copy</property>
@@ -3349,9 +3486,11 @@
                     </child>
                     <child>
                       <object class="GtkToolButton" id="paste_node_style">
+                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="tooltip_text" translatable="yes">Create new node style rule from copied style</property>
+                        <property name="use_action_appearance">False</property>
                         <property name="label" translatable="yes">_Paste new</property>
                         <property name="use_underline">True</property>
                         <property name="stock_id">gtk-new</property>
@@ -3408,11 +3547,13 @@
                     <property name="icon_size">2</property>
                     <child>
                       <object class="GtkToolButton" id="add_rel_style">
+                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="has_tooltip">True</property>
                         <property name="tooltip_markup" translatable="yes">Add a new relationship style rule</property>
                         <property name="tooltip_text" translatable="yes">Add a new relationship style rule</property>
+                        <property name="use_action_appearance">False</property>
                         <property name="label" translatable="yes">_Add</property>
                         <property name="use_underline">True</property>
                         <property name="stock_id">gtk-add</property>
@@ -3424,11 +3565,13 @@
                     </child>
                     <child>
                       <object class="GtkToolButton" id="edit_rel_style">
+                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="has_tooltip">True</property>
                         <property name="tooltip_markup" translatable="yes">Edit selected relationship style</property>
                         <property name="tooltip_text" translatable="yes">Edit selected relationship style</property>
+                        <property name="use_action_appearance">False</property>
                         <property name="label" translatable="yes">_Edit</property>
                         <property name="use_underline">True</property>
                         <property name="stock_id">gtk-edit</property>
@@ -3440,10 +3583,12 @@
                     </child>
                     <child>
                       <object class="GtkToolButton" id="del_rel_style">
+                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="tooltip_markup" translatable="yes">Delete selected relationship style(s)</property>
                         <property name="tooltip_text" translatable="yes">Delete selected relationship style(s)</property>
+                        <property name="use_action_appearance">False</property>
                         <property name="label" translatable="yes">_Delete</property>
                         <property name="use_underline">True</property>
                         <property name="stock_id">gtk-delete</property>
@@ -3465,11 +3610,13 @@
                     </child>
                     <child>
                       <object class="GtkToolButton" id="copy_rel_style">
+                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="has_tooltip">True</property>
                         <property name="tooltip_markup" translatable="yes">Copy relationship style rule</property>
                         <property name="tooltip_text" translatable="yes">Copy relationship style rule</property>
+                        <property name="use_action_appearance">False</property>
                         <property name="label" translatable="yes">_Copy</property>
                         <property name="use_underline">True</property>
                         <property name="stock_id">gtk-copy</property>
@@ -3481,11 +3628,13 @@
                     </child>
                     <child>
                       <object class="GtkToolButton" id="paste_rel_style">
+                        <property name="use_action_appearance">False</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="has_tooltip">True</property>
                         <property name="tooltip_markup" translatable="yes">Create new relationship style rule from copied style</property>
                         <property name="tooltip_text" translatable="yes">Create new relationship style rule from copied style</property>
+                        <property name="use_action_appearance">False</property>
                         <property name="label" translatable="yes">_Paste new</property>
                         <property name="use_underline">True</property>
                         <property name="stock_id">gtk-new</property>
