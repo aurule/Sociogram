@@ -34,6 +34,8 @@ commonContent =
     element uid { text },
     ## Node labels must be unique, but rel labels are arbitrary.
     element label { text },
+    ## Arbitrary text.
+    element notes { text },
     ## Every node and rel can have any number of attrs.
     element attr { attrContent }*
 

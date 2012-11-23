@@ -238,6 +238,7 @@ class Sociogram(object):
             "data.update_dest": self.update_dest,
             "data.update_weight": self.update_weight,
             "data.update_bidir": self.update_bidir,
+            "data.update_notes": self.update_notes,
             "data.newattr": self.add_attr,
             "data.delattr": self.del_attr,
             "data.updateattr": self.show_dev_error,
@@ -373,6 +374,7 @@ class Sociogram(object):
                     #add node
                     uid = node.find('uid').text
                     label = node.find('label').text
+                    notes = node.find('notes').text
                     
                     #construct attributes list
                     attrs = []
@@ -383,12 +385,13 @@ class Sociogram(object):
                         u = a.find('uid').text
                         attrs.append((name, val, vis, u))
                     
-                    self._add_node(label, uid=uid, attrs=attrs)
+                    self._add_node(label, uid=uid, attrs=attrs, notes=notes)
                 
                 for edge in data.iter('rel'):
                     #add edge
                     uid = edge.find('uid').text
                     label = edge.find('label').text
+                    notes = edge.find('notes').text
                     
                     #construct attributes list
                     attrs = []
@@ -404,7 +407,7 @@ class Sociogram(object):
                     mutual = True if edge.find('mutual').text == "True" else False
                     weight = int(float(edge.find('weight').text))
                     
-                    self._add_rel(label, origin, dest, weight, mutual, attrs=attrs, uid=uid)
+                    self._add_rel(label, origin, dest, weight, mutual, attrs=attrs, uid=uid, notes=notes)
             except AttributeError:
                 err = "all"
             
@@ -448,9 +451,10 @@ class Sociogram(object):
         for node in self.G.nodes_iter():
             n = self.G.node[node]['node']
             node = sub(data, 'node')
-            #store uid, label, attributes
-            uid = sub(node, 'uid', n.uid)
-            label = sub(node, 'label', n.label)
+            #store uid, label, notes, attributes
+            sub(node, 'uid', n.uid)
+            sub(node, 'label', n.label)
+            sub(node, 'notes', n.notes)
             for aid, aval in n.attributes.iteritems():
                 attr = sub(node, 'attr')
                 sub(attr, 'uid', aid)
@@ -461,9 +465,10 @@ class Sociogram(object):
         for f, t in self.G.edges_iter():
             for e in self.G[f][t]['rels']:
                 edge = sub(data, 'rel')
-                #store uid, label attributes, origin, destination, weight, mutual
+                #store uid, label, notes, attributes, origin, destination, weight, mutual
                 sub(edge, 'uid', e.uid)
                 sub(edge, 'label', e.label)
+                sub(edge, 'notes', e.notes)
                 for aid, aval in e.attributes.iteritems():
                     attr = sub(edge, 'attr')
                     sub(attr, 'uid', aid)
@@ -657,7 +662,7 @@ class Sociogram(object):
         self.builder.get_object("bidir_new").set_active(False)
         self.builder.get_object("use_copied_attrs").set_active(False)
     
-    def _add_node(self, lbl, paste=False, attrs=None, uid=None):
+    def _add_node(self, lbl, paste=False, attrs=None, uid=None, notes=None):
         '''Internal function. Add a node and handle bookkeeping.'''
         #make sure the node doesn't already exist
         if lbl in self.G: 
@@ -665,14 +670,14 @@ class Sociogram(object):
             return
         
         #create object and update data
-        node = Graph.Node(lbl, attrs=attrs, uid=uid)
+        node = Graph.Node(lbl, attrs=attrs, uid=uid, notes=notes)
         self.G.add_node(lbl, {"node": node}) #add to graph
         self.node_lbl_store.append([lbl]) #update name list for the dropdowns
         
         if paste:
             self._paste_attrs(node)
     
-    def _add_rel(self, lbl, fname, tname, weight, bidir, paste=False, attrs=None, uid=None):
+    def _add_rel(self, lbl, fname, tname, weight, bidir, paste=False, attrs=None, uid=None, notes=None):
         '''Internal function. Add a relationship and handle bookkeeping.'''
         #make sure both nodes exist
         if fname not in self.G:
@@ -681,7 +686,7 @@ class Sociogram(object):
             raise Errors.MissingNode("Node %s not in graph." % tname)
         
         #create relationship object
-        rel = Graph.Relationship(lbl, fname, tname, weight, bidir, attrs, uid)
+        rel = Graph.Relationship(lbl, fname, tname, weight, bidir, attrs=attrs, uid=uid, notes=notes)
         
         new_edge = self.G.add_rel(rel)
         
@@ -836,6 +841,7 @@ class Sociogram(object):
     
         #populate common fields
         self.builder.get_object("name_entry").set_text(self.seldata.label)
+        self.builder.get_object("notes_buffer").set_text(self.seldata.notes)
         
         #populate self.attr_store from selected graph object's attributes
         self.attr_store.clear()
@@ -846,6 +852,7 @@ class Sociogram(object):
     def clear_select(self, canvas=None, data=None):
         '''Event handler and standalone. Deselect object(s).'''
         if self.selection != None:
+            self.update_notes()
             self.selection.set_selected(False)        
             self.selection = None
             self.seltype = None
@@ -929,6 +936,7 @@ class Sociogram(object):
         self.from_main.set_text('')
         self.to_main.set_text('')
         self.builder.get_object("weight_spin").set_value(5)
+        self.builder.get_object("notes_buffer").set_text('')
         
         #explicitly disable
         self.builder.get_object("frombox").set_sensitive(False)
@@ -1239,6 +1247,16 @@ class Sociogram(object):
         #refresh instead of fully redrawing
         self.refresh(self.seldata)
         self.set_dirty(True)
+    
+    def update_notes(self, widget=None, data=None):
+        '''Event handler and standalone. Update notes field of selected object.'''
+        if self.selection == None: return
+        
+        buff = self.builder.get_object("notes_buffer")
+        
+        start = buff.get_iter_at_offset(0)
+        end = buff.get_iter_at_offset(-1)
+        self.seldata.notes = buff.get_text(start, end, False)
     
     def toggle_widget(self, widget, data=None):
         '''Event handler and standalone. Toggle passed widget.'''
