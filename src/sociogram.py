@@ -350,6 +350,8 @@ class Sociogram(object):
         self.savepath = None
         self.set_dirty(False)
         self.update_title()
+        self.set_doctitle(None)
+        self.set_docdesc(None)
         
         self.zoom_reset()
         self.G.clear()
