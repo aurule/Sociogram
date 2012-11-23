@@ -180,6 +180,8 @@ class Sociogram(object):
         self.hscroll = self.builder.get_object("horiz_scroll_adj")
         self.vscroll = self.builder.get_object("vertical_scroll_adj")
         self.scale_adj = self.builder.get_object("scale_adj")
+        self.load_err_dlg = self.builder.get_object("load_err_dlg")
+        self.settings_warning = self.builder.get_object("load_settings_warning")
         
         #set our version string
         self.builder.get_object("about_dlg").set_version(self.version)
@@ -335,60 +337,87 @@ class Sociogram(object):
             
             self.savepath = open_dlg.get_filename()
             self.update_title()
-            tree = et.parse(self.savepath)
+            try:
+                tree = et.parse(self.savepath)
+            except ParseError:
+                self.load_err_dlg.run()
+                self.load_err_dlg.hide()
+                self.make_new()
+                return
+            
             root = tree.getroot()
             
-            if self.version != root.attrib['version']:
-                #TODO warn that we're opening a version other than our own
+            err = None
+            
+            if self.version != root.get('version'):
+                #TODO figure out how to compare save format versions
+                #err = "version"
                 pass
             
-            #import document-specific settings
-            settings = root.find('settings')
-            scale = settings.find('scale').text
-            self.scale_adj.set_value(float(scale))
-            sortprefs = settings.find('attrsort')
-            sortdir = Gtk.SortType.ASCENDING if sortprefs.attrib['direction'] == "asc" else Gtk.SortType.DESCENDING
-            sortcol = int(sortprefs.text)
-            self.attr_store.set_sort_column_id(sortcol, sortdir)
+            try:
+                #import document-specific settings
+                settings = root.find('settings')
+                scale = settings.find('scale').text
+                self.scale_adj.set_value(float(scale))
+                sortprefs = settings.find('attrsort')
+                sortdir = Gtk.SortType.ASCENDING if sortprefs.get('direction') == "asc" else Gtk.SortType.DESCENDING
+                sortcol = int(sortprefs.text)
+                self.attr_store.set_sort_column_id(sortcol, sortdir)
+            except AttributeError:
+                err = "settings"
             
-            #import document data
-            data = root.find('data')
-            for node in data.iter('node'):
-                #add node
-                uid = node.find('uid').text
-                label = node.find('label').text
+            try:
+                #import document data
+                data = root.find('data')
+                for node in data.iter('node'):
+                    #add node
+                    uid = node.find('uid').text
+                    label = node.find('label').text
+                    
+                    #construct attributes list
+                    attrs = []
+                    for a in node.iter('attr'):
+                        name = a.find('name').text
+                        val = a.find('value').text
+                        vis = True if a.find('visible').text == "True" else False
+                        u = a.find('uid').text
+                        attrs.append((name, val, vis, u))
+                    
+                    self._add_node(label, uid=uid, attrs=attrs)
                 
-                #construct attributes list
-                attrs = []
-                for a in node.iter('attr'):
-                    name = a.find('name').text
-                    val = a.find('value').text
-                    vis = True if a.find('visible').text == "True" else False
-                    u = a.find('uid').text
-                    attrs.append((name, val, vis, u))
-                
-                self._add_node(label, uid=uid, attrs=attrs)
+                for edge in data.iter('rel'):
+                    #add edge
+                    uid = edge.find('uid').text
+                    label = edge.find('label').text
+                    
+                    #construct attributes list
+                    attrs = []
+                    for a in edge.iter('attr'):
+                        name = a.find('name').text
+                        val = a.find('value').text
+                        vis = True if a.find('visible').text == "True" else False
+                        u = a.find('uid').text
+                        attrs.append((name, val, vis, u))
+                    
+                    origin = edge.find('origin').text
+                    dest = edge.find('dest').text
+                    mutual = True if edge.find('mutual').text == "True" else False
+                    weight = int(float(edge.find('weight').text))
+                    
+                    self._add_rel(label, origin, dest, weight, mutual, attrs=attrs, uid=uid)
+            except AttributeError:
+                err = "all"
             
-            for edge in data.iter('rel'):
-                #add edge
-                uid = edge.find('uid').text
-                label = edge.find('label').text
-                
-                #construct attributes list
-                attrs = []
-                for a in edge.iter('attr'):
-                    name = a.find('name').text
-                    val = a.find('value').text
-                    vis = True if a.find('visible').text == "True" else False
-                    u = a.find('uid').text
-                    attrs.append((name, val, vis, u))
-                
-                origin = edge.find('origin').text
-                dest = edge.find('dest').text
-                mutual = True if edge.find('mutual').text == "True" else False
-                weight = int(float(edge.find('weight').text))
-                
-                self._add_rel(label, origin, dest, weight, mutual, attrs=attrs, uid=uid)
+            if err is not None:
+                if err is "all":
+                    self.load_err_dlg.run()
+                    self.load_err_dlg.hide()
+                    self.make_new()
+                    return
+                    
+                if err is "settings":
+                    self.settings_warning.run()
+                    self.settings_warning.hide()
             
             self.redraw()
             #TODO send "opened" message through status bar
