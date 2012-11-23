@@ -350,8 +350,8 @@ class Sociogram(object):
         self.savepath = None
         self.set_dirty(False)
         self.update_title()
-        self.set_doctitle(None)
-        self.set_docdesc(None)
+        self.set_doc_title(None)
+        self.set_doc_desc(None)
         
         self.zoom_reset()
         self.G.clear()
@@ -368,7 +368,8 @@ class Sociogram(object):
         
         response = open_dlg.run()
         open_dlg.hide()
-        if response:
+        
+        if response == 5:
             #clear existing data
             self.set_dirty(False) #prevent another prompt
             self.make_new()
@@ -543,7 +544,7 @@ class Sociogram(object):
         else:
             save_dlg.set_current_name("sociogram.xml")
         
-        response = save_dlg.run()
+        save_dlg.run()
         save_dlg.hide()
         uri = save_dlg.get_filename()
         
