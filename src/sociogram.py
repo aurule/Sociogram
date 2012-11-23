@@ -178,6 +178,7 @@ class Sociogram(object):
         self.save_close_warning = self.builder.get_object("savewarn_close_dlg")
         self.savebtn = self.builder.get_object("savefilebtn")
         self.savemenu = self.builder.get_object("menu_save")
+        self.docprops_dlg = self.builder.get_object("docprops_dlg")
         
         self.hscroll = self.builder.get_object("horiz_scroll_adj")
         self.vscroll = self.builder.get_object("vertical_scroll_adj")
@@ -231,6 +232,7 @@ class Sociogram(object):
             "app.check_endpoint": self.check_endpoint,
             "app.cancel_endpoint": self.cancel_endpoint,
             "app.set_selrel": self.pick_rel,
+            "app.show_docprops": self.edit_docprops,
             "data.add": self.show_dev_error,
             "data.copyattrs": self.show_dev_error,
             "data.pasteattrs": self.do_paste,
@@ -255,6 +257,21 @@ class Sociogram(object):
     def nothing(self, a=None, b=None, c=None):
         print 'nothing'
     
+    def edit_docprops(self, widget=None, data=None):
+        '''Event handler. Edit document title and description.'''
+        ret = self.docprops_dlg.run()
+        self.docprops_dlg.hide()
+        
+        if ret == 5:
+            #store title and description
+            self.doc_title = self.builder.get_object("doctitle_entry").get_text()
+            buff = self.builder.get_object("docdesc_buffer")
+            start = buff.get_iter_at_offset(0)
+            end = buff.get_iter_at_offset(-1)
+            self.doc_desc = buff.get_text(start, end, False)
+            self.set_dirty(True)
+            #TODO show status message about updated title/desc
+    
     def do_quit(self, widget=None, data=None):
         '''Handle quitting.'''
         self.confirm_discard(closing=True)
@@ -273,13 +290,19 @@ class Sociogram(object):
     
     def set_doc_title(self, title):
         '''Set document title text. This is not used in the window title.'''
+        if title is None:
+            title = ""
+        
         self.doc_title = title
-        #TODO update doc title UI element
+        self.builder.get_object("doctitle_entry").set_text(title)
     
     def set_doc_desc(self, desc):
         '''Set document description.'''
+        if desc is None:
+            desc = ""
+        
         self.doc_desc = desc
-        #TODO update doc desc UI element
+        self.builder.get_object("docdesc_buffer").set_text(desc)
     
     def set_dirty(self, val):
         '''Mark the current file as "dirty", indicating unsaved changes.'''
