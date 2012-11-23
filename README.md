@@ -43,6 +43,7 @@ These are what's left to implement before the first gold release.
 * unlimited undo/redo for changes to the diagram
 * basic in-app help docs
 * attribute copy/paste between nodes and relationships
+* add notes to each node, relationship, and the diagram as a whole
 
 The Future
 ---------
@@ -58,7 +59,8 @@ The Future
 * background color/texture, with builtins like corkboard and paper
 * relationships with one or both endpoints being other relationships, like in a family tree
 * import graph data from other formats (DOT file, csv, anything supported by networkx, etc.)
-* add notes to each node, relationship, and the diagram as a whole
+* semi-static node placement, with node dragging to customize
+* "collection" nodes which hold a list of all nodes (and/or rels?) with a certain attribute(s)
 
 Documentation
 ============
