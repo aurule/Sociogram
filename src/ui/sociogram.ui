@@ -604,6 +604,7 @@
     <property name="can_focus">False</property>
     <property name="stock">gtk-select-color</property>
   </object>
+  <object class="GtkEntryCompletion" id="entrycompletion1"/>
   <object class="GtkImage" id="done_icon">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
@@ -653,7 +654,6 @@
       </object>
     </child>
   </object>
-  <object class="GtkEntryCompletion" id="entrycompletion1"/>
   <object class="GtkImage" id="help_icon">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
@@ -1242,6 +1242,10 @@
                 <property name="use_action_appearance">False</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
+                <property name="has_focus">True</property>
+                <property name="is_focus">True</property>
+                <property name="can_default">True</property>
+                <property name="has_default">True</property>
                 <property name="receives_default">True</property>
                 <property name="use_action_appearance">False</property>
                 <property name="use_stock">True</property>
@@ -1748,6 +1752,10 @@
                 <property name="use_action_appearance">False</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
+                <property name="has_focus">True</property>
+                <property name="is_focus">True</property>
+                <property name="can_default">True</property>
+                <property name="has_default">True</property>
                 <property name="receives_default">True</property>
                 <property name="use_action_appearance">False</property>
                 <property name="use_stock">True</property>

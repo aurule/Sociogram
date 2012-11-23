@@ -440,7 +440,8 @@ class Sociogram(object):
                     self.settings_warning.run()
                     self.settings_warning.hide()
             
-            self.redraw()
+            self.redraw()        
+            self.builder.get_object("canvas_eventbox").grab_focus()
             #TODO send "opened" message through status bar
     
     def save(self, widget=None, data=None):
