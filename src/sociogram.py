@@ -330,6 +330,7 @@ class Sociogram(object):
         open_dlg.hide()
         if response:
             #clear existing data
+            self.set_dirty(False) #prevent another prompt
             self.make_new()
             
             self.savepath = open_dlg.get_filename()
@@ -834,6 +835,7 @@ class Sociogram(object):
             self.G.remove_node(self.seldata.label)
             self.selection.remove()
             self.clear_select()
+            self.redraw()
         else:
             killed_edge = self.G.remove_rel(self.seldata)
             if not killed_edge:
@@ -854,12 +856,7 @@ class Sociogram(object):
         #enable the enter sidebar and related controls
         self.activate_all_controls()
         
-        #now explicitly disable relationship-only controls
-        '''self.builder.get_object("relbox").set_sensitive(False)
-        self.builder.get_object("frombox").set_sensitive(False)
-        self.builder.get_object("tobox").set_sensitive(False)
-        self.builder.get_object("weightbox").set_sensitive(False)'''
-        #TODO hide rel controls
+        #hide rel controls
         self.builder.get_object("relbox").hide()
         self.builder.get_object("frombox").hide()
         self.builder.get_object("tobox").hide()
@@ -868,12 +865,11 @@ class Sociogram(object):
     def activate_rel_controls(self):
         '''Show relationship controls.'''
         self.activate_all_controls()
-        #TODO hide rel controls
+        #show rel controls
         self.builder.get_object("relbox").show()
         self.builder.get_object("frombox").show()
         self.builder.get_object("tobox").show()
         self.builder.get_object("weightbox").show()
-        #TODO show rel controls
     
     def activate_all_controls(self):
         '''Make all selection-specific controls sensitive to input.'''

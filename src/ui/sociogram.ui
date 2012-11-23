@@ -14,7 +14,7 @@
     <property name="transient_for">sociogram_main</property>
     <property name="program_name">Sociogram</property>
     <property name="copyright" translatable="yes">Copyright © 2012 Peter Andrews</property>
-    <property name="comments" translatable="yes">A social graphing tool for GTK+.</property>
+    <property name="comments" translatable="yes">A relationship graphing tool for GTK+.</property>
     <property name="license">
                                  Apache License
                            Version 2.0, January 2004
