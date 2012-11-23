@@ -45,6 +45,8 @@ class Sociogram(object):
         self.lastsave = time()
         self.dirty = False
         self.title = "Untitled Diagram - Sociogram"
+        self.doc_title = ""
+        self.doc_desc = ""
         
         self.builder = Gtk.Builder()
         self.builder.add_from_file("ui/sociogram.ui")
@@ -269,6 +271,16 @@ class Sociogram(object):
         
         self.window.set_title(self.title)
     
+    def set_doc_title(self, title):
+        '''Set document title text. This is not used in the window title.'''
+        self.doc_title = title
+        #TODO update doc title UI element
+    
+    def set_doc_desc(self, desc):
+        '''Set document description.'''
+        self.doc_desc = desc
+        #TODO update doc desc UI element
+    
     def set_dirty(self, val):
         '''Mark the current file as "dirty", indicating unsaved changes.'''
         if val == self.dirty: return
@@ -356,6 +368,12 @@ class Sociogram(object):
                 pass
             
             try:
+                #import doc title and description
+                title = root.find('title').text
+                desc = root.find('description').text
+                self.set_doc_title(title)
+                self.set_doc_desc(desc)
+                
                 #import document-specific settings
                 settings = root.find('settings')
                 scale = settings.find('scale').text
@@ -436,6 +454,10 @@ class Sociogram(object):
         #construct XML
         #create base element and record program version
         root = et.Element('sociogram', attrib={'version':self.version})
+        
+        #create title and description
+        sub(root, 'title', self.doc_title)
+        sub(root, 'description', self.doc_desc)
         
         #create settings
         settings = sub(root, 'settings')
