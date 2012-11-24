@@ -156,6 +156,18 @@ class Sociogram(object):
         sheet.set_fontdesc('sans normal 11')
         
         
+        #create file type filters
+        supported_extensions = {"XML Files":"*.xml", "Sociogram Files":"*.soc", "All Files":"*.*"}
+        self.save_dlg = self.builder.get_object("save_dlg")
+        self.open_dlg = self.builder.get_object("open_dlg")
+        for name, ext in supported_extensions.iteritems():
+            fil = Gtk.FileFilter()
+            fil.set_name(name)
+            fil.add_pattern("*.xml")
+            self.save_dlg.add_filter(fil)
+            self.open_dlg.add_filter(fil)
+        
+        
         # Declare references for all the dialogs and popups we need. We do keep
         # the builder around, so this is mostly for code readability.
         # TODO instantiate reference to everything we care about, so that the
@@ -172,8 +184,6 @@ class Sociogram(object):
         self.style_dlg = self.builder.get_object("style_dlg")
         self.blank_err_dlg = self.builder.get_object("blank_err_dlg")
         self.find_dlg = self.builder.get_object("find_dlg")
-        self.save_dlg = self.builder.get_object("save_dlg")
-        self.open_dlg = self.builder.get_object("open_dlg")
         self.save_warning = self.builder.get_object("savewarn_dlg")
         self.save_close_warning = self.builder.get_object("savewarn_close_dlg")
         self.savebtn = self.builder.get_object("savefilebtn")

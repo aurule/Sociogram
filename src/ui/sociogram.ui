@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
   <!-- interface-requires gtk+ 3.0 -->
+  <object class="GtkAccelGroup" id="accels_main"/>
+  <object class="GtkAction" id="action1"/>
   <object class="GtkAboutDialog" id="about_dlg">
     <property name="can_focus">False</property>
     <property name="border_width">5</property>
@@ -219,8 +221,6 @@
   </object>
   <object class="GtkAccelGroup" id="accels_add"/>
   <object class="GtkAccelGroup" id="accels_find"/>
-  <object class="GtkAccelGroup" id="accels_main"/>
-  <object class="GtkAction" id="action1"/>
   <object class="GtkDialog" id="add_item_dlg">
     <property name="can_focus">False</property>
     <property name="border_width">5</property>
@@ -1407,7 +1407,6 @@
     <property name="type_hint">dialog</property>
     <property name="skip_pager_hint">True</property>
     <property name="transient_for">sociogram_main</property>
-    <property name="filter">soc_filter</property>
     <child internal-child="vbox">
       <object class="GtkBox" id="filechooserdialog-vbox2">
         <property name="can_focus">False</property>
@@ -1663,6 +1662,7 @@
   <object class="GtkRecentFilter" id="recents_filter">
     <patterns>
       <pattern>*.xml</pattern>
+      <pattern>*.soc</pattern>
     </patterns>
     <applications>
       <application>Sociogram</application>
@@ -1917,7 +1917,6 @@
     <property name="transient_for">sociogram_main</property>
     <property name="action">save</property>
     <property name="do_overwrite_confirmation">True</property>
-    <property name="filter">soc_filter</property>
     <property name="preview_widget_active">False</property>
     <child internal-child="vbox">
       <object class="GtkBox" id="filechooserdialog-vbox1">
@@ -2363,11 +2362,6 @@
       <action-widget response="0">close_search</action-widget>
       <action-widget response="0">find_search</action-widget>
     </action-widgets>
-  </object>
-  <object class="GtkFileFilter" id="soc_filter">
-    <patterns>
-      <pattern>*.xml</pattern>
-    </patterns>
   </object>
   <object class="GtkWindow" id="sociogram_main">
     <property name="can_focus">False</property>
