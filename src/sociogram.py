@@ -29,6 +29,7 @@ import Errors
 import Graph
 import Drawing
 from ETree import sub_element as sub
+from undobuffer import UndoableBuffer as UBuff
 
 class Sociogram(object):
     def __init__(self):
@@ -168,6 +169,18 @@ class Sociogram(object):
             self.open_dlg.add_filter(fil)
         
         
+        #create undoable text buffers
+        self.notes_buff = UBuff()
+        self.notes_buff.connect('insert-text', self.notes_check_undo)
+        self.notes_buff.connect('delete-range', self.notes_check_undo)
+        self.desc_buff = UBuff()
+        self.desc_buff.connect('insert-text', self.desc_check_undo)
+        self.desc_buff.connect('delete-range', self.desc_check_undo)
+        
+        self.builder.get_object("notes_view").set_buffer(self.notes_buff)
+        self.builder.get_object("docdesc_view").set_buffer(self.desc_buff)
+        
+        
         # Declare references for all the dialogs and popups we need. We do keep
         # the builder around, so this is mostly for code readability.
         # TODO instantiate reference to everything we care about, so that the
@@ -195,6 +208,10 @@ class Sociogram(object):
         self.scale_adj = self.builder.get_object("scale_adj")
         self.load_err_dlg = self.builder.get_object("load_err_dlg")
         self.settings_warning = self.builder.get_object("load_settings_warning")
+        self.notes_undo_btn = self.builder.get_object("notes_undo")
+        self.notes_redo_btn = self.builder.get_object("notes_redo")
+        self.desc_undo_btn = self.builder.get_object("desc_undo")
+        self.desc_redo_btn = self.builder.get_object("desc_redo")
         
         #set our version string
         self.builder.get_object("about_dlg").set_version(self.version)
@@ -243,6 +260,10 @@ class Sociogram(object):
             "app.cancel_endpoint": self.cancel_endpoint,
             "app.set_selrel": self.pick_rel,
             "app.show_docprops": self.edit_docprops,
+            "app.notes_undo": self.notes_undo,
+            "app.notes_redo": self.notes_redo,
+            "app.desc_undo": self.desc_undo,
+            "app.desc_redo": self.desc_redo,
             "data.add": self.show_dev_error,
             "data.copyattrs": self.show_dev_error,
             "data.pasteattrs": self.do_paste,
@@ -267,6 +288,32 @@ class Sociogram(object):
     def nothing(self, a=None, b=None, c=None):
         print 'nothing'
     
+    def notes_undo(self, widget, data=None):
+        '''Event handler. Undo notes edit action.'''
+        self.notes_buff.undo()
+        
+    def notes_redo(self, widget, data=None):
+        '''Event handler. Redo notes edit action.'''
+        self.notes_buff.redo()
+        
+    def notes_check_undo(self, widget=None, data=None, a=None, b=None):
+        '''Event handler. Set undo/redo availability according to widget properties.'''
+        self.notes_undo_btn.set_sensitive(self.notes_buff.can_undo)
+        self.notes_redo_btn.set_sensitive(self.notes_buff.can_redo)
+        
+    def desc_undo(self, widget, data=None):
+        '''Event handler. Undo description edit action.'''
+        self.desc_buff.undo()
+        
+    def desc_redo(self, widget, data=None):
+        '''Event handler. Redo description edit action.'''
+        self.desc_buff.redo()
+        
+    def desc_check_undo(self, widget=None, data=None, a=None, b=None):
+        '''Event handler. Set undo/redo availability according to widget properties.'''
+        self.desc_undo_btn.set_sensitive(self.desc_buff.can_undo)
+        self.desc_redo_btn.set_sensitive(self.desc_buff.can_redo)
+    
     def edit_docprops(self, widget=None, data=None):
         '''Event handler. Edit document title and description.'''
         ret = self.docprops_dlg.run()
@@ -275,10 +322,9 @@ class Sociogram(object):
         if ret == 5:
             #store title and description
             self.doc_title = self.builder.get_object("doctitle_entry").get_text()
-            buff = self.builder.get_object("docdesc_buffer")
-            start = buff.get_iter_at_offset(0)
-            end = buff.get_iter_at_offset(-1)
-            self.doc_desc = buff.get_text(start, end, False)
+            start = self.desc_buff.get_iter_at_offset(0)
+            end = self.desc_buff.get_iter_at_offset(-1)
+            self.doc_desc = self.desc_buff.get_text(start, end, False)
             self.set_dirty(True)
             #TODO show status message about updated title/desc
     
@@ -312,7 +358,9 @@ class Sociogram(object):
             desc = ""
         
         self.doc_desc = desc
-        self.builder.get_object("docdesc_buffer").set_text(desc)
+        self.desc_buff.set_text(desc)
+        self.desc_buff.clear_undo()
+        self.desc_check_undo()
     
     def set_dirty(self, val):
         '''Mark the current file as "dirty", indicating unsaved changes.'''
@@ -900,7 +948,9 @@ class Sociogram(object):
     
         #populate common fields
         self.builder.get_object("name_entry").set_text(self.seldata.label)
-        self.builder.get_object("notes_buffer").set_text(self.seldata.notes)
+        self.notes_buff.set_text(self.seldata.notes)
+        self.notes_buff.clear_undo()
+        self.notes_check_undo()
         
         #populate self.attr_store from selected graph object's attributes
         self.attr_store.clear()
@@ -995,7 +1045,9 @@ class Sociogram(object):
         self.from_main.set_text('')
         self.to_main.set_text('')
         self.builder.get_object("weight_spin").set_value(5)
-        self.builder.get_object("notes_buffer").set_text('')
+        self.notes_buff.set_text('')
+        self.notes_buff.clear_undo()
+        self.notes_check_undo()
         
         #explicitly disable
         self.builder.get_object("frombox").set_sensitive(False)
@@ -1311,11 +1363,9 @@ class Sociogram(object):
         '''Event handler and standalone. Update notes field of selected object.'''
         if self.selection == None: return
         
-        buff = self.builder.get_object("notes_buffer")
-        
-        start = buff.get_iter_at_offset(0)
-        end = buff.get_iter_at_offset(-1)
-        self.seldata.notes = buff.get_text(start, end, False)
+        start = self.notes_buff.get_iter_at_offset(0)
+        end = self.notes_buff.get_iter_at_offset(-1)
+        self.seldata.notes = self.notes_buff.get_text(start, end, False)
     
     def toggle_widget(self, widget, data=None):
         '''Event handler and standalone. Toggle passed widget.'''

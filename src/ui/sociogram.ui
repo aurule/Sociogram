@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
   <!-- interface-requires gtk+ 3.0 -->
-  <object class="GtkAccelGroup" id="accels_main"/>
-  <object class="GtkAction" id="action1"/>
   <object class="GtkAboutDialog" id="about_dlg">
     <property name="can_focus">False</property>
     <property name="border_width">5</property>
@@ -221,6 +219,8 @@
   </object>
   <object class="GtkAccelGroup" id="accels_add"/>
   <object class="GtkAccelGroup" id="accels_find"/>
+  <object class="GtkAccelGroup" id="accels_main"/>
+  <object class="GtkAction" id="action1"/>
   <object class="GtkDialog" id="add_item_dlg">
     <property name="can_focus">False</property>
     <property name="border_width">5</property>
@@ -589,6 +589,12 @@
     <property name="step_increment">1</property>
     <property name="page_increment">2</property>
   </object>
+  <object class="GtkTextBuffer" id="docdesc_buffer"/>
+  <object class="GtkAdjustment" id="docdesc_vert_adj">
+    <property name="upper">100</property>
+    <property name="step_increment">1</property>
+    <property name="page_increment">10</property>
+  </object>
   <object class="GtkImage" id="close_icon">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
@@ -604,13 +610,7 @@
     <property name="can_focus">False</property>
     <property name="stock">gtk-select-color</property>
   </object>
-  <object class="GtkTextBuffer" id="docdesc_buffer"/>
   <object class="GtkAdjustment" id="docdesc_horiz_adj">
-    <property name="upper">100</property>
-    <property name="step_increment">1</property>
-    <property name="page_increment">10</property>
-  </object>
-  <object class="GtkAdjustment" id="docdesc_vert_adj">
     <property name="upper">100</property>
     <property name="step_increment">1</property>
     <property name="page_increment">10</property>
@@ -741,22 +741,83 @@
                     <property name="can_focus">False</property>
                     <property name="left_padding">12</property>
                     <child>
-                      <object class="GtkScrolledWindow" id="docdesc_scroll">
+                      <object class="GtkBox" id="box7">
                         <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="hadjustment">docdesc_horiz_adj</property>
-                        <property name="vadjustment">docdesc_vert_adj</property>
-                        <property name="window_placement_set">True</property>
-                        <property name="shadow_type">in</property>
+                        <property name="can_focus">False</property>
+                        <property name="orientation">vertical</property>
                         <child>
-                          <object class="GtkTextView" id="docdesc_view">
+                          <object class="GtkToolbar" id="desc_tools">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="toolbar_style">icons</property>
+                            <property name="icon_size">2</property>
+                            <child>
+                              <object class="GtkToolButton" id="desc_undo">
+                                <property name="use_action_appearance">False</property>
+                                <property name="visible">True</property>
+                                <property name="sensitive">False</property>
+                                <property name="can_focus">False</property>
+                                <property name="tooltip_text" translatable="yes">Undo last edit</property>
+                                <property name="use_action_appearance">False</property>
+                                <property name="label" translatable="yes">Undo</property>
+                                <property name="use_underline">True</property>
+                                <property name="stock_id">gtk-undo</property>
+                                <signal name="clicked" handler="app.desc_undo" swapped="no"/>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="homogeneous">True</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkToolButton" id="desc_redo">
+                                <property name="use_action_appearance">False</property>
+                                <property name="visible">True</property>
+                                <property name="sensitive">False</property>
+                                <property name="can_focus">False</property>
+                                <property name="tooltip_text" translatable="yes">Redo last edit</property>
+                                <property name="use_action_appearance">False</property>
+                                <property name="label" translatable="yes">Redo</property>
+                                <property name="use_underline">True</property>
+                                <property name="stock_id">gtk-redo</property>
+                                <signal name="clicked" handler="app.desc_redo" swapped="no"/>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="homogeneous">True</property>
+                              </packing>
+                            </child>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">0</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkScrolledWindow" id="docdesc_scroll">
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
                             <property name="hadjustment">docdesc_horiz_adj</property>
                             <property name="vadjustment">docdesc_vert_adj</property>
-                            <property name="wrap_mode">word</property>
-                            <property name="buffer">docdesc_buffer</property>
+                            <property name="window_placement_set">True</property>
+                            <property name="shadow_type">in</property>
+                            <child>
+                              <object class="GtkTextView" id="docdesc_view">
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="hadjustment">docdesc_horiz_adj</property>
+                                <property name="vadjustment">docdesc_vert_adj</property>
+                                <property name="wrap_mode">word</property>
+                                <property name="buffer">docdesc_buffer</property>
+                              </object>
+                            </child>
                           </object>
+                          <packing>
+                            <property name="expand">True</property>
+                            <property name="fill">True</property>
+                            <property name="position">1</property>
+                          </packing>
                         </child>
                       </object>
                     </child>
@@ -3199,7 +3260,6 @@
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="orientation">vertical</property>
-                    <property name="spacing">10</property>
                     <child>
                       <object class="GtkSeparator" id="separator1">
                         <property name="visible">True</property>
@@ -3212,26 +3272,26 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkLabel" id="props">
-                        <property name="visible">True</property>
-                        <property name="can_focus">False</property>
-                        <property name="label" translatable="yes">Properties</property>
-                        <attributes>
-                          <attribute name="weight" value="bold"/>
-                        </attributes>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
-                        <property name="position">1</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkBox" id="propsbox">
+                      <object class="GtkBox" id="props_box">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="orientation">vertical</property>
                         <property name="homogeneous">True</property>
+                        <child>
+                          <object class="GtkLabel" id="props1">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="label" translatable="yes">Properties</property>
+                            <attributes>
+                              <attribute name="weight" value="bold"/>
+                            </attributes>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">0</property>
+                          </packing>
+                        </child>
                         <child>
                           <object class="GtkBox" id="relbox">
                             <property name="can_focus">False</property>
@@ -3269,7 +3329,7 @@
                           <packing>
                             <property name="expand">False</property>
                             <property name="fill">True</property>
-                            <property name="position">0</property>
+                            <property name="position">1</property>
                           </packing>
                         </child>
                         <child>
@@ -3314,7 +3374,7 @@
                           <packing>
                             <property name="expand">False</property>
                             <property name="fill">True</property>
-                            <property name="position">1</property>
+                            <property name="position">2</property>
                           </packing>
                         </child>
                         <child>
@@ -3366,7 +3426,7 @@
                           <packing>
                             <property name="expand">False</property>
                             <property name="fill">True</property>
-                            <property name="position">2</property>
+                            <property name="position">3</property>
                           </packing>
                         </child>
                         <child>
@@ -3416,7 +3476,7 @@
                           <packing>
                             <property name="expand">False</property>
                             <property name="fill">True</property>
-                            <property name="position">3</property>
+                            <property name="position">4</property>
                           </packing>
                         </child>
                         <child>
@@ -3498,7 +3558,7 @@
                           <packing>
                             <property name="expand">False</property>
                             <property name="fill">True</property>
-                            <property name="position">4</property>
+                            <property name="position">5</property>
                           </packing>
                         </child>
                       </object>
@@ -3509,11 +3569,12 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkBox" id="attr_label_box">
+                      <object class="GtkBox" id="attrs_box">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
+                        <property name="orientation">vertical</property>
                         <child>
-                          <object class="GtkLabel" id="attrs">
+                          <object class="GtkLabel" id="attrs_lbl">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
                             <property name="label" translatable="yes">Attributes</property>
@@ -3523,7 +3584,7 @@
                             </attributes>
                           </object>
                           <packing>
-                            <property name="expand">True</property>
+                            <property name="expand">False</property>
                             <property name="fill">True</property>
                             <property name="position">0</property>
                           </packing>
@@ -3576,36 +3637,37 @@
                             <property name="position">1</property>
                           </packing>
                         </child>
-                      </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
-                        <property name="position">3</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <object class="GtkScrolledWindow" id="attrswindow">
-                        <property name="visible">True</property>
-                        <property name="can_focus">True</property>
-                        <property name="window_placement_set">True</property>
-                        <property name="shadow_type">in</property>
                         <child>
-                          <object class="GtkTreeView" id="attrstree">
+                          <object class="GtkScrolledWindow" id="attrswindow">
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
-                            <property name="rules_hint">True</property>
-                            <property name="search_column">0</property>
-                            <property name="show_expanders">False</property>
-                            <child internal-child="selection">
-                              <object class="GtkTreeSelection" id="treeview-selection1"/>
+                            <property name="window_placement_set">True</property>
+                            <property name="shadow_type">in</property>
+                            <child>
+                              <object class="GtkTreeView" id="attrstree">
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                                <property name="rules_hint">True</property>
+                                <property name="search_column">0</property>
+                                <property name="show_expanders">False</property>
+                                <child internal-child="selection">
+                                  <object class="GtkTreeSelection" id="treeview-selection1"/>
+                                </child>
+                              </object>
                             </child>
                           </object>
+                          <packing>
+                            <property name="expand">True</property>
+                            <property name="fill">True</property>
+                            <property name="position">4</property>
+                          </packing>
                         </child>
                       </object>
                       <packing>
                         <property name="expand">True</property>
                         <property name="fill">True</property>
-                        <property name="position">4</property>
+                        <property name="padding">10</property>
+                        <property name="position">3</property>
                       </packing>
                     </child>
                     <child>
@@ -3613,7 +3675,6 @@
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="orientation">vertical</property>
-                        <property name="spacing">10</property>
                         <child>
                           <object class="GtkLabel" id="notes_lbl">
                             <property name="visible">True</property>
@@ -3625,6 +3686,55 @@
                             <property name="expand">False</property>
                             <property name="fill">True</property>
                             <property name="position">0</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkToolbar" id="notes_toolbar">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <property name="toolbar_style">icons</property>
+                            <property name="icon_size">2</property>
+                            <child>
+                              <object class="GtkToolButton" id="notes_undo">
+                                <property name="use_action_appearance">False</property>
+                                <property name="visible">True</property>
+                                <property name="sensitive">False</property>
+                                <property name="can_focus">False</property>
+                                <property name="tooltip_text" translatable="yes">Undo last edit</property>
+                                <property name="use_action_appearance">False</property>
+                                <property name="label" translatable="yes">Undo</property>
+                                <property name="use_underline">True</property>
+                                <property name="stock_id">gtk-undo</property>
+                                <signal name="clicked" handler="app.notes_undo" swapped="no"/>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="homogeneous">True</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkToolButton" id="notes_redo">
+                                <property name="use_action_appearance">False</property>
+                                <property name="visible">True</property>
+                                <property name="sensitive">False</property>
+                                <property name="can_focus">False</property>
+                                <property name="tooltip_text" translatable="yes">Redo last edit</property>
+                                <property name="use_action_appearance">False</property>
+                                <property name="label" translatable="yes">Redo</property>
+                                <property name="use_underline">True</property>
+                                <property name="stock_id">gtk-redo</property>
+                                <signal name="clicked" handler="app.notes_redo" swapped="no"/>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="homogeneous">True</property>
+                              </packing>
+                            </child>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="position">1</property>
                           </packing>
                         </child>
                         <child>
@@ -3649,12 +3759,12 @@
                           <packing>
                             <property name="expand">True</property>
                             <property name="fill">True</property>
-                            <property name="position">1</property>
+                            <property name="position">2</property>
                           </packing>
                         </child>
                       </object>
                       <packing>
-                        <property name="expand">False</property>
+                        <property name="expand">True</property>
                         <property name="fill">True</property>
                         <property name="position">5</property>
                       </packing>
