@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
   <!-- interface-requires gtk+ 3.0 -->
+  <object class="GtkAction" id="action1"/>
   <object class="GtkAboutDialog" id="about_dlg">
     <property name="can_focus">False</property>
     <property name="border_width">5</property>
@@ -220,7 +221,6 @@
   <object class="GtkAccelGroup" id="accels_add"/>
   <object class="GtkAccelGroup" id="accels_find"/>
   <object class="GtkAccelGroup" id="accels_main"/>
-  <object class="GtkAction" id="action1"/>
   <object class="GtkDialog" id="add_item_dlg">
     <property name="can_focus">False</property>
     <property name="border_width">5</property>
@@ -589,12 +589,6 @@
     <property name="step_increment">1</property>
     <property name="page_increment">2</property>
   </object>
-  <object class="GtkTextBuffer" id="docdesc_buffer"/>
-  <object class="GtkAdjustment" id="docdesc_vert_adj">
-    <property name="upper">100</property>
-    <property name="step_increment">1</property>
-    <property name="page_increment">10</property>
-  </object>
   <object class="GtkImage" id="close_icon">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
@@ -609,6 +603,12 @@
     <property name="visible">True</property>
     <property name="can_focus">False</property>
     <property name="stock">gtk-select-color</property>
+  </object>
+  <object class="GtkTextBuffer" id="docdesc_buffer"/>
+  <object class="GtkAdjustment" id="docdesc_vert_adj">
+    <property name="upper">100</property>
+    <property name="step_increment">1</property>
+    <property name="page_increment">10</property>
   </object>
   <object class="GtkAdjustment" id="docdesc_horiz_adj">
     <property name="upper">100</property>
@@ -3226,6 +3226,7 @@
               <object class="GtkEventBox" id="canvas_eventbox">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
+                <property name="has_focus">True</property>
                 <signal name="key-press-event" handler="app.canvas_keys" swapped="no"/>
                 <child>
                   <object class="GtkScrolledWindow" id="canvas_scroll">
