@@ -208,8 +208,10 @@ class Sociogram(object):
         self.scale_adj = self.builder.get_object("scale_adj")
         self.load_err_dlg = self.builder.get_object("load_err_dlg")
         self.settings_warning = self.builder.get_object("load_settings_warning")
+        self.notes_view = self.builder.get_object("notes_view")
         self.notes_undo_btn = self.builder.get_object("notes_undo")
         self.notes_redo_btn = self.builder.get_object("notes_redo")
+        self.desc_view = self.builder.get_object("desc_view")
         self.desc_undo_btn = self.builder.get_object("desc_undo")
         self.desc_redo_btn = self.builder.get_object("desc_redo")
         
@@ -235,8 +237,8 @@ class Sociogram(object):
             "app.do_export": self.show_dev_error,
             "app.do_find": self.show_dev_error,
             "app.help": self.show_dev_error,
-            "app.undo": self.show_dev_error,
-            "app.redo": self.show_dev_error,
+            "app.undo": self.undo_picker,
+            "app.redo": self.redo_picker,
             "app.search": self.find_node,
             "app.reset_search_icon": self.set_search_icon,
             "app.toggle_widget": self.toggle_widget,
@@ -288,12 +290,34 @@ class Sociogram(object):
     def nothing(self, a=None, b=None, c=None):
         print 'nothing'
     
-    def notes_undo(self, widget, data=None):
-        '''Event handler. Undo notes edit action.'''
+    def undo_picker(self, widget, data=None):
+        '''Event handler and standalone. Picks which undo function to trigger based on the focused UI element.'''
+        focus = self.window.get_focus()
+        if focus is self.notes_view:
+            self.notes_undo()
+        elif focus is self.desc_view:
+            self.desc_undo()
+        else:
+            self.undo()
+            pass
+    
+    def redo_picker(self, widget, data=None):
+        '''Event handler and standalone. Picks which redo function to trigger based on the focused UI element.'''
+        focus = self.window.get_focus()
+        if focus is self.notes_view:
+            self.notes_redo()
+        elif focus is self.desc_view:
+            self.desc_redo()
+        else:
+            self.redo()
+            pass
+    
+    def notes_undo(self, widget=None, data=None):
+        '''Event handler and standalone. Undo notes edit action.'''
         self.notes_buff.undo()
         
-    def notes_redo(self, widget, data=None):
-        '''Event handler. Redo notes edit action.'''
+    def notes_redo(self, widget=None, data=None):
+        '''Event handler and standalone. Redo notes edit action.'''
         self.notes_buff.redo()
         
     def notes_check_undo(self, widget=None, data=None, a=None, b=None):
@@ -313,6 +337,14 @@ class Sociogram(object):
         '''Event handler. Set undo/redo availability according to widget properties.'''
         self.desc_undo_btn.set_sensitive(self.desc_buff.can_undo)
         self.desc_redo_btn.set_sensitive(self.desc_buff.can_redo)
+    
+    def undo(self, widget=None, data=None):
+        '''Event handler and standalone. Global (non-text field) undo function.'''
+        pass
+    
+    def redo(self, widget=None, data=None):
+        '''Event handler and standalone. Global (non-text field) redo function.'''
+        pass
     
     def edit_docprops(self, widget=None, data=None):
         '''Event handler. Edit document title and description.'''
